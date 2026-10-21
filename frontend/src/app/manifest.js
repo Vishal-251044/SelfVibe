@@ -1,0 +1,36 @@
+/**
+ * PWA web app manifest (PRD PWA-1), served by Next.js at /manifest.webmanifest.
+ */
+import { APP_DESCRIPTION, APP_NAME } from "@/utils/constants";
+
+export default function manifest() {
+  return {
+    name: APP_NAME,
+    short_name: APP_NAME,
+    description: APP_DESCRIPTION,
+    id: "/",
+    start_url: "/home",
+    scope: "/",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#000000",
+    theme_color: "#000000",
+    categories: ["music", "entertainment"],
+    icons: [
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      {
+        src: "/icons/icon-maskable-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icons/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+  };
+}

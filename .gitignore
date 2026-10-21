@@ -1,0 +1,25 @@
+# Root .gitignore — each app also has its own (frontend/.gitignore, backend/.gitignore)
+
+# dependencies
+node_modules/
+
+# env files (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# build output
+.next/
+out/
+dist/
+build/
+coverage/
+
+# logs
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/

@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# env files (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# logs
+logs/
+*.log
+npm-debug.log*
+
+# build / test output
+dist/
+build/
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
