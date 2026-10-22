@@ -69,6 +69,19 @@ function buildUrl(path, query) {
 }
 
 /**
+ * Message for failures without an API error body. A 5xx without our JSON
+ * envelope means the Next.js /api proxy could not reach the backend at all.
+ * @param {number} status
+ * @returns {string}
+ */
+function fallbackMessage(status) {
+  if (status >= 500)
+    return "Can't reach the SelfVibe server right now. Please try again in a moment.";
+  if (status === 404) return "That isn't available.";
+  return "Something went wrong. Please try again.";
+}
+
+/**
  * Which session a request belongs to: console routes use the staff session.
  * @param {string} path
  * @param {"user"|"staff"|"none"|undefined} auth - Explicit choice from the caller
@@ -147,7 +160,7 @@ export async function request(path, options = {}) {
     }
 
     throw new ApiClientError(
-      payload?.message ?? `Request to ${path} failed with status ${response.status}`,
+      payload?.message ?? fallbackMessage(response.status),
       response.status,
       payload?.error ?? null
     );
