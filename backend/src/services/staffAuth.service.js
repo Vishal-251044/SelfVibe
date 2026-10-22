@@ -124,7 +124,7 @@ export async function beginTwoFactorSetup(challengeToken) {
   }
 
   const enrollment = await createEnrollment(user.email, pendingSecret);
-  logger.info(`[StaffAuthService] 2FA enrolment started userId=${user._id}`);
+  logger.debug(`[StaffAuthService] 2FA enrolment started userId=${user._id}`);
   return {
     qrCodeDataUrl: enrollment.qrCodeDataUrl,
     otpauthUrl: enrollment.otpauthUrl,
@@ -160,7 +160,7 @@ export async function completeTwoFactor({ challengeToken, code }, meta) {
     user.twoFactorEnabled = true;
     user.twoFactorLastTimeStep = result.timeStep;
     user.twoFactorBackupCodes = generated.stored;
-    logger.info(`[StaffAuthService] 2FA enabled userId=${user._id}`);
+    logger.debug(`[StaffAuthService] 2FA enabled userId=${user._id}`);
   } else {
     await checkVerifyCode(user, code);
   }
@@ -169,7 +169,7 @@ export async function completeTwoFactor({ challengeToken, code }, meta) {
   await user.save();
 
   const { session, refreshToken } = await createSession(user._id, SESSION_KINDS.STAFF, meta);
-  logger.info(`[StaffAuthService] console login ok userId=${user._id} role=${user.staffRole}`);
+  logger.debug(`[StaffAuthService] console login ok userId=${user._id} role=${user.staffRole}`);
 
   return {
     staff: toStaffUser(user),

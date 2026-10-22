@@ -86,7 +86,7 @@ export const env = Object.freeze({
   isDevelopment: nodeEnv === "development",
   isTest: nodeEnv === "test",
   port: readPositiveInt("PORT", 5000),
-  logLevel: read("LOG_LEVEL", isProduction ? "info" : "debug"),
+  logLevel: read("LOG_LEVEL", "info"),
   databaseUrl: read("DATABASE_URL"),
   clientUrls,
   // Public URL of the web app, used in emails and OAuth redirects

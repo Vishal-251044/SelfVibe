@@ -41,7 +41,7 @@ export async function requestPasswordReset(email) {
 
   const user = await User.findOne({ email });
   if (!user || user.status !== "active") {
-    logger.info("[PasswordResetService] reset requested for an unknown or inactive account");
+    logger.debug("[PasswordResetService] reset requested for an unknown or inactive account");
     return;
   }
 
@@ -53,7 +53,7 @@ export async function requestPasswordReset(email) {
 
   const resetUrl = `${env.appUrl}/reset-password?token=${encodeURIComponent(token)}`;
   sendInBackground(passwordResetEmail({ name: user.name, resetUrl, ttlMinutes }), "reset link");
-  logger.info(`[PasswordResetService] reset link issued userId=${user._id}`);
+  logger.debug(`[PasswordResetService] reset link issued userId=${user._id}`);
 }
 
 /**
@@ -97,7 +97,7 @@ export async function resetPassword({ token, password }) {
   await user.save();
 
   const revoked = await revokeAllSessionsForUser(user._id, "password_reset");
-  logger.info(
+  logger.debug(
     `[PasswordResetService] password reset userId=${user._id} sessionsRevoked=${revoked}`
   );
 

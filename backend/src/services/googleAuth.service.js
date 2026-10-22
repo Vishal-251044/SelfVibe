@@ -159,7 +159,7 @@ export async function signInWithGoogle(profile, meta) {
         emailVerified: true,
         roles: ["listener"],
       });
-      logger.info(`[GoogleAuthService] new account via Google userId=${user._id}`);
+      logger.debug(`[GoogleAuthService] new account via Google userId=${user._id}`);
     }
   }
 
@@ -198,5 +198,5 @@ async function linkGoogleAccount(user, profile) {
   user.googleId = profile.googleId;
   user.emailVerified = true;
   if (!user.avatar && profile.picture) user.avatar = profile.picture;
-  logger.info(`[GoogleAuthService] Google linked to existing account userId=${user._id}`);
+  logger.debug(`[GoogleAuthService] Google linked to existing account userId=${user._id}`);
 }

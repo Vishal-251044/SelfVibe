@@ -86,5 +86,5 @@ export async function sendEmail(message) {
     throw new ApiError(502, "We couldn't send the email. Please try again in a moment.");
   }
 
-  logger.info(`[EmailService] sent "${message.subject}"`);
+  logger.debug(`[EmailService] sent "${message.subject}"`);
 }

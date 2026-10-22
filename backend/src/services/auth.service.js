@@ -66,7 +66,7 @@ export async function register({ name, email, password }, meta) {
     lastLoginAt: new Date(),
   });
 
-  logger.info(`[AuthService] registered userId=${user._id}`);
+  logger.debug(`[AuthService] registered userId=${user._id}`);
   return startSession(user, meta);
 }
 
@@ -83,7 +83,7 @@ export async function login({ email, password }, meta) {
   // Same message for unknown email and wrong password (no account enumeration)
   const isPasswordValid = await verifyPassword(password, user?.passwordHash);
   if (!user || !isPasswordValid) {
-    logger.info(`[AuthService] login failed (invalid credentials) ip=${meta.ip}`);
+    logger.debug(`[AuthService] login failed (invalid credentials) ip=${meta.ip}`);
     throw ApiError.unauthorized("Incorrect email or password", {
       code: ERROR_CODES.INVALID_CREDENTIALS,
     });
@@ -98,7 +98,7 @@ export async function login({ email, password }, meta) {
   user.lastLoginAt = new Date();
   await user.save();
 
-  logger.info(`[AuthService] login ok userId=${user._id}`);
+  logger.debug(`[AuthService] login ok userId=${user._id}`);
   return startSession(user, meta);
 }
 

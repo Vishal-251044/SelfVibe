@@ -84,7 +84,7 @@ export async function updateProfile(userId, changes) {
   }
 
   await user.save();
-  logger.info(
+  logger.debug(
     `[UserService] profile updated userId=${userId} fields=${Object.keys(changes).join(",")}`
   );
   return user;

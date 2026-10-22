@@ -62,7 +62,7 @@ export const handleGoogleCallback = asyncHandler(async (req, res) => {
   const { code, state, error } = req.query;
 
   if (error) {
-    logger.info(`[GoogleAuth] user cancelled or Google returned error=${error}`);
+    logger.debug(`[GoogleAuth] user cancelled or Google returned error=${error}`);
     return redirectToApp(res, "/login?error=google_cancelled");
   }
   if (

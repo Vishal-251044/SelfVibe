@@ -115,7 +115,7 @@ export async function completeOnboarding(userId, answers) {
   );
   if (!user) throw ApiError.notFound(`User not found with id: ${userId}`);
 
-  logger.info(
+  logger.debug(
     `[OnboardingService] taste profile saved userId=${userId} genres=${normalised.genres.length} vibes=${normalised.vibes.length} artists=${normalised.artists.length}`
   );
   return user;
@@ -133,7 +133,7 @@ export async function skipOnboarding(userId) {
     { returnDocument: "after" }
   );
   if (!user) throw ApiError.notFound(`User not found with id: ${userId}`);
-  logger.info(`[OnboardingService] onboarding skipped userId=${userId}`);
+  logger.debug(`[OnboardingService] onboarding skipped userId=${userId}`);
   return user;
 }
 
