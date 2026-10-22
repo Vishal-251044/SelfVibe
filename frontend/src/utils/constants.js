@@ -43,6 +43,7 @@ export const PROTECTED_APP_PATHS = [
   "/artist",
   "/studio",
   "/profile",
+  "/onboarding",
 ];
 
 /** Primary in-app destinations (MOB-2: Home · Search · Library · AI Studio · Profile). */
@@ -121,3 +122,18 @@ export const PLANS = [
     ],
   },
 ];
+
+/** Taste quiz rules — same as the API (PRD ONB-1). */
+export const ONBOARDING_LIMITS = {
+  minGenres: 3,
+  maxGenres: 10,
+  minVibes: 2,
+  maxVibes: 8,
+  maxArtists: 20,
+};
+
+/** React Query cache keys, in one place so invalidation never misses one. */
+export const QUERY_KEYS = {
+  onboardingOptions: ["onboarding", "options"],
+  taste: ["users", "me", "taste"],
+};

@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Button with SelfVibe variants. Renders a Next.js <Link> when `href` is given,
+ * Button with SelfVibe variants. Renders a Next.js <Link> when `href` is given
+ * (a plain <a> with `nativeLink`, for full page loads such as OAuth redirects),
  * otherwise a <button>. All sizes meet the 44px minimum touch target.
  */
 import Link from "next/link";
@@ -29,6 +30,7 @@ const MotionLink = motion.create(Link);
  * @param {"primary"|"outline"|"ghost"} [props.variant="primary"]
  * @param {"md"|"lg"} [props.size="md"]
  * @param {string} [props.href] - Render as a link to this path
+ * @param {boolean} [props.nativeLink=false] - Use a plain <a> (full navigation, no prefetch)
  * @param {boolean} [props.loading=false] - Show a spinner and disable the button
  * @param {boolean} [props.fullWidth=false]
  * @param {string} [props.className]
@@ -38,6 +40,7 @@ export default function Button({
   variant = "primary",
   size = "md",
   href,
+  nativeLink = false,
   loading = false,
   fullWidth = false,
   className,
@@ -52,6 +55,14 @@ export default function Button({
     fullWidth && "w-full",
     className
   );
+
+  if (href && nativeLink) {
+    return (
+      <motion.a href={href} className={classes} whileTap={tapPress} {...rest}>
+        {children}
+      </motion.a>
+    );
+  }
 
   if (href) {
     return (

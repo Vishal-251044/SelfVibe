@@ -19,6 +19,14 @@ const nextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
 
+  // Avatars: Cloudinary uploads and Google profile photos
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
+  },
+
   async rewrites() {
     return [
       {

@@ -4,6 +4,7 @@
  * is returned in the body and kept in memory by the frontend.
  */
 import * as authService from "../services/auth.service.js";
+import * as passwordResetService from "../services/passwordReset.service.js";
 import { SESSION_KINDS } from "../config/constants.js";
 import { getRequestMeta as requestMeta } from "../helpers/genericFunctions.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -55,4 +56,25 @@ export const logout = asyncHandler(async (req, res) => {
   await authService.logout(readRefreshCookie(req, SESSION_KINDS.USER));
   clearSessionCookies(res, SESSION_KINDS.USER);
   return sendSuccess(res, { message: "Logged out" });
+});
+
+/** POST /api/auth/forgot — always the same answer, whether or not the email exists */
+export const forgotPassword = asyncHandler(async (req, res) => {
+  await passwordResetService.requestPasswordReset(req.body.email);
+  return sendSuccess(res, {
+    message: "If an account exists for that email, we've sent a link to reset your password.",
+  });
+});
+
+/** GET /api/auth/reset/validate?token= — lets the reset page warn about dead links up front */
+export const validateResetToken = asyncHandler(async (req, res) => {
+  const isValid = await passwordResetService.isResetTokenValid(req.validated.query.token);
+  return sendSuccess(res, { message: "Reset link checked", data: { valid: isValid } });
+});
+
+/** POST /api/auth/reset — set a new password; signs out every device */
+export const resetPassword = asyncHandler(async (req, res) => {
+  await passwordResetService.resetPassword(req.body);
+  clearSessionCookies(res, SESSION_KINDS.USER);
+  return sendSuccess(res, { message: "Your password has been changed. Please log in." });
 });

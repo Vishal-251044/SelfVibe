@@ -1,25 +1,59 @@
 {
   "info": {
     "_postman_id": "5e1f7b1e-0d02-4c6e-9a3b-6a1f2d3c4b5e",
-    "name": "SelfVibe · Auth & Admin Console (Day 2)",
-    "description": "Listener auth (register → login → refresh → logout) and the staff console sign-in with two-factor authentication.\n\nImport into Postman or Thunder Client (Collections → Import).\n\n• Cookies: the refresh token is an httpOnly cookie. Postman and Thunder Client store it automatically for localhost, so Refresh / Logout work without extra setup.\n• Tokens: the test scripts save accessToken, staffAccessToken and challengeToken into collection variables, and requests that need them send `Authorization: Bearer {{...}}`.\n• Console flow: run 'Console · Login (password)'. If step = setup, run '2FA setup', scan the QR (or type manualKey) in Google Authenticator, put the 6-digit code into the `totpCode` variable, then run '2FA verify'.",
+    "name": "SelfVibe · Auth, Profile & Onboarding (Days 2–3)",
+    "description": "Listener auth (register → login → refresh → logout) and the staff console sign-in with two-factor authentication.\n\nImport into Postman or Thunder Client (Collections → Import).\n\n• Cookies: the refresh token is an httpOnly cookie. Postman and Thunder Client store it automatically for localhost, so Refresh / Logout work without extra setup.\n• Tokens: the test scripts save accessToken, staffAccessToken and challengeToken into collection variables, and requests that need them send `Authorization: Bearer {{...}}`.\n• Console flow: run 'Console · Login (password)'. If step = setup, run '2FA setup', scan the QR (or type manualKey) in Google Authenticator, put the 6-digit code into the `totpCode` variable, then run '2FA verify'.\n\nGoogle sign-in is a browser flow: open http://localhost:3000/api/auth/google in a browser (not Postman).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000/api" },
-    { "key": "email", "value": "riya@example.com" },
-    { "key": "password", "value": "password123" },
-    { "key": "ownerEmail", "value": "owner@example.com" },
-    { "key": "ownerPassword", "value": "change-me-in-postman" },
-    { "key": "totpCode", "value": "123456" },
-    { "key": "accessToken", "value": "" },
-    { "key": "staffAccessToken", "value": "" },
-    { "key": "challengeToken", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "email",
+      "value": "riya@example.com"
+    },
+    {
+      "key": "password",
+      "value": "password123"
+    },
+    {
+      "key": "ownerEmail",
+      "value": "owner@example.com"
+    },
+    {
+      "key": "ownerPassword",
+      "value": "change-me-in-postman"
+    },
+    {
+      "key": "totpCode",
+      "value": "123456"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "staffAccessToken",
+      "value": ""
+    },
+    {
+      "key": "challengeToken",
+      "value": ""
+    },
+    {
+      "key": "resetToken",
+      "value": "paste-token-from-the-email"
+    }
   ],
   "item": [
     {
       "name": "Health",
-      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
     },
     {
       "name": "Listener",
@@ -40,7 +74,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/register",
             "body": {
               "mode": "raw",
@@ -64,7 +103,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
@@ -77,12 +121,19 @@
           "event": [
             {
               "listen": "test",
-              "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+              "script": {
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
             }
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/users/me"
           }
         },
@@ -100,11 +151,17 @@
               }
             }
           ],
-          "request": { "method": "POST", "url": "{{baseUrl}}/auth/refresh" }
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh"
+          }
         },
         {
           "name": "Logout",
-          "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" }
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout"
+          }
         },
         {
           "name": "Listener token on console (expect 401)",
@@ -120,7 +177,12 @@
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/admin/auth/me"
           }
         }
@@ -146,7 +208,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/admin/auth/login",
             "body": {
               "mode": "raw",
@@ -170,9 +237,17 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/admin/auth/2fa/setup",
-            "body": { "mode": "raw", "raw": "{\n  \"challengeToken\": \"{{challengeToken}}\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"challengeToken\": \"{{challengeToken}}\"\n}"
+            }
           }
         },
         {
@@ -192,7 +267,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/admin/auth/2fa/verify",
             "body": {
               "mode": "raw",
@@ -205,12 +285,19 @@
           "event": [
             {
               "listen": "test",
-              "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+              "script": {
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
             }
           ],
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{staffAccessToken}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffAccessToken}}"
+              }
+            ],
             "url": "{{baseUrl}}/admin/auth/me"
           }
         },
@@ -228,11 +315,172 @@
               }
             }
           ],
-          "request": { "method": "POST", "url": "{{baseUrl}}/admin/auth/refresh" }
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/auth/refresh"
+          }
         },
         {
           "name": "Console · Logout",
-          "request": { "method": "POST", "url": "{{baseUrl}}/admin/auth/logout" }
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Password reset",
+      "item": [
+        {
+          "name": "Forgot password (sends the email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/forgot",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Check reset link",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset/validate?token={{resetToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset", "validate"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{resetToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"password\": \"new-password-123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile & onboarding",
+      "item": [
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Riya Sharma\",\n  \"bio\": \"Lo-fi at 2am.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Avatar upload signature (Cloudinary)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/uploads/avatar/sign"
+          }
+        },
+        {
+          "name": "Quiz options",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/onboarding/options"
+          }
+        },
+        {
+          "name": "Submit quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/me/onboarding",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genres\": [\n    \"lo-fi\",\n    \"indie\",\n    \"bollywood\"\n  ],\n  \"vibes\": [\n    \"code\",\n    \"focus\"\n  ],\n  \"artists\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Skip quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/me/onboarding/skip"
+          }
+        },
+        {
+          "name": "My taste profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/me/taste"
+          }
         }
       ]
     }

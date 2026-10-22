@@ -31,7 +31,7 @@ import { logger } from "../utils/logger.js";
  * @param {Object} meta - { userAgent, ip }
  * @returns {Promise<AuthResult>}
  */
-async function startSession(user, meta) {
+export async function startSession(user, meta) {
   const { session, refreshToken } = await createSession(user._id, SESSION_KINDS.USER, meta);
   return {
     user: toPublicUser(user),

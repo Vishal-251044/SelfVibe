@@ -11,6 +11,32 @@ const TOTP_PATTERN = /^\d{6}$/;
 const BACKUP_CODE_PATTERN = /^[A-Za-z0-9]{4}-?[A-Za-z0-9]{4}$/;
 
 /**
+ * Validate an email address.
+ * @param {string} email
+ * @returns {string|undefined} Error message, or undefined when valid
+ */
+export function validateEmail(email) {
+  if (!email?.trim()) return "Enter your email";
+  if (!EMAIL_PATTERN.test(email.trim())) return "Enter a valid email address";
+  return undefined;
+}
+
+/**
+ * Validate a NEW password (signup, reset): 8+ characters, within bcrypt's 72 bytes.
+ * @param {string} password
+ * @returns {string|undefined} Error message, or undefined when valid
+ */
+export function validateNewPassword(password) {
+  if (!password) return "Enter a password";
+  if (password.length < PASSWORD_MIN_LENGTH)
+    return `Use at least ${PASSWORD_MIN_LENGTH} characters`;
+  if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) {
+    return `Use at most ${PASSWORD_MAX_BYTES} characters`;
+  }
+  return undefined;
+}
+
+/**
  * Validate login / signup fields.
  * @param {Object} values - { name?, email, password }
  * @param {Object} [options]
@@ -26,22 +52,14 @@ export function validateAuthForm(values, { requireName = false } = {}) {
     else if (name.length > NAME_MAX_LENGTH) errors.name = "Name must be 80 characters or fewer";
   }
 
-  if (!values.email?.trim()) {
-    errors.email = "Enter your email";
-  } else if (!EMAIL_PATTERN.test(values.email.trim())) {
-    errors.email = "Enter a valid email address";
-  }
+  const emailError = validateEmail(values.email);
+  if (emailError) errors.email = emailError;
 
-  if (!values.password) {
-    errors.password = "Enter your password";
-  } else if (requireName) {
-    // Length rules only apply when creating a password, not when logging in
-    if (values.password.length < PASSWORD_MIN_LENGTH) {
-      errors.password = `Use at least ${PASSWORD_MIN_LENGTH} characters`;
-    } else if (new TextEncoder().encode(values.password).length > PASSWORD_MAX_BYTES) {
-      errors.password = `Use at most ${PASSWORD_MAX_BYTES} characters`;
-    }
-  }
+  // Length rules only apply when creating a password, not when logging in
+  const passwordError = requireName
+    ? validateNewPassword(values.password)
+    : !values.password && "Enter your password";
+  if (passwordError) errors.password = passwordError;
 
   return errors;
 }

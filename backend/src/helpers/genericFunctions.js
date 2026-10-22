@@ -56,3 +56,15 @@ export function slugify(text = "") {
 export function getRequestMeta(req) {
   return { userAgent: req.get("user-agent"), ip: req.ip };
 }
+
+/**
+ * Only allow redirects to paths on our own site (blocks open redirects via ?next=).
+ * @param {unknown} target - e.g. "/library"
+ * @param {string|null} [fallback=null]
+ * @returns {string|null} A safe internal path, or the fallback
+ */
+export function getSafeRedirectPath(target, fallback = null) {
+  if (typeof target !== "string" || target.length > 512) return fallback;
+  if (!target.startsWith("/") || target.startsWith("//") || target.includes("\\")) return fallback;
+  return target;
+}

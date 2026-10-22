@@ -11,3 +11,5 @@ export { Follow } from "./follow.model.js";
 export { ListenEvent } from "./listenEvent.model.js";
 export { TasteProfile } from "./tasteProfile.model.js";
 export { Session } from "./session.model.js";
+export { Genre } from "./genre.model.js";
+export { Vibe } from "./vibe.model.js";

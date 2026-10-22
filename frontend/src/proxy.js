@@ -76,6 +76,7 @@ export const config = {
     "/artist/:path*",
     "/studio/:path*",
     "/profile/:path*",
+    "/onboarding/:path*",
     "/admin/:path*",
   ],
 };

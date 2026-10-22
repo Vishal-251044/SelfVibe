@@ -15,6 +15,14 @@ export const useAuthStore = createSessionStore({
   logoutRequest: authService.logout,
   extend: (set, get) => ({
     /**
+     * Replace the signed-in user after a profile change or onboarding.
+     * @param {Object} user - Public user from the API
+     */
+    setUser(user) {
+      set({ user });
+    },
+
+    /**
      * Log in and store the session.
      * @param {{ email: string, password: string }} credentials
      * @returns {Promise<Object>} The signed-in user

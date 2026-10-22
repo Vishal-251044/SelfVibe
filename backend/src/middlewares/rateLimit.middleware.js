@@ -96,3 +96,28 @@ export const refreshLimiter = createLimiter({
   limit: 60,
   message: "Too many requests. Please slow down.",
 });
+
+/** 5 reset-link requests per hour per IP + email (stops inbox flooding). */
+export const forgotPasswordLimiter = createLimiter({
+  name: "forgot-password",
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  keyGenerator: ipAndEmailKey,
+  message: "Too many reset requests. Please check your inbox or try again in an hour.",
+});
+
+/** 10 reset attempts per 15 minutes per IP (stops token guessing). */
+export const resetPasswordLimiter = createLimiter({
+  name: "reset-password",
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: "Too many attempts. Please wait 15 minutes and try again.",
+});
+
+/** 20 upload signatures per 15 minutes per IP. */
+export const uploadSignLimiter = createLimiter({
+  name: "upload-sign",
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  message: "Too many uploads. Please wait a few minutes and try again.",
+});

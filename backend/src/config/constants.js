@@ -52,6 +52,8 @@ export const COOKIES = Object.freeze({
   // Non-secret "a session exists" hints, readable by the frontend route guard
   USER_HINT: { name: "sv_session", path: "/" },
   STAFF_HINT: { name: "sv_staff", path: "/" },
+  // Short-lived Google sign-in state (CSRF state + PKCE verifier + return path)
+  OAUTH_STATE: { name: "sv_oauth", path: "/api/auth/google" },
 });
 
 export const BCRYPT_ROUNDS = 12;
@@ -89,5 +91,38 @@ export const ERROR_CODES = Object.freeze({
   NOT_STAFF: "NOT_STAFF",
   TWO_FACTOR_INVALID: "TWO_FACTOR_INVALID",
   TWO_FACTOR_STATE: "TWO_FACTOR_STATE",
+  RESET_TOKEN_INVALID: "RESET_TOKEN_INVALID",
+  NOT_CONFIGURED: "NOT_CONFIGURED",
+  UNKNOWN_TASTE_OPTION: "UNKNOWN_TASTE_OPTION",
+  GOOGLE_EMAIL_UNVERIFIED: "GOOGLE_EMAIL_UNVERIFIED",
+  GOOGLE_ACCOUNT_CONFLICT: "GOOGLE_ACCOUNT_CONFLICT",
+  INVALID_UPLOAD: "INVALID_UPLOAD",
   RATE_LIMITED: "RATE_LIMITED",
 });
+
+/* ===== Onboarding & taste profile ===== */
+
+/** Taste quiz rules (PRD ONB-1): pick at least 3 genres and 2 vibes; artists optional. */
+export const ONBOARDING_LIMITS = Object.freeze({
+  minGenres: 3,
+  maxGenres: 10,
+  minVibes: 2,
+  maxVibes: 8,
+  maxArtists: 20,
+});
+
+/**
+ * Starting weights from the quiz (PRD §10.4.1 "Onboarding quiz: cold-start prior").
+ * Same scale as listening signals: like +5, follow artist +4.
+ */
+export const QUIZ_TASTE_WEIGHTS = Object.freeze({ genre: 5, vibe: 5, artist: 4 });
+
+/* ===== Uploads ===== */
+
+export const AVATAR_UPLOAD = Object.freeze({
+  folder: "selfvibe/avatars",
+  allowedFormats: ["jpg", "jpeg", "png", "webp"],
+  maxBytes: 5 * 1024 * 1024, // checked in the browser; Cloudinary rejects > 10 MB on free plans
+});
+
+export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;

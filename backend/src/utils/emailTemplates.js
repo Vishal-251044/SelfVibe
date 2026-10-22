@@ -1,0 +1,91 @@
+/**
+ * Transactional email templates in the SelfVibe theme (black, neon green,
+ * monospace). Inline styles only — email clients ignore <style> blocks.
+ */
+
+/**
+ * Escape text for safe use inside HTML.
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]
+  );
+}
+
+/**
+ * Wrap content in the branded email layout.
+ * @param {Object} options
+ * @param {string} options.title - Heading
+ * @param {string} options.bodyHtml - Already-escaped HTML paragraphs
+ * @param {{ label: string, url: string }} [options.button]
+ * @param {string} [options.footnote]
+ * @returns {string} HTML document
+ */
+function layout({ title, bodyHtml, button, footnote }) {
+  const mono = "'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace";
+  return `<!doctype html>
+<html><body style="margin:0;background:#000;padding:32px 16px;font-family:${mono};color:#e5e7eb">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+    <table role="presentation" width="100%" style="max-width:520px;background:#050806;border:1px solid rgba(34,197,94,.45);border-radius:16px">
+      <tr><td style="padding:32px">
+        <p style="margin:0 0 24px;font-size:20px;font-weight:700;color:#bbf7d0">SelfVibe</p>
+        <p style="margin:0 0 8px;font-size:13px;color:#22c55e">$ selfvibe notify</p>
+        <h1 style="margin:0 0 16px;font-size:22px;color:#fff">${escapeHtml(title)}</h1>
+        ${bodyHtml}
+        ${
+          button
+            ? `<p style="margin:28px 0"><a href="${escapeHtml(button.url)}" style="display:inline-block;background:#22c55e;color:#000;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:10px">${escapeHtml(button.label)}</a></p>
+        <p style="margin:0 0 8px;font-size:12px;color:#6b7280">Or paste this link into your browser:</p>
+        <p style="margin:0;font-size:12px;word-break:break-all"><a href="${escapeHtml(button.url)}" style="color:#22c55e">${escapeHtml(button.url)}</a></p>`
+            : ""
+        }
+        ${footnote ? `<p style="margin:28px 0 0;font-size:12px;color:#6b7280">${escapeHtml(footnote)}</p>` : ""}
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+/**
+ * "Reset your password" email (PRD AUTH-4).
+ * @param {{ name: string, resetUrl: string, ttlMinutes: number }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function passwordResetEmail({ name, resetUrl, ttlMinutes }) {
+  const greeting = `Hi ${name},`;
+  const line = `We got a request to reset your SelfVibe password. The link works for ${ttlMinutes} minutes and can be used once.`;
+  const footnote = "Didn't ask for this? You can ignore this email — your password won't change.";
+
+  return {
+    subject: "Reset your SelfVibe password",
+    html: layout({
+      title: "Reset your password",
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">${escapeHtml(greeting)}</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Choose a new password", url: resetUrl },
+      footnote,
+    }),
+    text: `${greeting}\n\n${line}\n\n${resetUrl}\n\n${footnote}`,
+  };
+}
+
+/**
+ * "Your password was changed" confirmation.
+ * @param {{ name: string, loginUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function passwordChangedEmail({ name, loginUrl }) {
+  const line =
+    "Your SelfVibe password was just changed and you were signed out on all devices. If this wasn't you, reset your password right away.";
+  return {
+    subject: "Your SelfVibe password was changed",
+    html: layout({
+      title: "Password changed",
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">Hi ${escapeHtml(name)},</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Log in", url: loginUrl },
+    }),
+    text: `Hi ${name},\n\n${line}\n\n${loginUrl}`,
+  };
+}

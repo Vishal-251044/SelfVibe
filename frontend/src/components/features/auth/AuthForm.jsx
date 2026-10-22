@@ -3,8 +3,9 @@
 /**
  * Shared login / signup form: fields, client-side validation, submit to the
  * API through the auth store, server error display, Google button and the
- * switch link to the other mode. After success it returns the user to
- * ?next=… (internal paths only) or /home.
+ * switch link to the other mode. After success, new users go to the taste
+ * quiz; everyone else returns to ?next=… (internal paths only) or /home.
+ * Also explains ?error= codes from Google sign-in and ?reset=success.
  */
 import { useState } from "react";
 import Link from "next/link";
@@ -16,7 +17,18 @@ import FormAlert from "@/components/ui/FormAlert";
 import GoogleButton from "@/components/features/auth/GoogleButton";
 import { useAuthStore } from "@/store/authStore";
 import { validateAuthForm } from "@/utils/validators";
-import { getSafeRedirect } from "@/utils/genericFunctions";
+import { getPostAuthRedirect } from "@/utils/genericFunctions";
+
+/** Messages for ?error= codes sent back by the Google sign-in redirect. */
+const GOOGLE_ERRORS = {
+  google_unavailable: "Google sign-in isn't available right now. Use your email instead.",
+  google_cancelled: "Google sign-in was cancelled.",
+  google_failed: "Google sign-in didn't work. Please try again.",
+  google_email_unverified:
+    "Your Google account's email isn't verified yet. Verify it with Google, or use email.",
+  google_account_conflict: "This email is already linked to a different Google account.",
+  account_suspended: "This account has been suspended. Contact support for help.",
+};
 
 const COPY = {
   login: {
@@ -54,7 +66,11 @@ export default function AuthForm({ mode }) {
 
   const [values, setValues] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [formError, setFormError] = useState(null);
+  const [formError, setFormError] = useState(GOOGLE_ERRORS[searchParams.get("error")] ?? null);
+  const notice =
+    searchParams.get("reset") === "success" && !formError
+      ? "Password changed. Log in with your new password."
+      : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Carry ?next= across the login ↔ signup switch
@@ -84,12 +100,10 @@ export default function AuthForm({ mode }) {
 
     setIsSubmitting(true);
     try {
-      if (isSignup) {
-        await register({ name: values.name, email: values.email, password: values.password });
-      } else {
-        await login({ email: values.email, password: values.password });
-      }
-      router.replace(getSafeRedirect(nextParam));
+      const user = isSignup
+        ? await register({ name: values.name, email: values.email, password: values.password })
+        : await login({ email: values.email, password: values.password });
+      router.replace(getPostAuthRedirect(user, nextParam));
     } catch (error) {
       const fieldErrors = error?.details?.fields;
       if (fieldErrors) setErrors(fieldErrors);
@@ -104,6 +118,7 @@ export default function AuthForm({ mode }) {
       <h1 className="mt-3 font-display text-3xl font-bold">{copy.title}</h1>
       <p className="mt-2 text-sm text-fg-muted">{copy.subtitle}</p>
 
+      <FormAlert message={notice} tone="success" className="mt-6" />
       <FormAlert message={formError} className="mt-6" />
 
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
@@ -142,6 +157,16 @@ export default function AuthForm({ mode }) {
           onChange={handleChange}
           error={errors.password}
         />
+        {!isSignup && (
+          <div className="-mt-1 flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="inline-flex min-h-11 items-center text-sm text-fg-muted hover:text-neon"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        )}
 
         <Button type="submit" fullWidth size="lg" className="mt-2" loading={isSubmitting}>
           {isSubmitting ? "Please wait…" : copy.submit}
@@ -154,7 +179,7 @@ export default function AuthForm({ mode }) {
         <div className="h-px flex-1 bg-line" />
       </div>
 
-      <GoogleButton />
+      <GoogleButton next={nextParam} />
 
       <p className="mt-8 text-center text-sm text-fg-muted">
         {copy.switchText}{" "}

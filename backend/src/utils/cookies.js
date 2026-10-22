@@ -4,7 +4,7 @@
  * - Hint cookie: non-secret "a session exists" flag the frontend route guard reads
  *   to avoid a flash of protected pages. It grants no access by itself.
  */
-import { COOKIES } from "../config/constants.js";
+import { COOKIES, OAUTH_STATE_TTL_MS } from "../config/constants.js";
 import { env } from "../config/env.js";
 
 /**
@@ -66,4 +66,37 @@ function cookiesFor(kind) {
   return kind === "staff"
     ? { refresh: COOKIES.STAFF_REFRESH, hint: COOKIES.STAFF_HINT }
     : { refresh: COOKIES.USER_REFRESH, hint: COOKIES.USER_HINT };
+}
+
+/**
+ * Remember the Google sign-in state (CSRF state, PKCE verifier, return path)
+ * until Google redirects back. httpOnly, 10 minutes, only sent to the Google routes.
+ * SameSite=Lax still sends it on Google's top-level redirect back to us.
+ * @param {import("express").Response} res
+ * @param {{ state: string, codeVerifier: string, next: string|null }} value
+ */
+export function setOAuthStateCookie(res, value) {
+  const { name, path } = COOKIES.OAUTH_STATE;
+  res.cookie(name, Buffer.from(JSON.stringify(value)).toString("base64url"), {
+    ...baseOptions(path, true),
+    maxAge: OAUTH_STATE_TTL_MS,
+  });
+}
+
+/**
+ * Read and clear the Google sign-in state cookie (single use).
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ * @returns {{ state: string, codeVerifier: string, next: string|null } | null}
+ */
+export function consumeOAuthStateCookie(req, res) {
+  const { name, path } = COOKIES.OAUTH_STATE;
+  const raw = req.cookies?.[name];
+  res.clearCookie(name, baseOptions(path, true));
+  if (!raw) return null;
+  try {
+    return JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
 }

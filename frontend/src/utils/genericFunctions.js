@@ -80,6 +80,21 @@ export function getSafeRedirect(target, fallback = "/home") {
 }
 
 /**
+ * Where to send a user right after they sign in: the taste quiz first if they
+ * have not done it (PRD ONB-1), otherwise ?next= or /home.
+ * @param {{ onboardingDone: boolean }} user
+ * @param {string|null} next - Requested destination
+ * @returns {string} A safe internal path
+ */
+export function getPostAuthRedirect(user, next) {
+  const destination = getSafeRedirect(next);
+  if (user?.onboardingDone) return destination;
+  return destination === "/home"
+    ? "/onboarding"
+    : `/onboarding?next=${encodeURIComponent(destination)}`;
+}
+
+/**
  * Whether a (non-httpOnly) cookie exists in the browser.
  * @param {string} name
  * @returns {boolean} Always false during server rendering

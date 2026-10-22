@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --test --import ./tests/setup.js \"tests/**/*.test.js\"",
-    "create-owner": "node scripts/createOwner.js"
+    "create-owner": "node scripts/createOwner.js",
+    "seed:taxonomy": "node scripts/seedTaxonomy.js"
   },
   "type": "module",
   "private": true,

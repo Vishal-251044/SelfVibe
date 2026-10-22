@@ -1,6 +1,11 @@
+"use client";
+
 /**
  * Round avatar: the user's photo, or their initials on a neon-tinted circle.
+ * Falls back to the initials if the photo fails to load (offline, deleted,
+ * expired Google photo URL), so broken-image text never shows.
  */
+import { useState } from "react";
 import Image from "next/image";
 import { cn, getInitials } from "@/utils/genericFunctions";
 
@@ -19,6 +24,9 @@ const SIZES = {
  */
 export default function Avatar({ name, src, size = "md", className }) {
   const { box, px } = SIZES[size];
+  // Remember which URL failed, so a new photo gets a fresh chance to load
+  const [failedSrc, setFailedSrc] = useState(null);
+  const showPhoto = Boolean(src) && failedSrc !== src;
 
   return (
     <span
@@ -28,13 +36,14 @@ export default function Avatar({ name, src, size = "md", className }) {
         className
       )}
     >
-      {src ? (
+      {showPhoto ? (
         <Image
           src={src}
           alt={name ? `${name}'s avatar` : "Avatar"}
           width={px}
           height={px}
           className="size-full object-cover"
+          onError={() => setFailedSrc(src)}
         />
       ) : (
         <span aria-hidden>{getInitials(name)}</span>

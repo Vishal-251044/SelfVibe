@@ -227,3 +227,17 @@ export async function getActiveStaffSession(sessionId) {
 
   return session;
 }
+
+/**
+ * Revoke every active session of a user (e.g. after a password reset).
+ * @param {string} userId
+ * @param {string} reason
+ * @returns {Promise<number>} How many sessions were revoked
+ */
+export async function revokeAllSessionsForUser(userId, reason) {
+  const result = await Session.updateMany(
+    { userId, revokedAt: null },
+    { $set: { revokedAt: new Date(), revokedReason: reason } }
+  );
+  return result.modifiedCount;
+}

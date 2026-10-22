@@ -1,6 +1,5 @@
 /**
- * Profile (/profile): the signed-in user's account details and Log out.
- * Editing name, bio and avatar arrives on Day 3.
+ * Profile (/profile): view and edit name, bio and avatar; taste profile; Log out.
  */
 import PageHeader from "@/components/ui/PageHeader";
 import ProfileSummary from "@/components/features/profile/ProfileSummary";

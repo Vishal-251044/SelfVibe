@@ -56,6 +56,30 @@ export function isUnset(value) {
 const nodeEnv = read("NODE_ENV", "development");
 const isProduction = nodeEnv === "production";
 
+// Comma-separated list of allowed browser origins for CORS
+const clientUrls = (read("CLIENT_URL", "http://localhost:3000") ?? "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const google = {
+  clientId: read("GOOGLE_CLIENT_ID"),
+  clientSecret: read("GOOGLE_CLIENT_SECRET"),
+  // Must point at the FRONTEND origin (/api is proxied) so the session cookie is first-party
+  callbackUrl: read("GOOGLE_CALLBACK_URL", "http://localhost:3000/api/auth/google/callback"),
+};
+
+const cloudinary = {
+  cloudName: read("CLOUDINARY_CLOUD_NAME"),
+  apiKey: read("CLOUDINARY_API_KEY"),
+  apiSecret: read("CLOUDINARY_API_SECRET"),
+};
+
+const email = {
+  from: read("EMAIL_FROM", "SelfVibe <onboarding@resend.dev>"),
+  resendApiKey: read("RESEND_API_KEY"),
+};
+
 export const env = Object.freeze({
   nodeEnv,
   isProduction,
@@ -64,11 +88,9 @@ export const env = Object.freeze({
   port: readPositiveInt("PORT", 5000),
   logLevel: read("LOG_LEVEL", isProduction ? "info" : "debug"),
   databaseUrl: read("DATABASE_URL"),
-  // Comma-separated list of allowed browser origins for CORS
-  clientUrls: (read("CLIENT_URL", "http://localhost:3000") ?? "")
-    .split(",")
-    .map((origin) => origin.trim().replace(/\/$/, ""))
-    .filter(Boolean),
+  clientUrls,
+  // Public URL of the web app, used in emails and OAuth redirects
+  appUrl: (read("APP_URL") ?? clientUrls[0] ?? "http://localhost:3000").replace(/\/$/, ""),
   jsonBodyLimit: read("JSON_BODY_LIMIT", "100kb"),
   // Number of reverse-proxy hops in front of the API (for req.ip and rate limiting)
   trustProxy: readPositiveInt("TRUST_PROXY", 1),
@@ -91,6 +113,28 @@ export const env = Object.freeze({
 
     // Cookies must be Secure in production (HTTPS); localhost dev runs on plain HTTP
     cookieSecure: readBoolean("COOKIE_SECURE", isProduction),
+
+    // Forgot-password links expire after 30 minutes (PRD AUTH-4)
+    passwordResetTtlMinutes: readPositiveInt("PASSWORD_RESET_TTL_MINUTES", 30),
+  }),
+
+  // Google OAuth (PRD AUTH-3). Optional: "Continue with Google" is disabled until set.
+  google: Object.freeze({
+    ...google,
+    isConfigured: !isUnset(google.clientId) && !isUnset(google.clientSecret),
+  }),
+
+  // Transactional email via Resend. Optional in development: emails are saved
+  // to backend/.dev-emails/ instead of being sent.
+  email: Object.freeze({ ...email, isConfigured: !isUnset(email.resendApiKey) }),
+
+  // Cloudinary for avatars and cover images. Optional: uploads are disabled until set.
+  cloudinary: Object.freeze({
+    ...cloudinary,
+    isConfigured:
+      !isUnset(cloudinary.cloudName) &&
+      !isUnset(cloudinary.apiKey) &&
+      !isUnset(cloudinary.apiSecret),
   }),
 
   // Used only by `npm run create-owner` (PRD ADL-3)

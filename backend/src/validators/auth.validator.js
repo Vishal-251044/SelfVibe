@@ -48,3 +48,21 @@ export const loginSchema = z.object({
   email: emailField,
   password: currentPasswordField,
 });
+
+export const forgotPasswordSchema = z.object({
+  email: emailField,
+});
+
+const resetTokenField = z
+  .string({ error: "This reset link is incomplete" })
+  .trim()
+  .regex(/^[A-Za-z0-9_-]{20,200}$/, { error: "This reset link is invalid" });
+
+export const resetPasswordSchema = z.object({
+  token: resetTokenField,
+  password: newPasswordField(),
+});
+
+export const resetTokenQuerySchema = z.object({
+  token: resetTokenField,
+});

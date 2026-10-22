@@ -1,9 +1,11 @@
 "use client";
 
 /**
- * "Continue with Google" button. The OAuth flow is connected on Day 3.
+ * "Continue with Google" button. A full-page navigation to the API, which
+ * sends the user to Google and back (see backend googleAuth.controller.js).
  */
 import Button from "@/components/ui/Button";
+import { getGoogleSignInUrl } from "@/services/auth.service";
 
 /** Official four-colour Google "G" mark (brand asset, not an icon-set icon). */
 function GoogleMark() {
@@ -32,11 +34,17 @@ function GoogleMark() {
 /**
  * @param {Object} props
  * @param {string} [props.label="Continue with Google"]
+ * @param {string|null} [props.next] - Internal path to return to after sign-in
  */
-export default function GoogleButton({ label = "Continue with Google" }) {
-  // TODO(Day 3): start the Google OAuth flow (GET /api/auth/google)
+export default function GoogleButton({ label = "Continue with Google", next = null }) {
   return (
-    <Button variant="outline" fullWidth className="text-fg">
+    <Button
+      href={getGoogleSignInUrl(next)}
+      nativeLink
+      variant="outline"
+      fullWidth
+      className="text-fg"
+    >
       <GoogleMark />
       {label}
     </Button>

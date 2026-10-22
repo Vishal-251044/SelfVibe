@@ -20,3 +20,6 @@ coverage/
 .DS_Store
 Thumbs.db
 .idea/
+
+# local dev mailbox (emails captured when RESEND_API_KEY is not set)
+.dev-emails/

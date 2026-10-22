@@ -18,7 +18,14 @@ const userSchema = new mongoose.Schema(
       maxlength: 254,
     },
     passwordHash: { type: String, select: false }, // absent for Google-only accounts
+    passwordChangedAt: { type: Date, default: null },
     googleId: { type: String, unique: true, sparse: true, select: false },
+    // True once the user proved they own the email (Google sign-in or a reset link)
+    emailVerified: { type: Boolean, default: false },
+
+    // Forgot-password (PRD AUTH-4): only the SHA-256 hash of the emailed token is stored
+    passwordResetTokenHash: { type: String, select: false, default: null },
+    passwordResetExpiresAt: { type: Date, select: false, default: null },
     avatar: { type: String, default: null },
     bio: { type: String, trim: true, maxlength: 300, default: "" },
 
@@ -56,11 +63,19 @@ const userSchema = new mongoose.Schema(
         delete ret.twoFactorLastTimeStep;
         delete ret.twoFactorBackupCodes;
         delete ret.googleId;
+        delete ret.passwordResetTokenHash;
+        delete ret.passwordResetExpiresAt;
         delete ret.__v;
         return ret;
       },
     },
   }
+);
+
+// Fast lookup of a reset link's token (only users with a pending reset are indexed)
+userSchema.index(
+  { passwordResetTokenHash: 1 },
+  { partialFilterExpression: { passwordResetTokenHash: { $type: "string" } } }
 );
 
 // Database-level guarantee that only one Owner can ever exist (PRD §8.2)
