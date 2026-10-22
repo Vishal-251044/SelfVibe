@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, RotateCw, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ListMusic, RotateCw, TriangleAlert } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import Button from "@/components/ui/Button";
 import FormAlert from "@/components/ui/FormAlert";
@@ -207,7 +207,19 @@ export default function TasteQuiz() {
                 />
               )}
 
-              {options && !isLoading && step.key !== "artists" && (
+              {options &&
+                !isLoading &&
+                step.key !== "artists" &&
+                options[step.key].length === 0 && (
+                  <EmptyState
+                    icon={ListMusic}
+                    command={`selfvibe taste --${step.key}`}
+                    title={`no ${step.key} available yet`}
+                    description="The catalog is still being set up. Skip for now — you can take the quiz later from your profile."
+                  />
+                )}
+
+              {options && !isLoading && step.key !== "artists" && options[step.key].length > 0 && (
                 <Stagger
                   key={step.key}
                   className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
