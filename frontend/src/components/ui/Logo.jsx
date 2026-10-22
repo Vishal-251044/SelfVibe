@@ -49,7 +49,12 @@ export default function Logo({ size = "md", href = "/", showWordmark = true, cla
   if (!href) return content;
 
   return (
-    <Link href={href} aria-label="SelfVibe home" className="rounded-xl">
+    // min-h-11 keeps the tap target at 44px even when the badge is smaller
+    <Link
+      href={href}
+      aria-label="SelfVibe home"
+      className="inline-flex min-h-11 items-center rounded-xl"
+    >
       {content}
     </Link>
   );
