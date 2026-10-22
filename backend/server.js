@@ -3,7 +3,7 @@
  * down cleanly on SIGINT / SIGTERM.
  */
 import app from "./src/app.js";
-import { env } from "./src/config/env.js";
+import { assertRequiredEnv, env } from "./src/config/env.js";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import { logger } from "./src/utils/logger.js";
 import "./src/models/index.js"; // register every model so its indexes are built on connect
@@ -15,6 +15,13 @@ const SHUTDOWN_TIMEOUT_MS = 10000;
  * /api/health can report the problem instead of the process crashing.
  */
 async function start() {
+  try {
+    assertRequiredEnv();
+  } catch (error) {
+    logger.fatal(error.message);
+    process.exit(1);
+  }
+
   await connectDB();
 
   const server = app.listen(env.port, () => {

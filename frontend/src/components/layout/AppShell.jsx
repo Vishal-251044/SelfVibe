@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import AppTopNav from "@/components/layout/AppTopNav";
 import BottomNav from "@/components/layout/BottomNav";
 import Logo from "@/components/ui/Logo";
+import AuthGuard from "@/components/features/auth/AuthGuard";
+import UserMenu from "@/components/features/auth/UserMenu";
 import { pageTransition } from "@/utils/animations";
 
 /**
@@ -24,8 +26,9 @@ export default function AppShell({ children }) {
     <div className="relative isolate min-h-dvh">
       {/* Phone top bar */}
       <header className="pt-safe px-safe sticky top-0 z-40 border-b border-line bg-black/80 backdrop-blur-xl md:hidden">
-        <div className="flex h-14 items-center">
+        <div className="flex h-14 items-center justify-between">
           <Logo href="/home" size="sm" />
+          <UserMenu />
         </div>
       </header>
 
@@ -38,7 +41,7 @@ export default function AppShell({ children }) {
         animate="visible"
         className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+2rem)] md:px-6 md:pt-10 md:pb-16"
       >
-        {children}
+        <AuthGuard>{children}</AuthGuard>
       </motion.main>
 
       <BottomNav />

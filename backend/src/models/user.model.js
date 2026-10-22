@@ -27,8 +27,17 @@ const userSchema = new mongoose.Schema(
       default: ["listener"],
     },
     staffRole: { type: String, enum: [...STAFF_ROLES, null], default: null },
+
+    // Two-factor auth (staff only, PRD ADL-2). Secrets are AES-256-GCM encrypted.
     twoFactorSecret: { type: String, select: false },
+    twoFactorPendingSecret: { type: String, select: false }, // during setup, before first code
     twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorLastTimeStep: { type: Number, select: false, default: null }, // blocks code replay
+    twoFactorBackupCodes: {
+      type: [{ _id: false, hash: String, usedAt: { type: Date, default: null } }],
+      select: false,
+      default: undefined,
+    },
 
     status: { type: String, enum: USER_STATUS, default: "active" },
     plan: { type: String, enum: PLANS, default: "free" },
@@ -43,6 +52,9 @@ const userSchema = new mongoose.Schema(
       transform: (doc, ret) => {
         delete ret.passwordHash;
         delete ret.twoFactorSecret;
+        delete ret.twoFactorPendingSecret;
+        delete ret.twoFactorLastTimeStep;
+        delete ret.twoFactorBackupCodes;
         delete ret.googleId;
         delete ret.__v;
         return ret;
@@ -51,6 +63,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.index({ staffRole: 1 }, { sparse: true });
+// Database-level guarantee that only one Owner can ever exist (PRD §8.2)
+userSchema.index(
+  { staffRole: 1 },
+  { name: "single_owner", unique: true, partialFilterExpression: { staffRole: "owner" } }
+);
 
 export const User = mongoose.model("User", userSchema);

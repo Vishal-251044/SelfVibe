@@ -1,6 +1,7 @@
 /**
  * Layout for all signed-in app screens (home, search, library, …).
- * Route protection (redirect to /login) is added on Day 2.
+ * Signed-out visitors are redirected to /login by src/proxy.js and AuthGuard
+ * (inside AppShell).
  */
 import AppShell from "@/components/layout/AppShell";
 

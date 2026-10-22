@@ -47,3 +47,12 @@ export function slugify(text = "") {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * Device info stored with a session (shown later in "signed-in devices").
+ * @param {import("express").Request} req
+ * @returns {{ userAgent: string|undefined, ip: string }}
+ */
+export function getRequestMeta(req) {
+  return { userAgent: req.get("user-agent"), ip: req.ip };
+}

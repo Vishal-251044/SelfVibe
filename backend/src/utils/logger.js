@@ -22,7 +22,8 @@ export const logger = pino({
     ],
     censor: "[redacted]",
   },
-  ...(env.isProduction
+  // Pretty output only for local development (no worker thread in tests / production)
+  ...(env.isProduction || env.isTest
     ? {}
     : {
         transport: {

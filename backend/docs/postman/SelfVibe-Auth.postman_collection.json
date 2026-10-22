@@ -1,0 +1,240 @@
+{
+  "info": {
+    "_postman_id": "5e1f7b1e-0d02-4c6e-9a3b-6a1f2d3c4b5e",
+    "name": "SelfVibe · Auth & Admin Console (Day 2)",
+    "description": "Listener auth (register → login → refresh → logout) and the staff console sign-in with two-factor authentication.\n\nImport into Postman or Thunder Client (Collections → Import).\n\n• Cookies: the refresh token is an httpOnly cookie. Postman and Thunder Client store it automatically for localhost, so Refresh / Logout work without extra setup.\n• Tokens: the test scripts save accessToken, staffAccessToken and challengeToken into collection variables, and requests that need them send `Authorization: Bearer {{...}}`.\n• Console flow: run 'Console · Login (password)'. If step = setup, run '2FA setup', scan the QR (or type manualKey) in Google Authenticator, put the 6-digit code into the `totpCode` variable, then run '2FA verify'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "email", "value": "riya@example.com" },
+    { "key": "password", "value": "password123" },
+    { "key": "ownerEmail", "value": "owner@example.com" },
+    { "key": "ownerPassword", "value": "change-me-in-postman" },
+    { "key": "totpCode", "value": "123456" },
+    { "key": "accessToken", "value": "" },
+    { "key": "staffAccessToken", "value": "" },
+    { "key": "challengeToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "Listener",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) pm.collectionVariables.set('accessToken', data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Riya\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) pm.collectionVariables.set('accessToken', data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me (requires access token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/users/me"
+          }
+        },
+        {
+          "name": "Refresh (uses httpOnly cookie)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) pm.collectionVariables.set('accessToken', data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/refresh" }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" }
+        },
+        {
+          "name": "Listener token on console (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401 for listener token', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/admin/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Console (staff)",
+      "item": [
+        {
+          "name": "Console · Login (password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.challengeToken) pm.collectionVariables.set('challengeToken', data.challengeToken);",
+                  "console.log('Next step:', data && data.step);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/admin/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Console · 2FA setup (first login only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data) console.log('Add this key to your authenticator app:', data.manualKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/admin/auth/2fa/setup",
+            "body": { "mode": "raw", "raw": "{\n  \"challengeToken\": \"{{challengeToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Console · 2FA verify",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) pm.collectionVariables.set('staffAccessToken', data.accessToken);",
+                  "if (data && data.backupCodes) console.log('SAVE THESE BACKUP CODES:', data.backupCodes.join('  '));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/admin/auth/2fa/verify",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"challengeToken\": \"{{challengeToken}}\",\n  \"code\": \"{{totpCode}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Console · Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"] }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staffAccessToken}}" }],
+            "url": "{{baseUrl}}/admin/auth/me"
+          }
+        },
+        {
+          "name": "Console · Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) pm.collectionVariables.set('staffAccessToken', data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "POST", "url": "{{baseUrl}}/admin/auth/refresh" }
+        },
+        {
+          "name": "Console · Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/admin/auth/logout" }
+        }
+      ]
+    }
+  ]
+}

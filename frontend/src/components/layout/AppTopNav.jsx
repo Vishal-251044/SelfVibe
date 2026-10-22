@@ -7,12 +7,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+import UserMenu from "@/components/features/auth/UserMenu";
 import { APP_NAV_ITEMS } from "@/utils/constants";
 import { cn, isNavActive } from "@/utils/genericFunctions";
 
-// Profile lives in the avatar button on the right, not in the link row
+// Profile lives in the avatar menu on the right, not in the link row
 const LINK_ITEMS = APP_NAV_ITEMS.filter((item) => item.href !== "/profile");
 
 export default function AppTopNav() {
@@ -54,18 +54,7 @@ export default function AppTopNav() {
           })}
         </ul>
 
-        <Link
-          href="/profile"
-          aria-label="Your profile"
-          className={cn(
-            "flex size-11 items-center justify-center rounded-full border transition",
-            isNavActive(pathname, "/profile")
-              ? "border-neon text-neon shadow-glow-sm"
-              : "border-line text-fg-muted hover:border-neon hover:text-neon"
-          )}
-        >
-          <User size={20} />
-        </Link>
+        <UserMenu />
       </nav>
     </header>
   );

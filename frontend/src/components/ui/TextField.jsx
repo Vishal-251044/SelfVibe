@@ -15,6 +15,7 @@ import { cn } from "@/utils/genericFunctions";
  * @param {string} [props.error] - Error message; also marks the input invalid
  * @param {string} [props.type="text"]
  * @param {string} [props.className] - Classes for the outer wrapper
+ * @param {string} [props.inputClassName] - Extra classes for the <input> (e.g. code fields)
  * Any other props are passed to the <input>.
  */
 export default function TextField({
@@ -23,6 +24,7 @@ export default function TextField({
   error,
   type = "text",
   className,
+  inputClassName,
   ...inputProps
 }) {
   const id = useId();
@@ -49,7 +51,10 @@ export default function TextField({
           type={isPassword && isPasswordVisible ? "text" : type}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className="w-full min-w-0 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle sm:text-sm"
+          className={cn(
+            "min-h-11 w-full min-w-0 self-stretch bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle sm:text-sm",
+            inputClassName
+          )}
           {...inputProps}
         />
         {isPassword && (
@@ -57,7 +62,7 @@ export default function TextField({
             type="button"
             onClick={() => setIsPasswordVisible((visible) => !visible)}
             aria-label={isPasswordVisible ? "Hide password" : "Show password"}
-            className="-mr-2 flex size-10 shrink-0 items-center justify-center rounded-lg text-fg-subtle hover:text-neon"
+            className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-fg-subtle hover:text-neon"
           >
             {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

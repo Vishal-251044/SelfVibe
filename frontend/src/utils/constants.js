@@ -24,6 +24,27 @@ export const APP_TAGLINE = "Stream music. Feel the magic.";
 export const APP_DESCRIPTION =
   "A next-generation music platform for listeners and creators: personalised streaming, a taste-learning recommendation engine, and an AI music studio.";
 
+/**
+ * Non-secret "a session exists" cookies set by the API. The route guard
+ * (src/proxy.js) reads them to redirect before rendering; real access is
+ * always checked by the API.
+ */
+export const SESSION_HINT_COOKIES = {
+  user: "sv_session",
+  staff: "sv_staff",
+};
+
+/** Pages that need a signed-in listener (kept in sync with the (app) route group). */
+export const PROTECTED_APP_PATHS = [
+  "/home",
+  "/search",
+  "/library",
+  "/playlist",
+  "/artist",
+  "/studio",
+  "/profile",
+];
+
 /** Primary in-app destinations (MOB-2: Home · Search · Library · AI Studio · Profile). */
 export const APP_NAV_ITEMS = [
   { label: "Home", href: "/home", icon: Home },

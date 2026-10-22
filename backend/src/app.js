@@ -6,6 +6,7 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import { requestLogger } from "./middlewares/requestLogger.middleware.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
@@ -14,8 +15,8 @@ import { ApiError } from "./utils/ApiError.js";
 
 const app = express();
 
-// Behind Render / Railway / Vercel proxies: trust the first hop for req.ip and HTTPS
-app.set("trust proxy", 1);
+// Behind the Next.js /api proxy and Render / Railway: trust N hops for req.ip and HTTPS
+app.set("trust proxy", env.trustProxy);
 app.disable("x-powered-by");
 
 app.use(helmet());
@@ -36,6 +37,7 @@ app.use(
 
 app.use(express.json({ limit: env.jsonBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: env.jsonBodyLimit }));
+app.use(cookieParser());
 app.use(requestLogger);
 
 app.use("/api", apiRoutes);

@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * Public landing-page navbar: logo, section anchors, Log in / Get Started.
+ * Public landing-page navbar: logo, section anchors, and session actions
+ * (avatar + Open app when signed in, Log in / Get Started otherwise).
  * Collapses into an animated dropdown menu on phones.
  */
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Logo from "@/components/ui/Logo";
-import Button from "@/components/ui/Button";
+import NavbarSessionActions from "@/components/features/auth/NavbarSessionActions";
 import { LANDING_NAV_ITEMS } from "@/utils/constants";
 import { slideDown } from "@/utils/animations";
 import { cn } from "@/utils/genericFunctions";
@@ -52,11 +53,8 @@ export default function SiteNavbar() {
           ))}
         </ul>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Button href="/login" variant="ghost">
-            Log in
-          </Button>
-          <Button href="/signup">Get Started</Button>
+        <div className="hidden md:block">
+          <NavbarSessionActions />
         </div>
 
         <button
@@ -95,13 +93,8 @@ export default function SiteNavbar() {
                 </li>
               ))}
             </ul>
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <Button href="/login" variant="outline" onClick={closeMenu}>
-                Log in
-              </Button>
-              <Button href="/signup" onClick={closeMenu}>
-                Get Started
-              </Button>
+            <div className="pt-2">
+              <NavbarSessionActions variant="mobile" onNavigate={closeMenu} />
             </div>
           </motion.div>
         )}

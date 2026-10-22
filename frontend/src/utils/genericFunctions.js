@@ -52,3 +52,57 @@ export function formatPrice(amount) {
 export function isNavActive(pathname, href) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+/**
+ * Up to two initials for an avatar placeholder.
+ * @param {string} [name] - e.g. "Vishal Chavan"
+ * @returns {string} e.g. "VC"; "?" when there is no name
+ */
+export function getInitials(name = "") {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const initials = parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts.at(-1)[0];
+  return initials.toUpperCase();
+}
+
+/**
+ * Only allow redirects to paths on this site (blocks open-redirect attacks via ?next=).
+ * @param {string|null|undefined} target - e.g. "/library"
+ * @param {string} [fallback="/home"]
+ * @returns {string} A safe internal path
+ */
+export function getSafeRedirect(target, fallback = "/home") {
+  if (typeof target !== "string" || !target.startsWith("/") || target.startsWith("//")) {
+    return fallback;
+  }
+  if (target.includes("\\") || /^\/(login|signup)(\/|$|\?)/.test(target)) return fallback;
+  return target;
+}
+
+/**
+ * Whether a (non-httpOnly) cookie exists in the browser.
+ * @param {string} name
+ * @returns {boolean} Always false during server rendering
+ */
+export function hasCookie(name) {
+  if (typeof document === "undefined") return false;
+  return document.cookie.split("; ").some((entry) => entry.startsWith(`${name}=`));
+}
+
+/**
+ * Delete a (non-httpOnly) cookie set on path "/".
+ * @param {string} name
+ */
+export function deleteCookie(name) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+}
+
+/**
+ * Wait for a number of milliseconds.
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

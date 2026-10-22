@@ -1,10 +1,13 @@
 /**
  * Base API client for the SelfVibe backend.
- * A thin fetch wrapper that adds the base URL, sends cookies (for the httpOnly
- * refresh token arriving on Day 2), parses the standard
- * `{ success, message, data | error }` envelope, and throws ApiClientError on
- * failure. Components never call fetch directly — they use the feature
- * services in this folder.
+ * A thin fetch wrapper that:
+ * - calls the API through the same-origin `/api` proxy (see next.config.mjs),
+ *   so the httpOnly refresh cookie is first-party on every browser
+ * - attaches the in-memory access token (listener or staff session)
+ * - on a 401, refreshes the session once and retries the request
+ * - parses the standard `{ success, message, data | error }` envelope and
+ *   throws ApiClientError on failure
+ * Components never call fetch directly — they use the feature services.
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -15,7 +18,7 @@ export class ApiClientError extends Error {
   /**
    * @param {string} message - Human-readable message (from the API when available)
    * @param {number} status - HTTP status, or 0 for network/timeout errors
-   * @param {Object|null} [details] - The `error` payload from the API, if any
+   * @param {Object|null} [details] - The `error` payload from the API, e.g. { code, fields }
    */
   constructor(message, status, details = null) {
     super(message);
@@ -23,20 +26,42 @@ export class ApiClientError extends Error {
     this.status = status;
     this.details = details;
   }
+
+  /** @returns {string|undefined} Machine-readable error code from the API */
+  get code() {
+    return this.details?.code;
+  }
 }
 
 /**
- * Build a full URL from a path and optional query params.
+ * Session hooks registered by the auth stores (keeps this file free of store imports).
+ * @type {Record<"user"|"staff", { getAccessToken: () => string|null, refresh: () => Promise<string|null> } | undefined>}
+ */
+const authBridges = { user: undefined, staff: undefined };
+
+/**
+ * Connect a session store to the API client.
+ * @param {"user"|"staff"} scope
+ * @param {{ getAccessToken: Function, refresh: Function }} bridge
+ */
+export function registerAuthBridge(scope, bridge) {
+  authBridges[scope] = bridge;
+}
+
+/**
+ * Build the request URL. A relative base (e.g. "/api") resolves against the
+ * current origin.
  * @param {string} path - API path, e.g. "/health"
  * @param {Object} [query] - Query params; undefined/null values are skipped
- * @returns {string} The absolute URL
+ * @returns {string}
  */
 function buildUrl(path, query) {
   if (!API_URL) {
     throw new ApiClientError("NEXT_PUBLIC_API_URL is not set. Add it to frontend/.env.local.", 0);
   }
 
-  const url = new URL(`${API_URL.replace(/\/$/, "")}${path}`);
+  const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost";
+  const url = new URL(`${API_URL.replace(/\/$/, "")}${path}`, origin);
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
   });
@@ -44,20 +69,45 @@ function buildUrl(path, query) {
 }
 
 /**
+ * Which session a request belongs to: console routes use the staff session.
+ * @param {string} path
+ * @param {"user"|"staff"|"none"|undefined} auth - Explicit choice from the caller
+ * @returns {"user"|"staff"|"none"}
+ */
+function resolveAuthScope(path, auth) {
+  if (auth) return auth;
+  return path.startsWith("/admin") ? "staff" : "user";
+}
+
+/**
  * Send a request to the backend.
- * @param {string} path - API path, e.g. "/health"
+ * @param {string} path - API path, e.g. "/users/me"
  * @param {Object} [options]
  * @param {string} [options.method="GET"] - HTTP method
  * @param {Object} [options.body] - JSON body (serialised automatically)
  * @param {Object} [options.query] - Query string params
  * @param {Object} [options.headers] - Extra headers
+ * @param {"user"|"staff"|"none"} [options.auth] - Session to use; "none" for login/refresh calls
  * @param {AbortSignal} [options.signal] - Caller abort signal (e.g. from React Query)
  * @param {number} [options.timeoutMs] - Request timeout in ms
  * @returns {Promise<any>} The `data` field of the API response
  * @throws {ApiClientError} On network error, timeout or non-2xx response
  */
 export async function request(path, options = {}) {
-  const { method = "GET", body, query, headers, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  const {
+    method = "GET",
+    body,
+    query,
+    headers,
+    auth,
+    signal,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    isRetry = false,
+  } = options;
+
+  const scope = resolveAuthScope(path, auth);
+  const bridge = scope === "none" ? undefined : authBridges[scope];
+  const accessToken = bridge?.getAccessToken();
 
   // Combine the caller's signal with our timeout so either can cancel the request
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
@@ -71,6 +121,7 @@ export async function request(path, options = {}) {
       headers: {
         Accept: "application/json",
         ...(body !== undefined && { "Content-Type": "application/json" }),
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         ...headers,
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -78,16 +129,23 @@ export async function request(path, options = {}) {
     });
   } catch (error) {
     if (error.name === "TimeoutError") {
-      throw new ApiClientError(`Request to ${path} timed out`, 0);
+      throw new ApiClientError("The server took too long to respond. Please try again.", 0);
     }
     if (error.name === "AbortError") throw error; // let React Query handle cancellation
-    throw new ApiClientError(`Network error while calling ${path}`, 0);
+    throw new ApiClientError("Can't reach SelfVibe. Check your connection and try again.", 0);
   }
 
   // 204 No Content has no body to parse
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
 
   if (!response.ok || payload?.success === false) {
+    // Expired / missing access token: refresh the session once, then retry.
+    // (If the refresh is rejected, the session store signs the user out itself.)
+    if (response.status === 401 && bridge && !isRetry) {
+      const newToken = await bridge.refresh();
+      if (newToken) return request(path, { ...options, isRetry: true });
+    }
+
     throw new ApiClientError(
       payload?.message ?? `Request to ${path} failed with status ${response.status}`,
       response.status,
