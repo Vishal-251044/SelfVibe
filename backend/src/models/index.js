@@ -13,3 +13,7 @@ export { TasteProfile } from "./tasteProfile.model.js";
 export { Session } from "./session.model.js";
 export { Genre } from "./genre.model.js";
 export { Vibe } from "./vibe.model.js";
+export { Album } from "./album.model.js";
+export { Report } from "./report.model.js";
+export { AuditLog } from "./auditLog.model.js";
+export { BulkImport } from "./bulkImport.model.js";

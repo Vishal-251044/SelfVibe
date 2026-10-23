@@ -121,3 +121,11 @@ export const uploadSignLimiter = createLimiter({
   limit: 20,
   message: "Too many uploads. Please wait a few minutes and try again.",
 });
+
+/** 20 reports per hour per IP (stops report spam). */
+export const reportLimiter = createLimiter({
+  name: "report",
+  windowMs: 60 * 60 * 1000,
+  limit: 20,
+  message: "Too many reports. Please try again later.",
+});

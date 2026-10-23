@@ -80,6 +80,20 @@ const email = {
   resendApiKey: read("RESEND_API_KEY"),
 };
 
+const s3 = {
+  endpoint: read("S3_ENDPOINT"), // R2: https://<account-id>.r2.cloudflarestorage.com
+  region: read("S3_REGION", "auto"),
+  bucket: read("S3_BUCKET"),
+  accessKeyId: read("S3_ACCESS_KEY_ID"),
+  secretAccessKey: read("S3_SECRET_ACCESS_KEY"),
+  // Public (CDN) base URL for cover images, e.g. https://media.selfvibe.app
+  publicBaseUrl: read("S3_PUBLIC_BASE_URL")?.replace(/\/$/, ""),
+};
+const s3IsConfigured = ["bucket", "accessKeyId", "secretAccessKey"].every(
+  (key) => !isUnset(s3[key])
+);
+const redisUrl = read("REDIS_URL");
+
 export const env = Object.freeze({
   nodeEnv,
   isProduction,
@@ -137,6 +151,27 @@ export const env = Object.freeze({
       !isUnset(cloudinary.apiSecret),
   }),
 
+  // Audio + cover storage (PRD CRT-3). "s3" = Cloudflare R2 / AWS S3; "local" = disk (development only)
+  storage: Object.freeze({
+    driver: read("STORAGE_DRIVER", s3IsConfigured ? "s3" : "local"),
+    localDir: read("LOCAL_STORAGE_DIR", ".storage"),
+    s3: Object.freeze({ ...s3, isConfigured: s3IsConfigured }),
+    // Signed audio stream URLs stay valid this long (long enough for background queues, Day 5)
+    streamUrlTtlSeconds: readPositiveInt("STREAM_URL_TTL_SECONDS", 4 * 60 * 60),
+    uploadUrlTtlSeconds: readPositiveInt("UPLOAD_URL_TTL_SECONDS", 15 * 60),
+  }),
+
+  // Background jobs: BullMQ on Redis (Upstash) when REDIS_URL is set; in-process otherwise (dev only)
+  queue: Object.freeze({
+    redisUrl: isUnset(redisUrl) ? null : redisUrl,
+    driver: isUnset(redisUrl) ? "memory" : "bullmq",
+  }),
+
+  // Royalty-free catalog import (npm run import:catalog)
+  catalog: Object.freeze({
+    jamendoClientId: isUnset(read("JAMENDO_CLIENT_ID")) ? null : read("JAMENDO_CLIENT_ID"),
+  }),
+
   // Used only by `npm run create-owner` (PRD ADL-3)
   owner: Object.freeze({
     email: read("OWNER_EMAIL"),
@@ -164,6 +199,15 @@ export function assertRequiredEnv() {
   }
   if (isUnset(totpEncryptionKey) || !/^[0-9a-f]{64}$/i.test(totpEncryptionKey)) {
     problems.push("TOTP_ENCRYPTION_KEY must be 64 hex characters (32 random bytes)");
+  }
+
+  if (env.isProduction && env.storage.driver !== "s3") {
+    problems.push(
+      "Production needs object storage: set S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY"
+    );
+  }
+  if (env.isProduction && env.queue.driver !== "bullmq") {
+    problems.push("Production needs Redis for background jobs: set REDIS_URL (Upstash)");
   }
 
   if (problems.length > 0) {

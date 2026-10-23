@@ -21,7 +21,8 @@ export const TRACK_STATUS = Object.freeze([
   "taken_down",
 ]);
 
-export const TRACK_SOURCE = Object.freeze(["upload", "ai"]);
+/** "import" = royalty-free library tracks added by the catalog import script. */
+export const TRACK_SOURCE = Object.freeze(["upload", "ai", "import"]);
 
 export const TRACK_ADDED_VIA = Object.freeze(["creator", "admin", "ai"]);
 
@@ -98,6 +99,10 @@ export const ERROR_CODES = Object.freeze({
   GOOGLE_EMAIL_UNVERIFIED: "GOOGLE_EMAIL_UNVERIFIED",
   GOOGLE_ACCOUNT_CONFLICT: "GOOGLE_ACCOUNT_CONFLICT",
   INVALID_UPLOAD: "INVALID_UPLOAD",
+  NOT_FOUND: "NOT_FOUND",
+  TRACK_NOT_READY: "TRACK_NOT_READY",
+  DUPLICATE_REPORT: "DUPLICATE_REPORT",
+  INVALID_STATE: "INVALID_STATE",
   RATE_LIMITED: "RATE_LIMITED",
 });
 
@@ -127,3 +132,85 @@ export const AVATAR_UPLOAD = Object.freeze({
 });
 
 export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+/* ===== Music: uploads, processing, streaming (Day 4) ===== */
+
+/** Audio uploads (PRD CRT-2): MP3, WAV, FLAC up to 50 MB. */
+export const AUDIO_UPLOAD = Object.freeze({
+  maxBytes: 50 * 1024 * 1024,
+  mimeTypes: Object.freeze({
+    "audio/mpeg": "mp3",
+    "audio/mp3": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/wave": "wav",
+    "audio/flac": "flac",
+    "audio/x-flac": "flac",
+  }),
+  maxDurationSec: 20 * 60, // longer files are rejected during processing
+});
+
+/** Cover images for tracks, albums and artists. */
+export const IMAGE_UPLOAD = Object.freeze({
+  maxBytes: 10 * 1024 * 1024,
+  mimeTypes: Object.freeze({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }),
+});
+
+/** Transcoded renditions (PRD CRT-4): standard for free listeners, high for paid plans. */
+export const AUDIO_RENDITIONS = Object.freeze({
+  standard: { bitrateKbps: 128, codec: "mp3" },
+  high: { bitrateKbps: 320, codec: "mp3" },
+});
+/** Only make the 320 kbps copy when the source is at least this good (never upscale). */
+export const HIGH_RENDITION_MIN_SOURCE_KBPS = 256;
+export const WAVEFORM_PEAK_COUNT = 160;
+
+/** Where the API is allowed to put things in object storage. */
+export const STORAGE_PREFIXES = Object.freeze({
+  incoming: "incoming", // browser uploads land here first (private)
+  audio: "audio", // processed audio (private, streamed with signed URLs)
+  covers: "covers", // processed images (public)
+});
+
+/** What a new track should become once processing finishes. */
+export const RELEASE_INTENTS = Object.freeze(["publish", "schedule", "draft"]);
+export const PROCESSING_STATES = Object.freeze(["queued", "running", "done", "failed"]);
+
+export const MOODS = Object.freeze([
+  "calm",
+  "chill",
+  "dark",
+  "dreamy",
+  "energetic",
+  "happy",
+  "melancholic",
+  "romantic",
+  "uplifting",
+]);
+export const LANGUAGES = Object.freeze([
+  "hindi",
+  "english",
+  "punjabi",
+  "marathi",
+  "tamil",
+  "telugu",
+  "bengali",
+  "instrumental",
+  "other",
+]);
+
+/** Report reasons (PRD F32 / §7 copyright risk). */
+export const REPORT_REASONS = Object.freeze(["copyright", "abuse", "explicit", "spam", "other"]);
+export const REPORT_TARGET_TYPES = Object.freeze(["track", "artist"]);
+
+export const ALBUM_TYPES = Object.freeze(["album", "ep", "single"]);
+
+/** Admin bulk upload (PRD MUS-2): up to 50 files + optional CSV. */
+export const BULK_UPLOAD_MAX_FILES = 50;
+
+/** Background job names. */
+export const JOBS = Object.freeze({
+  processTrack: "process-track",
+  bulkImport: "bulk-import",
+  publishScheduled: "publish-scheduled",
+});

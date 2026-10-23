@@ -7,6 +7,8 @@ import { assertRequiredEnv, env } from "./src/config/env.js";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import { logger } from "./src/utils/logger.js";
 import "./src/models/index.js"; // register every model so its indexes are built on connect
+import { startJobs } from "./src/jobs/index.js";
+import { queue } from "./src/services/queue/index.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10000;
 
@@ -23,6 +25,10 @@ async function start() {
   }
 
   await connectDB();
+
+  // Without Redis (development) the API runs background jobs itself;
+  // with Redis they run in the separate worker process (npm run worker).
+  if (env.queue.driver === "memory") await startJobs();
 
   const server = app.listen(env.port, () => {
     logger.info(
@@ -49,6 +55,7 @@ async function start() {
     }, SHUTDOWN_TIMEOUT_MS).unref();
 
     server.close(async () => {
+      await queue.close();
       await disconnectDB();
       process.exit(0);
     });
