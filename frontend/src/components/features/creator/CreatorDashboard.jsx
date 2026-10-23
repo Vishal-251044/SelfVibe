@@ -19,7 +19,7 @@ import TrackRow from "@/components/features/music/TrackRow";
 import TrackStatusBadge from "@/components/features/music/TrackStatusBadge";
 import CreatorTrackActions from "@/components/features/creator/CreatorTrackActions";
 import UploadAllowance from "@/components/features/creator/UploadAllowance";
-import { listMyTracks, getStreamUrl } from "@/services/track.service";
+import { listMyTracks } from "@/services/track.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { PROCESSING_POLL_MS } from "@/utils/musicConstants";
 
@@ -136,7 +136,9 @@ export default function CreatorDashboard({ artist }) {
                   <TrackRow
                     track={track}
                     showArtist={false}
-                    loadUrl={() => getStreamUrl(track.id)}
+                    tracks={tracks.filter((item) => item.bitrates?.length > 0)}
+                    playable
+                    source="studio"
                     canPlay={track.bitrates?.length > 0}
                     status={<TrackStatusBadge track={track} />}
                     actions={<CreatorTrackActions track={track} />}

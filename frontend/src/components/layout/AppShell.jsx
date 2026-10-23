@@ -5,12 +5,13 @@
  * - Phones: compact top bar with the logo + fixed bottom navigation
  * - md and up: full top navbar, no bottom bar
  * Content gets bottom padding so it never hides behind the bottom bar
- * (the mini player on Day 5 will add its own height on top of this).
+ * plus the player dock's height while a song is loaded (--player-height).
  */
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import AppTopNav from "@/components/layout/AppTopNav";
 import BottomNav from "@/components/layout/BottomNav";
+import PlayerDock from "@/components/features/player/PlayerDock";
 import Logo from "@/components/ui/Logo";
 import AuthGuard from "@/components/features/auth/AuthGuard";
 import UserMenu from "@/components/features/auth/UserMenu";
@@ -43,11 +44,12 @@ export default function AppShell({ children }) {
         variants={pageTransition}
         initial="hidden"
         animate="visible"
-        className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+2rem)] md:px-6 md:pt-10 md:pb-16"
+        className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] md:px-6 md:pt-10 md:pb-[calc(var(--player-height)+4rem)]"
       >
         <AuthGuard optional={isPublicPage}>{children}</AuthGuard>
       </motion.main>
 
+      <PlayerDock variant="app" />
       <BottomNav />
     </div>
   );

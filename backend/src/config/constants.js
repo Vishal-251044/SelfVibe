@@ -30,6 +30,28 @@ export const PLAYLIST_TYPES = Object.freeze(["user", "system"]);
 
 export const LISTEN_EVENT_TYPES = Object.freeze(["play", "skip", "complete", "repeat"]);
 
+/** What the client reports for one listen (PRD PLY-7): it started, or it stopped. */
+export const LISTEN_EVENT_KINDS = Object.freeze(["start", "end"]);
+/** Under 30 s listened = skip; at least 80% = complete (PRD 10.4.1, roadmap Day 5). */
+export const LISTEN_SKIP_MAX_MS = 30 * 1000;
+export const LISTEN_COMPLETE_PERCENT = 80;
+export const LISTEN_EVENTS_MAX_BATCH = 50;
+export const LISTEN_HISTORY_LIMIT = 100;
+export const LISTEN_SOURCES = Object.freeze([
+  "artist",
+  "album",
+  "playlist",
+  "search",
+  "feed",
+  "history",
+  "queue",
+  "studio",
+  "other",
+]);
+export const LISTEN_DEVICES = Object.freeze(["mobile", "tablet", "desktop"]);
+/** Batch stream URLs for the upcoming queue (background play, BGP-5). */
+export const STREAM_BATCH_MAX = 20;
+
 /** Listen events are kept for 180 days (PRD §13, listenEvents). */
 export const LISTEN_EVENT_TTL_SECONDS = 180 * 24 * 60 * 60;
 

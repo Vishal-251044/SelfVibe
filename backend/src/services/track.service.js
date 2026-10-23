@@ -384,3 +384,24 @@ export async function getStreamUrl(trackId, viewer, { quality } = {}) {
     durationSec: track.audio.durationSec,
   };
 }
+
+/**
+ * Signed stream URLs for several tracks at once — the player fetches the
+ * upcoming queue ahead of time so background play never waits (BGP-5) and
+ * refreshes URLs before they expire. Tracks that can't be streamed are left out.
+ * @param {string[]} trackIds
+ * @param {{ userId: string, plan?: string }} viewer
+ * @returns {Promise<Object<string, { url: string, expiresAt: Date, bitrateKbps: number, durationSec: number }>>}
+ */
+export async function getStreamUrls(trackIds, viewer) {
+  const entries = await Promise.all(
+    [...new Set(trackIds)].map(async (trackId) => {
+      try {
+        return [trackId, await getStreamUrl(trackId, viewer)];
+      } catch {
+        return null; // missing, unpublished or still processing
+      }
+    })
+  );
+  return Object.fromEntries(entries.filter(Boolean));
+}

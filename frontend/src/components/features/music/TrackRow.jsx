@@ -2,8 +2,9 @@
 
 /**
  * One track in a list: number, cover with play button, title / artist,
- * optional status and duration, and an optional actions slot on the right.
- * Highlights itself while it is the track playing in the preview player.
+ * optional status and duration, the queue menu (Play next / Add to queue)
+ * and an optional actions slot. Highlights itself while it is the song
+ * loaded in the player.
  */
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,15 +13,20 @@ import CoverArt from "@/components/features/music/CoverArt";
 import PlayButton from "@/components/features/music/PlayButton";
 import Badge from "@/components/ui/Badge";
 import { CATALOG_META } from "@/utils/musicConstants";
-import { usePreviewPlayerStore } from "@/store/previewPlayerStore";
+import TrackQueueMenu from "@/components/features/music/TrackQueueMenu";
+import { usePlayerStore } from "@/store/playerStore";
 import { cn, formatDuration } from "@/utils/genericFunctions";
 
 /**
  * @param {Object} props
  * @param {Object} props.track - Public or managed track
  * @param {number} [props.index] - 1-based position, shown on wider screens
- * @param {() => Promise<{ url: string }>} [props.loadUrl] - Enables the play button
- * @param {boolean} [props.canPlay=true]
+ * @param {Object[]} [props.tracks] - The whole list; playing a row queues the list from there
+ * @param {boolean} [props.playable=false] - Show the play button (signed-in listener / staff)
+ * @param {boolean} [props.canPlay=true] - false disables it (e.g. still processing)
+ * @param {string} [props.source] - Listening-event source, e.g. "artist"
+ * @param {"user"|"staff"} [props.scope="user"] - "staff" for Admin Console previews
+ * @param {boolean} [props.showQueueMenu=false] - Play next / Add to queue menu
  * @param {string} [props.href] - Makes the title a link (e.g. admin detail page)
  * @param {boolean} [props.showArtist=true]
  * @param {boolean} [props.showCatalog=false] - Official / Community badge (PRD 10.14)
@@ -30,15 +36,19 @@ import { cn, formatDuration } from "@/utils/genericFunctions";
 export default function TrackRow({
   track,
   index,
-  loadUrl,
+  tracks,
+  playable = false,
   canPlay = true,
+  source,
+  scope = "user",
+  showQueueMenu = false,
   href,
   showArtist = true,
   showCatalog = false,
   status,
   actions,
 }) {
-  const isCurrent = usePreviewPlayerStore((state) => state.trackId === track.id);
+  const isCurrent = usePlayerStore((state) => state.queue[state.index]?.id === track.id);
   const title = href ? (
     <Link href={href} className="truncate font-medium text-fg hover:text-neon">
       {track.title}
@@ -70,11 +80,13 @@ export default function TrackRow({
           className="size-12 rounded-lg"
           sizes="48px"
         />
-        {loadUrl && (
+        {playable && (
           <PlayButton
-            trackId={track.id}
-            title={track.title}
-            loadUrl={loadUrl}
+            track={track}
+            tracks={tracks}
+            index={index !== undefined ? index - 1 : undefined}
+            source={source}
+            scope={scope}
             size="sm"
             disabled={!canPlay}
             className="absolute inset-0 m-auto size-11 bg-black/55 text-white backdrop-blur-[2px] hover:bg-neon"
@@ -123,7 +135,12 @@ export default function TrackRow({
       <span className="hidden w-12 shrink-0 text-right text-sm text-fg-subtle tabular-nums md:block">
         {track.durationSec ? formatDuration(track.durationSec) : "--:--"}
       </span>
-      {actions && <div className="flex shrink-0 items-center">{actions}</div>}
+      {(showQueueMenu || actions) && (
+        <div className="flex shrink-0 items-center">
+          {showQueueMenu && canPlay && <TrackQueueMenu track={track} showArtistLink={showArtist} />}
+          {actions}
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -18,7 +18,7 @@ import TrackStatusBadge from "@/components/features/music/TrackStatusBadge";
 import TrackReleasePanel from "@/components/features/admin/music/TrackReleasePanel";
 import TrackMaintenancePanel from "@/components/features/admin/music/TrackMaintenancePanel";
 import AdminTrackEditForm from "@/components/features/admin/music/AdminTrackEditForm";
-import { getAdminPreviewStream, getAdminTrack } from "@/services/adminMusic.service";
+import { getAdminTrack } from "@/services/adminMusic.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { formatDuration, formatFileSize } from "@/utils/genericFunctions";
 import { CATALOG_META, PROCESSING_POLL_MS } from "@/utils/musicConstants";
@@ -105,13 +105,7 @@ export default function AdminTrackDetail({ trackId }) {
                 : `Processing attempt ${track.processing.attempts || 1}`}
             </p>
           </div>
-          <PlayButton
-            trackId={track.id}
-            title={track.title}
-            size="lg"
-            disabled={!isReady}
-            loadUrl={() => getAdminPreviewStream(track.id, { quality: "high" })}
-          />
+          <PlayButton track={track} scope="staff" size="lg" disabled={!isReady} />
         </div>
         {track.waveform?.length > 0 && (
           <Waveform trackId={track.id} peaks={track.waveform} className="mt-6 h-14" />

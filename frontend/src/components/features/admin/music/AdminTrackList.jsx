@@ -20,7 +20,7 @@ import TrackStatusBadge from "@/components/features/music/TrackStatusBadge";
 import { useHasPermission } from "@/components/features/admin/RequirePermission";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useTaxonomy } from "@/hooks/useTaxonomy";
-import { getAdminPreviewStream, listAdminTracks } from "@/services/adminMusic.service";
+import { listAdminTracks } from "@/services/adminMusic.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { CATALOG_META, PROCESSING_POLL_MS, TRACK_STATUS_META } from "@/utils/musicConstants";
 
@@ -189,7 +189,9 @@ export default function AdminTrackList() {
                   track={track}
                   href={`/admin/music/${track.id}`}
                   showCatalog
-                  loadUrl={() => getAdminPreviewStream(track.id)}
+                  tracks={tracks.filter((item) => item.bitrates?.length > 0)}
+                  playable
+                  scope="staff"
                   canPlay={track.bitrates?.length > 0}
                   status={<TrackStatusBadge track={track} />}
                   actions={

@@ -1,0 +1,205 @@
+"use client";
+
+/**
+ * Full-screen Now Playing (PRD PLY-8, MOB-3/4): the terminal-style
+ * "$ selfvibe play" view with large artwork, the visualiser, seek bar and
+ * controls. Swipe down (or the close button / Escape) minimises it.
+ */
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import Link from "next/link";
+import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
+import { BadgeCheck, ChevronDown, ListMusic } from "lucide-react";
+import CoverArt from "@/components/features/music/CoverArt";
+import TerminalWindow from "@/components/ui/TerminalWindow";
+import PlayerControls from "@/components/features/player/PlayerControls";
+import SeekBar from "@/components/features/player/SeekBar";
+import VolumeControl from "@/components/features/player/VolumeControl";
+import Visualizer from "@/components/features/player/Visualizer";
+import { usePlayerStore } from "@/store/playerStore";
+import { formatDuration, slugify } from "@/utils/genericFunctions";
+import { DURATION, EASE_OUT } from "@/utils/animations";
+
+const CLOSE_DRAG_DISTANCE = 120; // px
+const CLOSE_DRAG_VELOCITY = 600; // px/s
+
+/** Terminal lines with the song and live progress. */
+function TerminalReadout({ track }) {
+  const currentTime = usePlayerStore((state) => state.currentTime);
+  const duration = usePlayerStore((state) => state.duration);
+  const status = usePlayerStore((state) => state.status);
+  const percent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const filled = Math.round(percent / 5);
+
+  return (
+    <div className="space-y-1 font-mono text-xs sm:text-sm">
+      <p className="truncate text-neon">
+        $ selfvibe play &quot;{slugify(track.title) || track.id}&quot;
+      </p>
+      <p className="text-fg-muted">
+        {">>"} {status === "loading" ? "buffering" : status === "playing" ? "streaming" : "paused"}{" "}
+        <span className="text-neon">
+          [{"#".repeat(filled)}
+          {".".repeat(20 - filled)}]
+        </span>{" "}
+        {Math.round(percent)}% · {formatDuration(currentTime)}
+        <span className="ml-1 animate-blink text-neon">_</span>
+      </p>
+    </div>
+  );
+}
+
+export default function NowPlaying() {
+  const isOpen = usePlayerStore((state) => state.isNowPlayingOpen);
+  const track = usePlayerStore((state) => state.queue[state.index] ?? null);
+  const error = usePlayerStore((state) => state.error);
+  const upNext = usePlayerStore((state) => state.queue[state.index + 1] ?? null);
+  const setNowPlayingOpen = usePlayerStore((state) => state.setNowPlayingOpen);
+  const setQueueOpen = usePlayerStore((state) => state.setQueueOpen);
+  const dragControls = useDragControls();
+  const prefersReducedMotion = useReducedMotion();
+  const close = () => setNowPlayingOpen(false);
+
+  // Escape closes; lock page scroll behind the overlay
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKeyDown = (event) => {
+      const player = usePlayerStore.getState();
+      if (event.key === "Escape" && !player.isQueueOpen) player.setNowPlayingOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && track && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Now playing: ${track.title}`}
+          initial={prefersReducedMotion ? { opacity: 0 } : { y: "100%" }}
+          animate={prefersReducedMotion ? { opacity: 1 } : { y: 0 }}
+          exit={prefersReducedMotion ? { opacity: 0 } : { y: "100%" }}
+          transition={{ duration: DURATION.slow, ease: EASE_OUT }}
+          drag="y"
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.7 }}
+          onDragEnd={(_, info) => {
+            if (info.offset.y > CLOSE_DRAG_DISTANCE || info.velocity.y > CLOSE_DRAG_VELOCITY)
+              close();
+          }}
+          className="pt-safe pb-safe px-safe fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-ink"
+        >
+          {/* Blurred artwork glow behind everything */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute -top-1/4 left-1/2 size-[140vmax] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgb(34_197_94/0.18),transparent_60%)]" />
+          </div>
+
+          {/* Header — also the drag handle on phones */}
+          <div
+            onPointerDown={(event) => dragControls.start(event)}
+            className="flex touch-none items-center justify-between gap-3 px-1 py-2 sm:px-6 sm:py-4"
+          >
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Minimise player"
+              className="flex size-11 items-center justify-center rounded-full text-fg-muted transition hover:bg-neon-dim hover:text-neon"
+            >
+              <ChevronDown size={26} />
+            </button>
+            <span
+              className="mx-auto mt-1 h-1.5 w-12 rounded-full bg-line-strong sm:hidden"
+              aria-hidden
+            />
+            <p className="hidden text-xs tracking-widest text-neon uppercase sm:block">
+              Now playing
+            </p>
+            <button
+              type="button"
+              onClick={() => setQueueOpen(true)}
+              aria-label="Open queue"
+              className="flex size-11 items-center justify-center rounded-full text-fg-muted transition hover:bg-neon-dim hover:text-neon"
+            >
+              <ListMusic size={22} />
+            </button>
+          </div>
+
+          <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-3 pb-6 sm:px-6 lg:flex-row lg:items-center lg:gap-12">
+            {/* Artwork */}
+            <motion.div
+              key={track.qid}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: DURATION.slow, ease: EASE_OUT }}
+              className="mx-auto w-full max-w-[min(22rem,70vw,42dvh)] shrink-0 lg:max-w-md"
+            >
+              <CoverArt
+                src={track.coverUrl}
+                alt={`${track.title} cover`}
+                seed={track.id}
+                className="aspect-square w-full rounded-card shadow-glow-lg"
+                sizes="(min-width: 1024px) 28rem, 70vw"
+                priority
+              />
+            </motion.div>
+
+            {/* Terminal + controls */}
+            <div className="flex min-w-0 flex-1 flex-col gap-5">
+              <div className="min-w-0 text-center lg:text-left">
+                <h2 className="truncate font-display text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-bold">
+                  {track.title}
+                </h2>
+                {track.artist && (
+                  <Link
+                    href={`/artist/${track.artist.slug ?? track.artist.id}`}
+                    onClick={close}
+                    className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-fg-muted hover:text-neon"
+                  >
+                    {track.artist.stageName}
+                    {track.artist.verified && (
+                      <BadgeCheck size={16} className="text-neon" aria-label="Verified" />
+                    )}
+                  </Link>
+                )}
+                {error && (
+                  <p role="alert" className="text-sm text-danger">
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              <TerminalWindow title="selfvibe@player:~" className="hidden sm:block">
+                <TerminalReadout track={track} />
+                <Visualizer isActive={isOpen} className="mt-4 h-20" />
+              </TerminalWindow>
+              <Visualizer isActive={isOpen} className="h-16 sm:hidden" />
+
+              <SeekBar />
+              <PlayerControls size="large" />
+              <div className="hidden items-center justify-between gap-4 md:flex">
+                <VolumeControl />
+                {upNext && (
+                  <p className="min-w-0 truncate text-sm text-fg-subtle">
+                    Up next: <span className="text-fg-muted">{upNext.title}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  );
+}

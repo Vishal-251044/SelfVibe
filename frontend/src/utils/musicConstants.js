@@ -109,3 +109,24 @@ export const CATALOG_META = {
 
 /** Poll processing tracks this often (ms). */
 export const PROCESSING_POLL_MS = 3000;
+
+/* ===== Player (Day 5) ===== */
+
+/** Repeat modes, in the order the repeat button cycles through them (PRD PLY-1). */
+export const REPEAT_MODES = ["off", "all", "one"];
+/** ←/→ seek step in seconds (PRD PLY-5). */
+export const SEEK_STEP_SECONDS = 5;
+/** "Previous" restarts the song when more than this many seconds have played. */
+export const RESTART_THRESHOLD_SECONDS = 3;
+/** Start loading the next song this many seconds before the current one ends (BGP-5). */
+export const PRELOAD_BEFORE_END_SECONDS = 25;
+/** Fetch a fresh stream URL when the cached one expires within this time. */
+export const STREAM_URL_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+/** Send queued listening events this often, plus on page hide / back online (BGP-7). */
+export const LISTEN_FLUSH_INTERVAL_MS = 15 * 1000;
+export const LISTEN_EVENTS_BATCH_SIZE = 50;
+/** Keep at most this many unsent events in the browser. */
+export const LISTEN_QUEUE_MAX = 500;
+/** Browser storage keys: saved queue / settings, and unsent listening events. */
+export const PLAYER_STORAGE_KEY = "sv_player";
+export const LISTEN_QUEUE_STORAGE_KEY = "sv_listen_queue";

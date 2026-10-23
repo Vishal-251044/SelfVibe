@@ -132,3 +132,41 @@ export function formatFileSize(bytes) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
+
+/**
+ * Shuffled copy of an array (Fisher–Yates).
+ * @template T
+ * @param {T[]} items
+ * @returns {T[]}
+ */
+export function shuffleArray(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/**
+ * Random id for client-side records (queue items, listening sessions).
+ * @returns {string}
+ */
+export function createId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+/**
+ * URL-safe slug, e.g. "Chai at 2AM!" → "chai-at-2am".
+ * @param {string} [text]
+ * @returns {string}
+ */
+export function slugify(text = "") {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

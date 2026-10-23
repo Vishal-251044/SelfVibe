@@ -129,3 +129,11 @@ export const reportLimiter = createLimiter({
   limit: 20,
   message: "Too many reports. Please try again later.",
 });
+
+/** Listening events arrive in batches every ~15 s; 120 batches / 10 min per IP is plenty. */
+export const listenEventsLimiter = createLimiter({
+  name: "listen-events",
+  windowMs: 10 * 60 * 1000,
+  limit: 120,
+  message: "Too many requests. Please slow down.",
+});

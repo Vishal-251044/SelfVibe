@@ -103,6 +103,7 @@ function resolveAuthScope(path, auth) {
  * @param {"user"|"staff"|"none"} [options.auth] - Session to use; "none" for login/refresh calls
  * @param {AbortSignal} [options.signal] - Caller abort signal (e.g. from React Query)
  * @param {number} [options.timeoutMs] - Request timeout in ms
+ * @param {boolean} [options.keepalive] - Let the request finish after the page is hidden / closed
  * @returns {Promise<any>} The `data` field of the API response
  * @throws {ApiClientError} On network error, timeout or non-2xx response
  */
@@ -115,6 +116,7 @@ export async function request(path, options = {}) {
     auth,
     signal,
     timeoutMs = DEFAULT_TIMEOUT_MS,
+    keepalive = false,
     isRetry = false,
   } = options;
 
@@ -139,6 +141,7 @@ export async function request(path, options = {}) {
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: combinedSignal,
+      keepalive,
     });
   } catch (error) {
     if (error.name === "TimeoutError") {

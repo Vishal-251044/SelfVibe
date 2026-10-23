@@ -17,9 +17,8 @@ import TrackRow from "@/components/features/music/TrackRow";
 import CoverArt from "@/components/features/music/CoverArt";
 import ReportButton from "@/components/features/music/ReportButton";
 import { getArtistPage } from "@/services/creator.service";
-import { getStreamUrl } from "@/services/track.service";
 import { useAuthStore } from "@/store/authStore";
-import { usePreviewPlayerStore } from "@/store/previewPlayerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { QUERY_KEYS } from "@/utils/constants";
 
 /** Loading skeleton with the same layout as the page. */
@@ -49,7 +48,7 @@ function ArtistPageSkeleton() {
  */
 export default function ArtistPageView({ idOrSlug }) {
   const isSignedIn = useAuthStore((state) => state.status === "authenticated");
-  const toggle = usePreviewPlayerStore((state) => state.toggle);
+  const playQueue = usePlayerStore((state) => state.playQueue);
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.artistPage(idOrSlug),
     queryFn: ({ signal }) => getArtistPage(idOrSlug, { signal }),
@@ -81,7 +80,6 @@ export default function ArtistPageView({ idOrSlug }) {
   }
 
   const { artist, tracks, albums } = data;
-  const loadUrlFor = (trackId) => (isSignedIn ? () => getStreamUrl(trackId) : undefined);
   const website = artist.socials?.website;
 
   return (
@@ -139,8 +137,8 @@ export default function ArtistPageView({ idOrSlug }) {
         <div className="mt-6 flex items-center justify-center gap-3 sm:justify-start">
           {tracks.length > 0 &&
             (isSignedIn ? (
-              <Button size="lg" onClick={() => toggle(tracks[0].id, loadUrlFor(tracks[0].id))}>
-                <Play size={18} fill="currentColor" aria-hidden /> Play top track
+              <Button size="lg" onClick={() => playQueue(tracks, 0, { source: "artist" })}>
+                <Play size={18} fill="currentColor" aria-hidden /> Play
               </Button>
             ) : (
               <Button size="lg" href={`/login?next=${encodeURIComponent(`/artist/${idOrSlug}`)}`}>
@@ -185,7 +183,10 @@ export default function ArtistPageView({ idOrSlug }) {
                   index={index + 1}
                   showArtist={false}
                   showCatalog
-                  loadUrl={loadUrlFor(track.id)}
+                  tracks={tracks}
+                  playable={isSignedIn}
+                  showQueueMenu={isSignedIn}
+                  source="artist"
                   actions={
                     <ReportButton targetType="track" targetId={track.id} targetName={track.title} />
                   }

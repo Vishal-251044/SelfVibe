@@ -17,6 +17,7 @@ import { useStaffAuthStore } from "@/store/staffAuthStore";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { STAFF_HEARTBEAT_INTERVAL_MS, STAFF_IDLE_TIMEOUT_MS } from "@/utils/adminConstants";
 import { DURATION, EASE_OUT, pageTransition } from "@/utils/animations";
+import PlayerDock from "@/components/features/player/PlayerDock";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -128,10 +129,13 @@ export default function AdminShell({ children }) {
         variants={pageTransition}
         initial="hidden"
         animate="visible"
-        className="pb-safe mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:py-10"
+        className="mx-auto w-full max-w-6xl px-4 pt-8 pb-[calc(var(--player-height)+env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:pt-10"
       >
         {children}
       </motion.main>
+
+      {/* Track previews play in the same player as the app */}
+      <PlayerDock variant="console" />
     </div>
   );
 }

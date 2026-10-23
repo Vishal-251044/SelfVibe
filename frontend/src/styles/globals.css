@@ -65,7 +65,21 @@
 :root {
   --bottom-nav-height: 4rem;
   --top-nav-height: 4.5rem;
+  /* Height of the player dock; 0 until a song is loaded (set via html[data-player]) */
+  --player-height: 0rem;
+  --mini-player-height: 4.25rem;
+  --player-bar-height: 5.5rem;
   color-scheme: dark;
+}
+
+/* The player dock is showing: reserve room for it below the page content */
+html[data-player="on"] {
+  --player-height: var(--mini-player-height);
+}
+@media (min-width: 768px) {
+  html[data-player="on"] {
+    --player-height: var(--player-bar-height);
+  }
 }
 
 @layer base {
@@ -75,12 +89,14 @@
     /* Keep focused / scrolled-to elements clear of the sticky top bar and,
        on phones, the fixed bottom navigation */
     scroll-padding-top: 4.5rem;
-    scroll-padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 1rem);
+    scroll-padding-bottom: calc(
+      var(--bottom-nav-height) + var(--player-height) + env(safe-area-inset-bottom) + 1rem
+    );
   }
 
   @media (min-width: 768px) {
     html {
-      scroll-padding-bottom: 1rem;
+      scroll-padding-bottom: calc(var(--player-height) + 1rem);
     }
   }
 
@@ -151,5 +167,60 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Player sliders (seek / volume): thin neon track with a fill up to --fill, big touch area */
+@layer components {
+  .player-range {
+    appearance: none;
+    background: transparent;
+  }
+  .player-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      var(--color-neon) var(--fill, 0%),
+      rgb(255 255 255 / 0.16) var(--fill, 0%)
+    );
+  }
+  .player-range::-moz-range-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.16);
+  }
+  .player-range::-moz-range-progress {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-neon);
+  }
+  .player-range::-webkit-slider-thumb {
+    appearance: none;
+    margin-top: -5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: var(--shadow-glow-sm);
+    transition: transform 150ms ease;
+  }
+  .player-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: var(--shadow-glow-sm);
+  }
+  .player-range:hover::-webkit-slider-thumb,
+  .player-range:focus-visible::-webkit-slider-thumb {
+    transform: scale(1.25);
+  }
+  .player-range:focus-visible {
+    outline: none;
+  }
+  .player-range:focus-visible::-webkit-slider-runnable-track {
+    box-shadow: 0 0 0 2px var(--color-neon);
   }
 }

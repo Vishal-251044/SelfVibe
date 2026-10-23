@@ -2,10 +2,10 @@
 
 /**
  * Static waveform from the peaks the API computes during processing (0–1).
- * The played part is highlighted when this track is playing in the preview player.
- * Bars use scaleY transforms, so drawing stays cheap on phones.
+ * While its song is loaded in the player, the played part lights up and a
+ * tap / click seeks to that point. Bars use scaleY transforms (cheap on phones).
  */
-import { usePreviewPlayerStore } from "@/store/previewPlayerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { cn } from "@/utils/genericFunctions";
 
 /**
@@ -30,16 +30,35 @@ function downsample(peaks, count) {
  * @param {string} [props.className] - Height, e.g. "h-16"
  */
 export default function Waveform({ trackId, peaks, bars = 80, className }) {
-  const isCurrent = usePreviewPlayerStore((state) => state.trackId === trackId);
-  const progress = usePreviewPlayerStore((state) =>
-    state.trackId === trackId && state.duration > 0 ? state.currentTime / state.duration : 0
+  const isCurrent = usePlayerStore((state) => state.queue[state.index]?.id === trackId);
+  const progress = usePlayerStore((state) =>
+    state.queue[state.index]?.id === trackId && state.duration > 0
+      ? state.currentTime / state.duration
+      : 0
   );
+  const duration = usePlayerStore((state) => state.duration);
+  const seek = usePlayerStore((state) => state.seek);
 
   if (!peaks?.length) return null;
   const values = downsample(peaks, bars);
 
+  /** Seek to the clicked position (only for the song that is loaded). */
+  const handleClick = (event) => {
+    if (!isCurrent || !duration) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    seek(((event.clientX - rect.left) / rect.width) * duration);
+  };
+
   return (
-    <div aria-hidden className={cn("flex h-16 w-full items-center gap-[2px]", className)}>
+    <div
+      aria-hidden
+      onClick={handleClick}
+      className={cn(
+        "flex h-16 w-full items-center gap-[2px]",
+        isCurrent && "cursor-pointer",
+        className
+      )}
+    >
       {values.map((peak, index) => {
         const isPlayed = isCurrent && index / values.length <= progress;
         return (

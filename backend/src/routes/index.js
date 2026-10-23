@@ -6,6 +6,7 @@ import healthRoutes from "./health.routes.js";
 import storageRoutes from "./storage.routes.js";
 import authRoutes from "./auth.routes.js";
 import userRoutes from "./user.routes.js";
+import listeningRoutes from "./listening.routes.js";
 import adminAuthRoutes from "./adminAuth.routes.js";
 import adminMusicRoutes from "./adminMusic.routes.js";
 import onboardingRoutes from "./onboarding.routes.js";
@@ -33,6 +34,7 @@ router.use("/tracks", trackRoutes);
 router.use("/creator", creatorRoutes);
 router.use("/artists", artistRoutes);
 router.use("/reports", reportRoutes);
+router.use(listeningRoutes); // /events, /history
 router.use("/admin/auth", adminAuthRoutes);
 router.use("/admin", adminMusicRoutes);
 

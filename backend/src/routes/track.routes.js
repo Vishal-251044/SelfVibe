@@ -11,6 +11,7 @@ import {
   streamQuerySchema,
   trackIdParamsSchema,
 } from "../validators/track.validator.js";
+import { streamBatchSchema } from "../validators/listening.validator.js";
 
 const router = Router();
 const idParams = validate({ params: trackIdParamsSchema });
@@ -19,6 +20,13 @@ const idParams = validate({ params: trackIdParamsSchema });
 const uploaderOnly = [requireAuth];
 
 // Listeners
+// Before "/:id" so "streams" is never read as a track id
+router.post(
+  "/streams",
+  requireAuth,
+  validate({ body: streamBatchSchema }),
+  trackController.getStreams
+);
 router.get("/:id", idParams, trackController.getTrack);
 router.get(
   "/:id/stream",

@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+  Offline screen (PRD PWA-3). Served by the service worker (public/sw.js) when
+  there is no network and the page isn't cached. Fully self-contained — inline
+  styles, inline icon, no app JavaScript — so it always renders offline.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <title>Offline · SelfVibe</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --neon: #22c55e;
+        --line: rgb(34 197 94 / 0.22);
+        --line-strong: rgb(34 197 94 / 0.5);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+          max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+        background:
+          radial-gradient(circle at 50% 0%, rgb(34 197 94 / 0.16), transparent 60%),
+          #000;
+        color: #fff;
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      main {
+        width: 100%;
+        max-width: 32rem;
+        text-align: center;
+      }
+      .logo {
+        margin-bottom: 2.5rem;
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: #bbf7d0;
+      }
+      .card {
+        border: 1px dashed var(--line);
+        border-radius: 1rem;
+        background: rgb(5 8 6 / 0.85);
+        padding: 3rem 1.5rem;
+      }
+      .icon {
+        display: inline-flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--line-strong);
+        border-radius: 1rem;
+        background: rgb(34 197 94 / 0.12);
+        color: var(--neon);
+      }
+      .command {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--neon);
+      }
+      h1 {
+        margin: 0.5rem 0 0;
+        font-size: 1.125rem;
+      }
+      h1 span {
+        color: var(--neon);
+      }
+      .cursor {
+        animation: blink 1.1s steps(1) infinite;
+      }
+      p.description {
+        margin: 0.75rem auto 0;
+        max-width: 26rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: #9ca3af;
+      }
+      button {
+        margin-top: 1.5rem;
+        min-height: 2.75rem;
+        padding: 0 1.25rem;
+        border: 0;
+        border-radius: 0.75rem;
+        background: var(--neon);
+        color: #000;
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 0 12px rgb(34 197 94 / 0.45);
+      }
+      button:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cursor {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="logo">SelfVibe</div>
+      <div class="card">
+        <div class="icon" aria-hidden="true">
+          <!-- Lucide "wifi-off" -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h.01" />
+            <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+            <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+            <path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+            <path d="M2 8.82a15 15 0 0 1 4.177-2.643" />
+            <path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+            <path d="m2 2 20 20" />
+          </svg>
+        </div>
+        <p class="command">$ selfvibe ping --network</p>
+        <h1><span>&gt;&gt;</span> you're offline<span class="cursor" style="color: var(--neon)">_</span></h1>
+        <p class="description">
+          Check your internet connection. SelfVibe will pick up where you left off as soon as
+          you're back.
+        </p>
+        <button type="button" onclick="location.reload()">Try again</button>
+      </div>
+    </main>
+  </body>
+</html>

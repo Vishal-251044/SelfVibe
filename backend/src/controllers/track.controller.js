@@ -34,6 +34,16 @@ export const getTrack = asyncHandler(async (req, res) => {
   return sendSuccess(res, { message: "Track fetched", data: { track: toPublicTrack(track) } });
 });
 
+/** POST /api/tracks/streams — signed URLs for the upcoming queue (background play) */
+export const getStreams = asyncHandler(async (req, res) => {
+  const viewer = await User.findById(req.auth.userId).select("plan").lean();
+  const streams = await trackService.getStreamUrls(req.validated.body.trackIds, {
+    userId: req.auth.userId,
+    plan: viewer?.plan,
+  });
+  return sendSuccess(res, { message: "Streams ready", data: { streams } });
+});
+
 /** GET /api/tracks/:id/stream — short-lived signed audio URL */
 export const getStream = asyncHandler(async (req, res) => {
   const viewer = await User.findById(req.auth.userId).select("plan").lean();
