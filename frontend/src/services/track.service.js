@@ -24,9 +24,11 @@ export function getStreamUrl(trackId, params = {}) {
 }
 
 /**
- * Creator: publish a new track (files already uploaded with uploadMedia).
- * @param {Object} input - title, genres, vibes, mood, language, explicit, lyrics, audioKey, coverKey, rightsConfirmed
- * @returns {Promise<{ track: Object }>}
+ * Upload a new song as any signed-in user (files already uploaded with uploadMedia).
+ * The first upload also creates the creator profile (PRD CRT-1) and returns the
+ * updated user, so the client can refresh its session for the new role.
+ * @param {Object} input - title, genres, vibes, mood, language, explicit, lyrics, audioKey, coverKey, rightsConfirmed, stageName
+ * @returns {Promise<{ track: Object, user: Object|null }>}
  */
 export function createMyTrack(input) {
   return api.post("/tracks", input);
@@ -69,4 +71,14 @@ export function changeMyTrackRelease(trackId, action) {
  */
 export function deleteMyTrack(trackId) {
   return api.delete(`/tracks/${trackId}`);
+}
+
+/**
+ * My community upload allowance (PRD CRT-8): songs used, limit (null = unlimited)
+ * and storage used.
+ * @param {Object} [options]
+ * @returns {Promise<{ songsUsed: number, songLimit: number|null, bytesUsed: number }>}
+ */
+export function getMyUploadUsage(options) {
+  return api.get("/creator/usage", options);
 }

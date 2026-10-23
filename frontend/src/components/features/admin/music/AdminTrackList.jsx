@@ -22,10 +22,14 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useTaxonomy } from "@/hooks/useTaxonomy";
 import { getAdminPreviewStream, listAdminTracks } from "@/services/adminMusic.service";
 import { QUERY_KEYS } from "@/utils/constants";
-import { PROCESSING_POLL_MS, TRACK_STATUS_META } from "@/utils/musicConstants";
+import { CATALOG_META, PROCESSING_POLL_MS, TRACK_STATUS_META } from "@/utils/musicConstants";
 
 const PAGE_SIZE = 25;
 const STATUS_OPTIONS = Object.entries(TRACK_STATUS_META).map(([value, meta]) => ({
+  value,
+  label: meta.label,
+}));
+const CATALOG_OPTIONS = Object.entries(CATALOG_META).map(([value, meta]) => ({
   value,
   label: meta.label,
 }));
@@ -40,7 +44,7 @@ export default function AdminTrackList() {
   const canAddMusic = useHasPermission("music.manage");
   const taxonomy = useTaxonomy("staff");
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ status: "", processing: "", genre: "" });
+  const [filters, setFilters] = useState({ catalog: "", status: "", processing: "", genre: "" });
   const [page, setPage] = useState(1);
   const q = useDebouncedValue(search.trim(), 350);
 
@@ -66,7 +70,7 @@ export default function AdminTrackList() {
     setPage(1);
   };
   const tracks = data?.tracks ?? [];
-  const hasFilters = Boolean(q || filters.status || filters.processing || filters.genre);
+  const hasFilters = Boolean(q || Object.values(filters).some(Boolean));
 
   return (
     <>
@@ -94,7 +98,7 @@ export default function AdminTrackList() {
         }
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))]">
         <TextField
           label="Search"
           icon={Search}
@@ -105,6 +109,13 @@ export default function AdminTrackList() {
             setSearch(event.target.value);
             setPage(1);
           }}
+        />
+        <SelectField
+          label="Catalog"
+          placeholder="All"
+          options={CATALOG_OPTIONS}
+          value={filters.catalog}
+          onChange={(event) => setFilter("catalog", event.target.value)}
         />
         <SelectField
           label="Status"
@@ -177,6 +188,7 @@ export default function AdminTrackList() {
                 <TrackRow
                   track={track}
                   href={`/admin/music/${track.id}`}
+                  showCatalog
                   loadUrl={() => getAdminPreviewStream(track.id)}
                   canPlay={track.bitrates?.length > 0}
                   status={<TrackStatusBadge track={track} />}

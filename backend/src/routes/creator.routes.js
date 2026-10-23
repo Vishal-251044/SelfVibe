@@ -21,11 +21,8 @@ router.patch(
   validate({ body: updateCreatorSchema }),
   creatorController.updateMyArtist
 );
-router.get(
-  "/tracks",
-  requireRole("creator"),
-  validate({ query: listTracksQuerySchema }),
-  trackController.listMyTracks
-);
+// Own uploads + upload allowance (any signed-in user — empty before the first upload)
+router.get("/tracks", validate({ query: listTracksQuerySchema }), trackController.listMyTracks);
+router.get("/usage", trackController.getMyUploadUsage);
 
 export default router;

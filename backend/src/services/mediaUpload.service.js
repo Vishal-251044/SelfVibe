@@ -1,5 +1,6 @@
 /**
- * Direct-to-storage uploads (PRD CRT-3): sign an upload for the browser, then
+ * Direct-to-storage uploads (PRD CRT-3): pick a storage pool account (Official
+ * pool for staff, Community pool for users — PRD 10.13), sign an upload for the browser, then
  * check the uploaded object before anything uses it. Also turns an uploaded
  * image into a square WebP cover (artists, albums).
  */
@@ -8,7 +9,14 @@ import os from "node:os";
 import path from "node:path";
 import { Track } from "../models/track.model.js";
 import { storage } from "./storage/index.js";
-import { coverKey, incomingKey, isIncomingKeyOwnedBy } from "./storage/storageKeys.js";
+import {
+  coverKey,
+  incomingKey,
+  isIncomingKeyOwnedBy,
+  splitAccountKey,
+  withAccount,
+} from "./storage/storageKeys.js";
+import { pickStorageAccount } from "./storagePool.service.js";
 import { makeSquareCover } from "./media/ffmpeg.js";
 import { AUDIO_UPLOAD, ERROR_CODES, IMAGE_UPLOAD } from "../config/constants.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -19,8 +27,8 @@ const KIND_RULES = { audio: AUDIO_UPLOAD, image: IMAGE_UPLOAD };
  * Create a signed upload URL for one file.
  * @param {{ userId?: string, staffId?: string }} owner - Who is uploading
  * @param {{ kind: "audio"|"image", contentType: string, sizeBytes: number }} file
- * @returns {Promise<{ key: string, upload: { method: string, url: string, headers: Object }, expiresAt: Date }>}
- * @throws {ApiError} 400 for unsupported types or files that are too large
+ * @returns {Promise<{ key: string, upload: { method: string, url: string, headers: Object, fields?: Object }, expiresAt: Date }>}
+ * @throws {ApiError} 400 for unsupported types or files that are too large; 503 when storage is full
  */
 export async function signUpload(owner, { kind, contentType, sizeBytes }) {
   const rules = KIND_RULES[kind];
@@ -42,11 +50,18 @@ export async function signUpload(owner, { kind, contentType, sizeBytes }) {
     );
   }
 
-  const key = incomingKey(owner, extension);
+  const accountKey = await pickStorageAccount(owner.staffId ? "official" : "community");
+  const key = withAccount(accountKey, incomingKey(owner, extension));
   const target = await storage.createUploadTarget({ key, contentType, sizeBytes });
   return {
     key,
-    upload: { method: target.method, url: target.url, headers: target.headers },
+    // PUT the raw file (local / S3), or POST a form with these fields + "file" (Cloudinary)
+    upload: {
+      method: target.method,
+      url: target.url,
+      headers: target.headers,
+      fields: target.fields,
+    },
     expiresAt: target.expiresAt,
   };
 }
@@ -101,7 +116,11 @@ export async function processCoverUpload(sourceKey, kind, id) {
         code: ERROR_CODES.INVALID_UPLOAD,
       });
     }
-    const key = coverKey(kind, id, Date.now().toString(36));
+    // The cover stays on the same pool account as the upload
+    const key = withAccount(
+      splitAccountKey(sourceKey).accountKey,
+      coverKey(kind, id, Date.now().toString(36))
+    );
     await storage.putFile(output, key, "image/webp");
     await storage.remove([sourceKey]);
     return { key, url: storage.publicUrl(key) };

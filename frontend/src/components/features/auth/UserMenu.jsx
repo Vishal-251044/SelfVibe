@@ -102,7 +102,7 @@ export default function UserMenu() {
               className="flex min-h-11 items-center gap-3 px-4 text-sm text-fg-muted transition hover:bg-neon-dim hover:text-neon"
             >
               <Mic2 size={18} aria-hidden />
-              {isCreator ? "Creator studio" : "Become a creator"}
+              {isCreator ? "Creator studio" : "Upload your music"}
             </Link>
             <button
               type="button"

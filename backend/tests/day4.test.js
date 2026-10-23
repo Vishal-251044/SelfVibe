@@ -89,16 +89,9 @@ describe("release rules", () => {
   });
 });
 
-describe("renditions (never upscale)", () => {
-  const kbps = (probe) => chooseRenditions(probe).map((r) => r.bitrateKbps);
-  it("high-quality and lossless sources get 128 + 320", () => {
-    assert.deepEqual(kbps({ bitrateKbps: 320, codec: "mp3" }), [128, 320]);
-    assert.deepEqual(kbps({ bitrateKbps: 900, codec: "flac" }), [128, 320]);
-    assert.deepEqual(kbps({ bitrateKbps: 1411, codec: "pcm_s16le" }), [128, 320]);
-  });
-  it("low-bitrate sources only get 128", () => {
-    assert.deepEqual(kbps({ bitrateKbps: 192, codec: "mp3" }), [128]);
-    assert.deepEqual(kbps({ bitrateKbps: null, codec: "mp3" }), [128]);
+describe("renditions (PRD CRT-4)", () => {
+  it("every source gets one 192 kbps MP3 playback copy", () => {
+    assert.deepEqual(chooseRenditions(), [{ bitrateKbps: 192, codec: "mp3" }]);
   });
 });
 

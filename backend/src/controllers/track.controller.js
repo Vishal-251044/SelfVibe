@@ -1,11 +1,13 @@
 /**
  * Track endpoints for listeners and creators: /api/tracks/*, /api/creator/tracks
  * - Listeners: track details, signed stream URL (PLY-4).
- * - Creators: upload (create), list, edit, publish / unpublish, delete their own tracks.
+ * - Any signed-in user: upload (the first upload creates the creator profile — PRD CRT-1),
+ *   upload allowance (CRT-8), and list / edit / publish / unpublish / delete their own tracks.
  */
 import * as trackService from "../services/track.service.js";
 import { assertUploaded } from "../services/mediaUpload.service.js";
-import { requireMyArtistProfile } from "../services/creator.service.js";
+import { becomeCreator, getMyArtistProfile } from "../services/creator.service.js";
+import { toPublicUser } from "../services/user.service.js";
 import { toManagedTrack, toPublicTrack } from "../services/track.serializer.js";
 import { User } from "../models/user.model.js";
 import { ERROR_CODES } from "../config/constants.js";
@@ -43,14 +45,24 @@ export const getStream = asyncHandler(async (req, res) => {
   return sendSuccess(res, { message: "Stream ready", data: stream });
 });
 
-/** POST /api/tracks — creator upload (CRT-2) */
+/** POST /api/tracks — community upload by any signed-in user (CRT-1, CRT-2, CRT-8) */
 export const createTrack = asyncHandler(async (req, res) => {
-  const artist = await requireMyArtistProfile(req.auth.userId);
+  const user = await User.findById(req.auth.userId).select("name plan");
+  if (!user) throw ApiError.unauthorized("Please log in again");
   const owner = { userId: req.auth.userId };
-  const { audioKey, coverKey, rightsConfirmed, ...metadata } = req.body;
+  const { audioKey, coverKey, rightsConfirmed, stageName, ...metadata } = req.body;
 
+  await trackService.assertCanUpload({ userId: req.auth.userId, plan: user.plan });
   await assertUploaded(audioKey, owner, "audio", "audioKey");
   if (coverKey) await assertUploaded(coverKey, owner, "image", "coverKey");
+
+  // First upload: turn on the simple creator profile (no approval needed)
+  let artist = await getMyArtistProfile(req.auth.userId);
+  let newCreator = null;
+  if (!artist) {
+    newCreator = await becomeCreator(req.auth.userId, { stageName: stageName || user.name });
+    artist = newCreator.artist;
+  }
 
   const track = await trackService.createTrack({
     artistId: artist._id,
@@ -59,6 +71,7 @@ export const createTrack = asyncHandler(async (req, res) => {
     coverKey,
     metadata,
     addedVia: "creator",
+    catalog: "community",
     releaseIntent: "publish", // open uploads (PRD Q4): live as soon as processing finishes
     rightsConfirmed,
   });
@@ -66,8 +79,19 @@ export const createTrack = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     statusCode: 201,
     message: "Upload received — your track is processing",
-    data: { track: toManagedTrack(created) },
+    // On the first upload the user gained the creator role: the client refreshes its session
+    data: {
+      track: toManagedTrack(created),
+      user: newCreator ? toPublicUser(newCreator.user) : null,
+    },
   });
+});
+
+/** GET /api/creator/usage — songs used / limit and storage used (CRT-8) */
+export const getMyUploadUsage = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.auth.userId).select("plan").lean();
+  const usage = await trackService.getUploadUsage({ userId: req.auth.userId, plan: user?.plan });
+  return sendSuccess(res, { message: "Upload usage fetched", data: usage });
 });
 
 /** GET /api/creator/tracks — the creator's own tracks, any status */

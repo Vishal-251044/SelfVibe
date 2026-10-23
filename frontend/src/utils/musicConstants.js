@@ -4,10 +4,11 @@
  * so the browser can reject a bad file before uploading it.
  */
 
-/** Audio uploads (PRD CRT-3): MP3 / WAV / FLAC, up to 50 MB. */
+/** Audio uploads (PRD CRT-2): MP3 / WAV / FLAC / M4A, up to 50 MB. */
 export const AUDIO_UPLOAD = {
   maxBytes: 50 * 1024 * 1024,
-  accept: ".mp3,.wav,.flac,audio/mpeg,audio/wav,audio/x-wav,audio/flac,audio/x-flac",
+  accept:
+    ".mp3,.wav,.flac,.m4a,audio/mpeg,audio/wav,audio/x-wav,audio/flac,audio/x-flac,audio/mp4,audio/x-m4a",
   mimeTypes: {
     "audio/mpeg": "audio/mpeg",
     "audio/mp3": "audio/mpeg",
@@ -16,10 +17,13 @@ export const AUDIO_UPLOAD = {
     "audio/wave": "audio/wav",
     "audio/flac": "audio/flac",
     "audio/x-flac": "audio/flac",
+    "audio/mp4": "audio/mp4",
+    "audio/x-m4a": "audio/mp4",
+    "audio/m4a": "audio/mp4",
   },
   // Some browsers leave file.type empty for FLAC — fall back to the extension
-  extensions: { mp3: "audio/mpeg", wav: "audio/wav", flac: "audio/flac" },
-  label: "MP3, WAV or FLAC · up to 50 MB",
+  extensions: { mp3: "audio/mpeg", wav: "audio/wav", flac: "audio/flac", m4a: "audio/mp4" },
+  label: "MP3, WAV, FLAC or M4A · up to 50 MB",
 };
 
 /** Cover and artist images: JPG / PNG / WebP, up to 10 MB. */
@@ -96,6 +100,12 @@ export const ALBUM_TYPES = [
   { value: "ep", label: "EP" },
   { value: "single", label: "Single" },
 ];
+
+/** Official (staff) vs Community (user uploads) — PRD 10.14. */
+export const CATALOG_META = {
+  official: { label: "Official", tone: "success" },
+  community: { label: "Community", tone: "info" },
+};
 
 /** Poll processing tracks this often (ms). */
 export const PROCESSING_POLL_MS = 3000;

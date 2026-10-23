@@ -8,16 +8,7 @@ import { CheckCircle2, FileAudio, RotateCw } from "lucide-react";
 import FileDropzone from "@/components/ui/FileDropzone";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { AUDIO_UPLOAD } from "@/utils/musicConstants";
-
-/**
- * Human-readable size, e.g. "4.2 MB".
- * @param {number} bytes
- * @returns {string}
- */
-export function formatFileSize(bytes) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
+import { formatFileSize } from "@/utils/genericFunctions";
 
 /**
  * @param {Object} props

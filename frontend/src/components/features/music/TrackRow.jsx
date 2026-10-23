@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 import { BadgeCheck } from "lucide-react";
 import CoverArt from "@/components/features/music/CoverArt";
 import PlayButton from "@/components/features/music/PlayButton";
+import Badge from "@/components/ui/Badge";
+import { CATALOG_META } from "@/utils/musicConstants";
 import { usePreviewPlayerStore } from "@/store/previewPlayerStore";
 import { cn, formatDuration } from "@/utils/genericFunctions";
 
@@ -21,6 +23,7 @@ import { cn, formatDuration } from "@/utils/genericFunctions";
  * @param {boolean} [props.canPlay=true]
  * @param {string} [props.href] - Makes the title a link (e.g. admin detail page)
  * @param {boolean} [props.showArtist=true]
+ * @param {boolean} [props.showCatalog=false] - Official / Community badge (PRD 10.14)
  * @param {React.ReactNode} [props.status] - e.g. <TrackStatusBadge />
  * @param {React.ReactNode} [props.actions]
  */
@@ -31,6 +34,7 @@ export default function TrackRow({
   canPlay = true,
   href,
   showArtist = true,
+  showCatalog = false,
   status,
   actions,
 }) {
@@ -89,6 +93,14 @@ export default function TrackRow({
             >
               E
             </span>
+          )}
+          {showCatalog && CATALOG_META[track.catalog] && (
+            <Badge
+              tone={CATALOG_META[track.catalog].tone}
+              className="hidden px-2 text-[10px] sm:inline-flex"
+            >
+              {CATALOG_META[track.catalog].label}
+            </Badge>
           )}
         </div>
         {showArtist && track.artist && (

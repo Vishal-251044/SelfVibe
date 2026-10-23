@@ -4,6 +4,7 @@
  * here and never reads process.env directly.
  */
 import "dotenv/config";
+import { STORAGE_DEFAULT_QUOTA_GB, STORAGE_POOLS } from "./constants.js";
 
 const PLACEHOLDER_PATTERN = /^your_.*_here$/;
 
@@ -74,6 +75,66 @@ const cloudinary = {
   apiKey: read("CLOUDINARY_API_KEY"),
   apiSecret: read("CLOUDINARY_API_SECRET"),
 };
+
+/**
+ * Cloudinary storage pool (PRD 10.13, STO-2). Format, comma-separated:
+ *   CLOUDINARY_ACCOUNTS=key|pool|cloudName|apiKey|apiSecret|quotaGb
+ * pool = official | community | shared; quotaGb is optional (default 10).
+ * Without the list, the single CLOUDINARY_* account (if set) becomes one
+ * shared account, so a one-account setup needs no extra variables.
+ * @returns {Array<{ key: string, pool: string, cloudName: string, apiKey: string, apiSecret: string, quotaBytes: number }>}
+ * @throws {Error} When an entry is malformed (the message says which one)
+ */
+function readStorageAccounts() {
+  const raw = read("CLOUDINARY_ACCOUNTS");
+  if (isUnset(raw)) {
+    const isSingleConfigured = [
+      cloudinary.cloudName,
+      cloudinary.apiKey,
+      cloudinary.apiSecret,
+    ].every((value) => !isUnset(value));
+    if (!isSingleConfigured) return [];
+    return [
+      {
+        key: "main",
+        pool: "shared",
+        cloudName: cloudinary.cloudName,
+        apiKey: cloudinary.apiKey,
+        apiSecret: cloudinary.apiSecret,
+        quotaBytes: STORAGE_DEFAULT_QUOTA_GB * 1024 ** 3,
+      },
+    ];
+  }
+
+  return raw
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry, index) => {
+      const [key, pool, cloudName, apiKey, apiSecret, quotaGb] = entry
+        .split("|")
+        .map((part) => part.trim());
+      const label = `[Config] CLOUDINARY_ACCOUNTS entry ${index + 1} ("${key ?? ""}")`;
+      if (!/^[a-z0-9-]{1,32}$/.test(key ?? "")) {
+        throw new Error(`${label}: the key must be 1-32 lowercase letters, numbers or dashes`);
+      }
+      if (!STORAGE_POOLS.includes(pool)) {
+        throw new Error(`${label}: pool must be one of ${STORAGE_POOLS.join(", ")}`);
+      }
+      if ([cloudName, apiKey, apiSecret].some((value) => isUnset(value))) {
+        throw new Error(`${label}: cloud name, API key and API secret are required`);
+      }
+      const quota = quotaGb ? Number(quotaGb) : STORAGE_DEFAULT_QUOTA_GB;
+      if (!Number.isFinite(quota) || quota <= 0) {
+        throw new Error(`${label}: quotaGb must be a positive number`);
+      }
+      return { key, pool, cloudName, apiKey, apiSecret, quotaBytes: Math.round(quota * 1024 ** 3) };
+    });
+}
+const storageAccounts = readStorageAccounts();
+if (new Set(storageAccounts.map((account) => account.key)).size !== storageAccounts.length) {
+  throw new Error("[Config] CLOUDINARY_ACCOUNTS has the same key twice");
+}
 
 const email = {
   from: read("EMAIL_FROM", "SelfVibe <onboarding@resend.dev>"),
@@ -151,9 +212,14 @@ export const env = Object.freeze({
       !isUnset(cloudinary.apiSecret),
   }),
 
-  // Audio + cover storage (PRD CRT-3). "s3" = Cloudflare R2 / AWS S3; "local" = disk (development only)
+  // Audio + cover storage (PRD 10.13). "cloudinary" = the Cloudinary storage pool (default when
+  // accounts are set); "s3" = R2 / S3 (spare option); "local" = disk (development only)
   storage: Object.freeze({
-    driver: read("STORAGE_DRIVER", s3IsConfigured ? "s3" : "local"),
+    driver: read(
+      "STORAGE_DRIVER",
+      storageAccounts.length ? "cloudinary" : s3IsConfigured ? "s3" : "local"
+    ),
+    cloudinaryAccounts: Object.freeze(storageAccounts.map((account) => Object.freeze(account))),
     localDir: read("LOCAL_STORAGE_DIR", ".storage"),
     s3: Object.freeze({ ...s3, isConfigured: s3IsConfigured }),
     // Signed audio stream URLs stay valid this long (long enough for background queues, Day 5)
@@ -201,9 +267,14 @@ export function assertRequiredEnv() {
     problems.push("TOTP_ENCRYPTION_KEY must be 64 hex characters (32 random bytes)");
   }
 
-  if (env.isProduction && env.storage.driver !== "s3") {
+  if (env.isProduction && env.storage.driver === "local") {
     problems.push(
-      "Production needs object storage: set S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY"
+      "Production needs the Cloudinary storage pool: set CLOUDINARY_ACCOUNTS (or the CLOUDINARY_* account)"
+    );
+  }
+  if (env.storage.driver === "cloudinary" && env.storage.cloudinaryAccounts.length === 0) {
+    problems.push(
+      "STORAGE_DRIVER=cloudinary needs CLOUDINARY_ACCOUNTS (or the CLOUDINARY_* account)"
     );
   }
   if (env.isProduction && env.queue.driver !== "bullmq") {

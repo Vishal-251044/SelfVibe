@@ -184,6 +184,7 @@ export default function ArtistPageView({ idOrSlug }) {
                   track={track}
                   index={index + 1}
                   showArtist={false}
+                  showCatalog
                   loadUrl={loadUrlFor(track.id)}
                   actions={
                     <ReportButton targetType="track" targetId={track.id} targetName={track.title} />

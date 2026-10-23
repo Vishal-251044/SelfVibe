@@ -12,7 +12,8 @@ import { Vibe } from "../models/vibe.model.js";
 import { storage } from "./storage/index.js";
 import { queue } from "./queue/index.js";
 import { env } from "../config/env.js";
-import { ERROR_CODES, JOBS } from "../config/constants.js";
+import { ERROR_CODES, JOBS, UPLOAD_LIMITS } from "../config/constants.js";
+import { recordStorageUsage } from "./storagePool.service.js";
 import { PROCESS_TRACK_MAX_ATTEMPTS } from "./trackProcessing.service.js";
 import { getPagination, buildPageMeta } from "../helpers/genericFunctions.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -60,6 +61,40 @@ export async function enqueueProcessing(trackId) {
 }
 
 /**
+ * Community upload allowance for a user (PRD CRT-8): songs used, limit by plan,
+ * and storage used.
+ * @param {{ userId: string, plan?: string }} user
+ * @returns {Promise<{ songsUsed: number, songLimit: number|null, bytesUsed: number }>}
+ */
+export async function getUploadUsage({ userId, plan = "free" }) {
+  const [songsUsed, [bytes]] = await Promise.all([
+    Track.countDocuments({ uploadedBy: userId, catalog: "community" }),
+    Track.aggregate([
+      { $match: { uploadedBy: new mongoose.Types.ObjectId(String(userId)), catalog: "community" } },
+      { $group: { _id: null, total: { $sum: "$storage.bytes" } } },
+    ]),
+  ]);
+  const songLimit = Object.hasOwn(UPLOAD_LIMITS, plan) ? UPLOAD_LIMITS[plan] : UPLOAD_LIMITS.free;
+  return { songsUsed, songLimit, bytesUsed: bytes?.total ?? 0 };
+}
+
+/**
+ * Throw when a user has used up their community uploads.
+ * @param {{ userId: string, plan?: string }} user
+ * @returns {Promise<void>}
+ * @throws {ApiError} 403 UPLOAD_LIMIT_REACHED
+ */
+export async function assertCanUpload(user) {
+  const { songsUsed, songLimit } = await getUploadUsage(user);
+  if (songLimit !== null && songsUsed >= songLimit) {
+    throw ApiError.forbidden(
+      `You've reached your limit of ${songLimit} songs. Delete a song or upgrade to Creator Pro for unlimited uploads.`,
+      { code: ERROR_CODES.UPLOAD_LIMIT_REACHED }
+    );
+  }
+}
+
+/**
  * Create a track in "processing" state and queue its processing job.
  * Uploaded keys must already be checked with assertUploaded().
  * @param {Object} input
@@ -69,6 +104,7 @@ export async function enqueueProcessing(trackId) {
  * @param {string|null} [input.coverKey] - Incoming cover image key
  * @param {Object} input.metadata - title, genres, vibes, mood, language, explicit, lyrics, bpm, albumId
  * @param {"creator"|"admin"} input.addedVia
+ * @param {"official"|"community"} [input.catalog] - Defaults from addedVia (admin → official)
  * @param {"upload"|"import"} [input.source]
  * @param {"publish"|"schedule"|"draft"} [input.releaseIntent]
  * @param {Date|null} [input.scheduledAt]
@@ -93,6 +129,7 @@ export async function createTrack(input) {
     audio: { sourceKey: input.audioKey },
     coverSourceKey: input.coverKey ?? null,
     addedVia: input.addedVia,
+    catalog: input.catalog ?? (input.addedVia === "admin" ? "official" : "community"),
     source: input.source ?? "upload",
     releaseIntent: input.releaseIntent ?? "publish",
     scheduledAt: input.releaseIntent === "schedule" ? input.scheduledAt : null,
@@ -267,6 +304,9 @@ export async function deleteTrack(trackId) {
     .catch((error) =>
       logger.warn(`[TrackService] cleanup for deleted track ${trackId} failed: ${error.message}`)
     );
+  if (track.storage?.bytes) {
+    await recordStorageUsage(track.storage.accountKey, { bytes: -track.storage.bytes, songs: -1 });
+  }
   return track;
 }
 
@@ -286,6 +326,7 @@ export async function listTracks(filters, query) {
   if (filters.uploadedBy) where.uploadedBy = filters.uploadedBy;
   if (filters.addedVia) where.addedVia = filters.addedVia;
   if (filters.processing) where["processing.state"] = filters.processing;
+  if (filters.catalog) where.catalog = filters.catalog;
 
   const [items, total] = await Promise.all([
     Track.find(where)

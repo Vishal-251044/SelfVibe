@@ -1,16 +1,19 @@
 "use client";
 
 /**
- * Creator upload (/creator/upload, PRD CRT-2 / CRT-3 / CRT-6):
+ * Song upload (/creator/upload, PRD CRT-1 / CRT-2 / CRT-3 / CRT-6 / CRT-8):
  * audio (required) and cover (optional) upload straight to storage while the
- * creator fills in the details; the rights checkbox is required. After submit
- * the track is processed in the background and appears in the studio.
+ * user fills in the details; the rights checkbox is required. The first upload
+ * also asks for an artist name and turns on the creator profile (the session is
+ * refreshed for the new role). Uploads stop at the plan's song limit.
+ * After submit the track is processed in the background and appears in the studio.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Mic2, ShieldCheck } from "lucide-react";
+import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import FormAlert from "@/components/ui/FormAlert";
 import CheckboxField from "@/components/ui/CheckboxField";
@@ -23,13 +26,25 @@ import TrackMetadataFields, {
   validateMetadata,
 } from "@/components/features/music/TrackMetadataFields";
 import { useMediaUpload } from "@/hooks/useMediaUpload";
+import UploadAllowance, { useUploadAllowance } from "@/components/features/creator/UploadAllowance";
 import { useTaxonomy } from "@/hooks/useTaxonomy";
+import { useAuthStore } from "@/store/authStore";
 import { createMyTrack } from "@/services/track.service";
+import { QUERY_KEYS } from "@/utils/constants";
 import { fadeUp } from "@/utils/animations";
 
-export default function TrackUploadForm() {
+/**
+ * @param {Object} props
+ * @param {Object|null} props.artist - My artist profile; null before the first upload
+ */
+export default function TrackUploadForm({ artist }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const refreshSession = useAuthStore((state) => state.refresh);
+  const { isAtLimit } = useUploadAllowance();
+  const [stageName, setStageName] = useState(user?.name ?? "");
   const taxonomy = useTaxonomy("user");
   const audio = useMediaUpload({ kind: "audio" });
   const cover = useMediaUpload({ kind: "image" });
@@ -59,6 +74,7 @@ export default function TrackUploadForm() {
     if (!audio.file) nextErrors.audioKey = "Add your audio file";
     else if (audio.status === "error") nextErrors.audioKey = audio.error;
     if (!rightsConfirmed) nextErrors.rightsConfirmed = "Confirm you own the rights to this audio";
+    if (!artist && stageName.trim().length < 2) nextErrors.stageName = "Use at least 2 characters";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       setFormError("Check the highlighted fields.");
@@ -71,13 +87,20 @@ export default function TrackUploadForm() {
 
     setIsSaving(true);
     try {
-      await createMyTrack({
+      const result = await createMyTrack({
         ...metadataToPayload(values),
         audioKey: audio.key,
         coverKey: cover.status === "done" ? cover.key : null,
         rightsConfirmed: true,
+        ...(!artist && { stageName: stageName.trim() }),
       });
-      queryClient.invalidateQueries({ queryKey: ["creator", "tracks"] });
+      if (result.user) {
+        // First upload: the user is a creator now — get a token with the new role
+        setUser(result.user);
+        await refreshSession();
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myArtist });
+      }
+      queryClient.invalidateQueries({ queryKey: ["creator"] });
       setCreatedTitle(values.title.trim());
     } catch (error) {
       if (error?.details?.fields) setErrors(error.details.fields);
@@ -110,8 +133,8 @@ export default function TrackUploadForm() {
           <CheckCircle2 size={52} className="text-neon" aria-hidden />
           <h2 className="mt-5 font-display text-2xl font-bold">Upload received</h2>
           <p className="mt-2 text-sm text-fg-muted">
-            &ldquo;{createdTitle}&rdquo; is processing. It goes live automatically when it&apos;s
-            ready — usually within a minute.
+            &ldquo;{createdTitle}&rdquo; is processing. It goes live as a Community song when
+            it&apos;s ready — usually within a minute.
           </p>
           <div className="mt-8 grid w-full gap-3 sm:grid-cols-2">
             <Button variant="outline" onClick={resetForm}>
@@ -132,6 +155,7 @@ export default function TrackUploadForm() {
           className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-8"
         >
           <div className="space-y-5">
+            <UploadAllowance />
             <AudioUploadField
               upload={{ ...audio, start: startAudio }}
               error={errors.audioKey}
@@ -142,6 +166,20 @@ export default function TrackUploadForm() {
 
           <div className="space-y-5 rounded-card border border-line bg-surface p-5 sm:p-6">
             <FormAlert message={formError} />
+            {!artist && (
+              <TextField
+                label="Artist name (shown on your songs)"
+                icon={Mic2}
+                value={stageName}
+                maxLength={60}
+                autoComplete="nickname"
+                onChange={(event) => {
+                  setStageName(event.target.value);
+                  setErrors((current) => ({ ...current, stageName: undefined }));
+                }}
+                error={errors.stageName}
+              />
+            )}
             <TrackMetadataFields
               values={values}
               onChange={update}
@@ -163,10 +201,14 @@ export default function TrackUploadForm() {
               size="lg"
               fullWidth
               loading={isSaving}
-              disabled={audio.status === "uploading" || cover.status === "uploading"}
+              disabled={isAtLimit || audio.status === "uploading" || cover.status === "uploading"}
             >
               <ShieldCheck size={18} aria-hidden />
-              {audio.status === "uploading" ? `Uploading ${audio.progress}%…` : "Publish track"}
+              {isAtLimit
+                ? "Upload limit reached"
+                : audio.status === "uploading"
+                  ? `Uploading ${audio.progress}%…`
+                  : "Publish song"}
             </Button>
           </div>
         </motion.form>

@@ -1,26 +1,32 @@
 /**
  * Track processing job (PRD CRT-4, roadmap Day 4 "Worker job"):
- * original → validate → transcode 128 / 320 kbps MP3 → duration → waveform →
- * cover → publish / schedule / draft. Runs in the worker (or in-process in dev).
+ * original → validate → 192 kbps MP3 playback copy (PRD CRT-4, STO-6; the original
+ * is kept) → duration → waveform → cover → publish / schedule / draft. Files stay
+ * on the upload's storage pool account. Runs in the worker (or in-process in dev).
  */
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Track } from "../models/track.model.js";
 import { storage } from "./storage/index.js";
-import { audioRenditionKey, audioSourceKey, coverKey } from "./storage/storageKeys.js";
+import {
+  audioRenditionKey,
+  audioSourceKey,
+  coverKey,
+  splitAccountKey,
+  withAccount,
+} from "./storage/storageKeys.js";
+import { recordStorageUsage } from "./storagePool.service.js";
 import { extractWaveform, makeSquareCover, probeAudio, transcodeToMp3 } from "./media/ffmpeg.js";
 import {
   AUDIO_RENDITIONS,
   AUDIO_UPLOAD,
-  HIGH_RENDITION_MIN_SOURCE_KBPS,
   STORAGE_PREFIXES,
   WAVEFORM_PEAK_COUNT,
 } from "../config/constants.js";
 import { logger } from "../utils/logger.js";
 
 export const PROCESS_TRACK_MAX_ATTEMPTS = 3;
-const LOSSLESS_CODECS = /^(flac|alac|pcm_)/;
 
 /** A problem with the file itself — retrying will not help. */
 export class PermanentProcessingError extends Error {}
@@ -40,17 +46,12 @@ export function resolveReleaseStatus(track, now = new Date()) {
 }
 
 /**
- * Which renditions to produce for a source (never upscale a low-bitrate file).
- * @param {{ bitrateKbps: number|null, codec: string|null }} probe
+ * Playback copies to produce: one standard 192 kbps MP3 for every source
+ * (PRD CRT-4). Kept as a list so more qualities can be added later.
  * @returns {Array<{ bitrateKbps: number, codec: string }>}
  */
-export function chooseRenditions(probe) {
-  const renditions = [AUDIO_RENDITIONS.standard];
-  const isLossless = LOSSLESS_CODECS.test(probe.codec ?? "");
-  if (isLossless || (probe.bitrateKbps ?? 0) >= HIGH_RENDITION_MIN_SOURCE_KBPS) {
-    renditions.push(AUDIO_RENDITIONS.high);
-  }
-  return renditions;
+export function chooseRenditions() {
+  return Object.values(AUDIO_RENDITIONS);
 }
 
 /**
@@ -115,8 +116,12 @@ async function processTrack(track) {
     // 1. Move the upload out of incoming/ into the track's own folder (first run only)
     let sourceKey = track.audio.sourceKey;
     if (!sourceKey) throw new PermanentProcessingError("No audio file was uploaded");
-    if (sourceKey.startsWith(`${STORAGE_PREFIXES.incoming}/`)) {
-      const finalKey = audioSourceKey(trackId, path.extname(sourceKey).slice(1) || "audio");
+    const { accountKey } = splitAccountKey(sourceKey); // everything stays on this pool account
+    if (splitAccountKey(sourceKey).path.startsWith(`${STORAGE_PREFIXES.incoming}/`)) {
+      const finalKey = withAccount(
+        accountKey,
+        audioSourceKey(trackId, path.extname(sourceKey).slice(1) || "audio")
+      );
       await storage.move(sourceKey, finalKey);
       sourceKey = finalKey;
       await Track.updateOne({ _id: track._id }, { $set: { "audio.sourceKey": finalKey } });
@@ -139,7 +144,7 @@ async function processTrack(track) {
 
     // 3. Transcode + waveform
     const formats = [];
-    for (const rendition of chooseRenditions(probe)) {
+    for (const rendition of chooseRenditions()) {
       const outputPath = path.join(workDir, `${rendition.bitrateKbps}.mp3`);
       try {
         await transcodeToMp3(sourcePath, outputPath, rendition.bitrateKbps);
@@ -147,10 +152,13 @@ async function processTrack(track) {
         // FFmpeg failing on a local file is deterministic — retrying will not help
         logger.debug(`[TrackProcessing] transcode failed for ${trackId}: ${error.message}`);
         throw new PermanentProcessingError(
-          "This file isn't a readable audio file. Re-export it as MP3, WAV or FLAC and try again."
+          "This file isn't a readable audio file. Re-export it as MP3, WAV, FLAC or M4A and try again."
         );
       }
-      const key = audioRenditionKey(trackId, rendition.bitrateKbps, version);
+      const key = withAccount(
+        accountKey,
+        audioRenditionKey(trackId, rendition.bitrateKbps, version)
+      );
       await storage.putFile(outputPath, key, "audio/mpeg");
       formats.push({ ...rendition, key, sizeBytes: (await stat(outputPath)).size });
     }
@@ -161,7 +169,17 @@ async function processTrack(track) {
     );
 
     // 4. Cover: the uploaded image, else artwork embedded in the audio file
-    const cover = await buildCover(track, sourcePath, probe.hasCoverArt, workDir, version);
+    const cover = await buildCover(
+      track,
+      sourcePath,
+      probe.hasCoverArt,
+      workDir,
+      version,
+      accountKey
+    );
+    const storedBytes =
+      (await stat(sourcePath)).size +
+      formats.reduce((total, format) => total + format.sizeBytes, 0);
 
     // 5. Save, release, and clean up replaced files
     const previousKeys = [
@@ -182,6 +200,7 @@ async function processTrack(track) {
           "processing.state": "done",
           "processing.error": null,
           "processing.finishedAt": new Date(),
+          storage: { provider: storage.name, accountKey, bytes: storedBytes },
           ...release,
         },
       }
@@ -189,6 +208,11 @@ async function processTrack(track) {
     await storage.remove(
       previousKeys.filter((key) => !formats.some((format) => format.key === key))
     );
+    // Pool usage between syncs: bytes changed, and one more song the first time
+    await recordStorageUsage(accountKey, {
+      bytes: storedBytes - (track.storage?.bytes ?? 0),
+      songs: track.storage?.bytes ? 0 : 1,
+    });
 
     logger.info(
       `[TrackProcessing] "${track.title}" ready (${probe.durationSec}s, ${formats.map((f) => f.bitrateKbps).join("/")} kbps)${release.status ? ` → ${release.status}` : ""}`
@@ -202,7 +226,7 @@ async function processTrack(track) {
  * Produce the cover for a track, if there is one.
  * @returns {Promise<{ key: string, url: string } | null>}
  */
-async function buildCover(track, sourcePath, hasEmbeddedArt, workDir, version) {
+async function buildCover(track, sourcePath, hasEmbeddedArt, workDir, version, accountKey) {
   const outputPath = path.join(workDir, "cover.webp");
   try {
     if (track.coverSourceKey) {
@@ -221,7 +245,7 @@ async function buildCover(track, sourcePath, hasEmbeddedArt, workDir, version) {
     return null;
   }
 
-  const key = coverKey("tracks", String(track._id), version);
+  const key = withAccount(accountKey, coverKey("tracks", String(track._id), version));
   await storage.putFile(outputPath, key, "image/webp");
   return { key, url: storage.publicUrl(key) };
 }

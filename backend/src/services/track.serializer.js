@@ -43,6 +43,7 @@ export function toPublicTrack(track) {
     explicit: Boolean(track.explicit),
     lyrics: track.lyrics ?? "",
     source: track.source,
+    catalog: track.catalog ?? "community", // Official vs Community badge (PRD 10.14)
     license: track.license?.name ? track.license : null,
     playCount: track.playCount ?? 0,
     likeCount: track.likeCount ?? 0,
@@ -71,6 +72,14 @@ export function toManagedTrack(track) {
       attempts: track.processing?.attempts ?? 0,
     },
     external: track.external?.provider ? track.external : null,
+    // Which storage pool account holds the files (PRD 10.13) — staff only
+    storage: track.storage?.provider
+      ? {
+          provider: track.storage.provider,
+          accountKey: track.storage.accountKey,
+          bytes: track.storage.bytes,
+        }
+      : null,
     createdAt: track.createdAt,
     updatedAt: track.updatedAt,
   };

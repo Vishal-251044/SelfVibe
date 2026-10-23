@@ -18,6 +18,7 @@ import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import TrackRow from "@/components/features/music/TrackRow";
 import TrackStatusBadge from "@/components/features/music/TrackStatusBadge";
 import CreatorTrackActions from "@/components/features/creator/CreatorTrackActions";
+import UploadAllowance from "@/components/features/creator/UploadAllowance";
 import { listMyTracks, getStreamUrl } from "@/services/track.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { PROCESSING_POLL_MS } from "@/utils/musicConstants";
@@ -62,7 +63,7 @@ export default function CreatorDashboard({ artist }) {
         subtitle="Upload tracks, follow their processing and manage what's live."
         actions={
           <Button href="/creator/upload" size="lg">
-            <Upload size={18} aria-hidden /> Upload a track
+            <Upload size={18} aria-hidden /> Upload a song
           </Button>
         }
       />
@@ -92,6 +93,8 @@ export default function CreatorDashboard({ artist }) {
           ))}
         </section>
       </div>
+
+      <UploadAllowance className="mt-4" />
 
       <section className="mt-10" aria-labelledby="my-tracks-heading">
         <div className="mb-3 flex items-center justify-between">
@@ -123,7 +126,7 @@ export default function CreatorDashboard({ artist }) {
             command="selfvibe upload"
             title="no tracks yet"
             description="Upload your first track — we'll create the streaming versions and publish it when it's ready."
-            action={<Button href="/creator/upload">Upload a track</Button>}
+            action={<Button href="/creator/upload">Upload a song</Button>}
           />
         ) : (
           <>

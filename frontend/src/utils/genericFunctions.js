@@ -121,3 +121,14 @@ export function deleteCookie(name) {
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Human-readable file size, e.g. 4404019 → "4.2 MB".
+ * @param {number} bytes
+ * @returns {string}
+ */
+export function formatFileSize(bytes) {
+  if (!bytes) return "0 MB";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}

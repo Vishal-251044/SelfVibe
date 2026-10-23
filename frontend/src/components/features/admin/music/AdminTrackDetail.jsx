@@ -20,8 +20,8 @@ import TrackMaintenancePanel from "@/components/features/admin/music/TrackMainte
 import AdminTrackEditForm from "@/components/features/admin/music/AdminTrackEditForm";
 import { getAdminPreviewStream, getAdminTrack } from "@/services/adminMusic.service";
 import { QUERY_KEYS } from "@/utils/constants";
-import { formatDuration } from "@/utils/genericFunctions";
-import { PROCESSING_POLL_MS } from "@/utils/musicConstants";
+import { formatDuration, formatFileSize } from "@/utils/genericFunctions";
+import { CATALOG_META, PROCESSING_POLL_MS } from "@/utils/musicConstants";
 
 /**
  * @param {Object} props
@@ -93,7 +93,15 @@ export default function AdminTrackDetail({ trackId }) {
             <p className="text-fg-muted">{track.artist?.stageName}</p>
             <p className="mt-1 text-xs text-fg-subtle">
               {isReady
-                ? `${formatDuration(track.durationSec)} · ${track.bitrates.join(" / ")} kbps · added via ${track.addedVia}`
+                ? [
+                    formatDuration(track.durationSec),
+                    `${track.bitrates.join(" / ")} kbps`,
+                    CATALOG_META[track.catalog]?.label,
+                    track.storage?.accountKey && `stored on ${track.storage.accountKey}`,
+                    track.storage?.bytes && formatFileSize(track.storage.bytes),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
                 : `Processing attempt ${track.processing.attempts || 1}`}
             </p>
           </div>

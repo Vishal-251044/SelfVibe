@@ -7,8 +7,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, CircleAlert, FileAudio, Loader2, RotateCw, X } from "lucide-react";
 import ProgressBar from "@/components/ui/ProgressBar";
-import { formatFileSize } from "@/components/features/music/AudioUploadField";
 import { listItem } from "@/utils/animations";
+import { formatFileSize } from "@/utils/genericFunctions";
 
 const STATUS_ICONS = {
   waiting: { icon: FileAudio, className: "text-fg-subtle" },

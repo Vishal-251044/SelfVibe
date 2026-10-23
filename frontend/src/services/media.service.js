@@ -1,8 +1,9 @@
 /**
- * Audio and image uploads to SelfVibe storage (Cloudflare R2 / S3, or the
- * API's local disk in development):
+ * Audio and image uploads to SelfVibe storage — the Cloudinary storage pool
+ * (or R2 / S3, or the API's local disk in development):
  * 1. ask the API for a signed upload (it checks type and size)
- * 2. PUT the file straight to that URL with progress
+ * 2. send the file straight to that URL with progress: a signed form POST for
+ *    Cloudinary, a raw PUT for S3 / local disk
  * 3. send the returned `key` with the track / artist form
  * The API never streams the bytes through its own process in production.
  */
@@ -34,7 +35,7 @@ export function resolveContentType(file, kind) {
 export function validateMediaFile(file, kind) {
   const rules = RULES[kind];
   if (!resolveContentType(file, kind)) {
-    return kind === "audio" ? "Use an MP3, WAV or FLAC file" : "Use a JPG, PNG or WebP image";
+    return kind === "audio" ? "Use an MP3, WAV, FLAC or M4A file" : "Use a JPG, PNG or WebP image";
   }
   if (file.size === 0) return "This file is empty";
   if (file.size > rules.maxBytes) {
@@ -44,10 +45,10 @@ export function validateMediaFile(file, kind) {
 }
 
 /**
- * PUT a file to a signed URL, reporting progress.
+ * Send a file to a signed upload target, reporting progress.
  * XMLHttpRequest is used (not fetch) because only it reports upload progress.
  * @param {File} file
- * @param {{ method: string, url: string, headers: Object }} target
+ * @param {{ method: string, url: string, headers: Object, fields?: Object }} target
  * @param {Object} [options]
  * @param {(percent: number) => void} [options.onProgress] - 0–100
  * @param {AbortSignal} [options.signal]
@@ -79,7 +80,16 @@ function putFile(file, target, { onProgress, signal } = {}) {
     xhr.onerror = () => reject(new ApiClientError("Upload failed. Check your connection.", 0));
     xhr.onabort = () => reject(new ApiClientError("Upload cancelled", 0, { code: "ABORTED" }));
     signal?.addEventListener("abort", () => xhr.abort(), { once: true });
-    xhr.send(file);
+
+    if (target.fields) {
+      // Cloudinary: signed fields + the file as multipart form data
+      const form = new FormData();
+      Object.entries(target.fields).forEach(([name, value]) => form.append(name, String(value)));
+      form.append("file", file);
+      xhr.send(form);
+    } else {
+      xhr.send(file);
+    }
   });
 }
 

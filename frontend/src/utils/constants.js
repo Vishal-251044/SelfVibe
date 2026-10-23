@@ -142,6 +142,7 @@ export const QUERY_KEYS = {
   /** @param {string[]} genres @param {string[]} vibes */
   myArtist: ["creator", "me"],
   myTracks: (page) => ["creator", "tracks", page],
+  myUploadUsage: ["creator", "usage"],
   /** @param {string} idOrSlug */
   artistPage: (idOrSlug) => ["artists", idOrSlug],
   adminTaxonomy: ["admin", "taxonomy"],

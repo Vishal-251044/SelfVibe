@@ -11,7 +11,8 @@ import path from "node:path";
 import { ArtistProfile } from "../../models/artistProfile.model.js";
 import { Track } from "../../models/track.model.js";
 import { storage } from "../storage/index.js";
-import { incomingKey } from "../storage/storageKeys.js";
+import { incomingKey, withAccount } from "../storage/storageKeys.js";
+import { pickStorageAccount } from "../storagePool.service.js";
 import { createOfficialArtist, findArtistByName } from "../artist.service.js";
 import { createTrack } from "../track.service.js";
 import { AUDIO_UPLOAD, IMAGE_UPLOAD } from "../../config/constants.js";
@@ -97,7 +98,9 @@ async function importItem(item, ownerId, workDir) {
   const owner = { staffId: ownerId };
   const audioPath = path.join(workDir, `${item.provider}-${item.externalId}.mp3`);
   await downloadToFile(item.audioUrl, audioPath, AUDIO_UPLOAD.maxBytes, item.pageUrl);
-  const audioKey = incomingKey(owner, "mp3");
+  // Imported music is Official music (PRD 10.14): it goes to the Official storage pool
+  const accountKey = await pickStorageAccount("official");
+  const audioKey = withAccount(accountKey, incomingKey(owner, "mp3"));
   await storage.putFile(audioPath, audioKey, "audio/mpeg");
   await rm(audioPath, { force: true });
 
@@ -107,7 +110,7 @@ async function importItem(item, ownerId, workDir) {
     const coverPath = path.join(workDir, `${item.provider}-${item.externalId}.jpg`);
     try {
       await downloadToFile(item.coverUrl, coverPath, IMAGE_UPLOAD.maxBytes);
-      coverKey = incomingKey(owner, "jpg");
+      coverKey = withAccount(accountKey, incomingKey(owner, "jpg"));
       await storage.putFile(coverPath, coverKey, "image/jpeg");
     } catch (error) {
       coverKey = null;
@@ -125,6 +128,7 @@ async function importItem(item, ownerId, workDir) {
     coverKey,
     metadata: { title: item.title, genres: item.genres, vibes: item.vibes, bpm: item.bpm },
     addedVia: "admin",
+    catalog: "official",
     source: "import",
     releaseIntent: "publish",
     rightsConfirmed: true,

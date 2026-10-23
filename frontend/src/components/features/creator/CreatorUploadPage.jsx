@@ -1,23 +1,19 @@
 "use client";
 
 /**
- * /creator/upload: the upload form for creators; listeners are sent to the
- * "Become a Creator" step first.
+ * /creator/upload: upload a song (any signed-in user — PRD CRT-1). Before the
+ * first upload the form also asks for the artist name the songs appear under.
  */
 import { ArrowLeft } from "lucide-react";
 import Button from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
 import TrackUploadForm from "@/components/features/creator/TrackUploadForm";
 import { CreatorSkeleton, useMyArtist } from "@/components/features/creator/CreatorHome";
-import BecomeCreatorForm from "@/components/features/creator/BecomeCreatorForm";
-import { useAuthStore } from "@/store/authStore";
 
 export default function CreatorUploadPage() {
-  const isCreator = useAuthStore((state) => state.user?.roles?.includes("creator"));
   const { data, isPending } = useMyArtist();
-
   if (isPending) return <CreatorSkeleton />;
-  if (!data?.artist || !isCreator) return <BecomeCreatorForm />;
+  const artist = data?.artist ?? null;
 
   return (
     <>
@@ -26,10 +22,14 @@ export default function CreatorUploadPage() {
       </Button>
       <PageHeader
         eyebrow="selfvibe upload --track"
-        title="Upload a track"
-        subtitle={`Publishing as ${data.artist.stageName}. Files upload while you fill in the details.`}
+        title="Upload a song"
+        subtitle={
+          artist
+            ? `Publishing as ${artist.stageName}. Files upload while you fill in the details.`
+            : "Your first upload creates your artist page. Files upload while you fill in the details."
+        }
       />
-      <TrackUploadForm />
+      <TrackUploadForm artist={artist} />
     </>
   );
 }

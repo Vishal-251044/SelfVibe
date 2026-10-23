@@ -17,3 +17,6 @@ process.env.GOOGLE_CALLBACK_URL = "http://localhost:3000/api/auth/google/callbac
 process.env.CLOUDINARY_CLOUD_NAME = "selfvibe-test";
 process.env.CLOUDINARY_API_KEY = "123456789";
 process.env.CLOUDINARY_API_SECRET = "test-cloudinary-secret";
+// Unit tests use disk storage; Cloudinary pool logic is tested with its pure helpers
+process.env.STORAGE_DRIVER = "local";
+process.env.LOCAL_STORAGE_DIR = ".storage-test";

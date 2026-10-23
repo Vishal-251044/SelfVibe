@@ -26,3 +26,4 @@ Thumbs.db
 
 # local object storage (development, STORAGE_DRIVER=local)
 .storage/
+.storage-test/

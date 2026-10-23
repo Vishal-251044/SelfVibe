@@ -89,3 +89,21 @@ export function passwordChangedEmail({ name, loginUrl }) {
     text: `Hi ${name},\n\n${line}\n\n${loginUrl}`,
   };
 }
+
+/**
+ * "Storage pool is full" alert for the Owner (PRD STO-4).
+ * @param {{ name: string, pool: string, consoleUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function storageFullEmail({ name, pool, consoleUrl }) {
+  const line = `Every Cloudinary account in the ${pool} storage pool is full or paused, so new ${pool} uploads are being rejected. Add an account to CLOUDINARY_ACCOUNTS or free up space.`;
+  return {
+    subject: `SelfVibe: the ${pool} storage pool is full`,
+    html: layout({
+      title: "Storage pool is full",
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">Hi ${escapeHtml(name)},</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Open the console", url: consoleUrl },
+    }),
+    text: `Hi ${name},\n\n${line}\n\n${consoleUrl}`,
+  };
+}

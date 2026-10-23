@@ -1,22 +1,22 @@
 "use client";
 
 /**
- * /creator entry: shows "Become a Creator" for listeners and the studio for
- * creators (based on whether an artist profile exists).
+ * /creator entry: the welcome screen before a user's first upload, the
+ * creator studio afterwards (PRD CRT-1 — no separate sign-up step).
  */
 import { useQuery } from "@tanstack/react-query";
 import { Mic2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
-import BecomeCreatorForm from "@/components/features/creator/BecomeCreatorForm";
+import CreatorWelcome from "@/components/features/creator/CreatorWelcome";
 import CreatorDashboard from "@/components/features/creator/CreatorDashboard";
 import { getMyArtist } from "@/services/creator.service";
-import { useAuthStore } from "@/store/authStore";
 import { QUERY_KEYS } from "@/utils/constants";
 
 /**
- * Load my artist profile (shared by the studio pages).
+ * Load my artist profile (shared by the studio pages). `artist` is null
+ * until the first upload.
  * @returns {import("@tanstack/react-query").UseQueryResult<{ artist: Object|null }>}
  */
 export function useMyArtist() {
@@ -40,7 +40,6 @@ export function CreatorSkeleton() {
 }
 
 export default function CreatorHome() {
-  const isCreator = useAuthStore((state) => state.user?.roles?.includes("creator"));
   const { data, isPending, isError, error, refetch } = useMyArtist();
 
   if (isPending) return <CreatorSkeleton />;
@@ -55,9 +54,5 @@ export default function CreatorHome() {
       />
     );
   }
-  return data.artist && isCreator ? (
-    <CreatorDashboard artist={data.artist} />
-  ) : (
-    <BecomeCreatorForm />
-  );
+  return data.artist ? <CreatorDashboard artist={data.artist} /> : <CreatorWelcome />;
 }

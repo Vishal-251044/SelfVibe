@@ -103,6 +103,8 @@ export const ERROR_CODES = Object.freeze({
   TRACK_NOT_READY: "TRACK_NOT_READY",
   DUPLICATE_REPORT: "DUPLICATE_REPORT",
   INVALID_STATE: "INVALID_STATE",
+  STORAGE_FULL: "STORAGE_FULL",
+  UPLOAD_LIMIT_REACHED: "UPLOAD_LIMIT_REACHED",
   RATE_LIMITED: "RATE_LIMITED",
 });
 
@@ -135,7 +137,7 @@ export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 /* ===== Music: uploads, processing, streaming (Day 4) ===== */
 
-/** Audio uploads (PRD CRT-2): MP3, WAV, FLAC up to 50 MB. */
+/** Audio uploads (PRD CRT-2): MP3, WAV, FLAC, M4A up to 50 MB. */
 export const AUDIO_UPLOAD = Object.freeze({
   maxBytes: 50 * 1024 * 1024,
   mimeTypes: Object.freeze({
@@ -146,6 +148,9 @@ export const AUDIO_UPLOAD = Object.freeze({
     "audio/wave": "wav",
     "audio/flac": "flac",
     "audio/x-flac": "flac",
+    "audio/mp4": "m4a",
+    "audio/x-m4a": "m4a",
+    "audio/m4a": "m4a",
   }),
   maxDurationSec: 20 * 60, // longer files are rejected during processing
 });
@@ -156,13 +161,10 @@ export const IMAGE_UPLOAD = Object.freeze({
   mimeTypes: Object.freeze({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }),
 });
 
-/** Transcoded renditions (PRD CRT-4): standard for free listeners, high for paid plans. */
+/** Playback copy (PRD CRT-4, STO-6): one 192 kbps MP3; the original upload is kept. */
 export const AUDIO_RENDITIONS = Object.freeze({
-  standard: { bitrateKbps: 128, codec: "mp3" },
-  high: { bitrateKbps: 320, codec: "mp3" },
+  standard: { bitrateKbps: 192, codec: "mp3" },
 });
-/** Only make the 320 kbps copy when the source is at least this good (never upscale). */
-export const HIGH_RENDITION_MIN_SOURCE_KBPS = 256;
 export const WAVEFORM_PEAK_COUNT = 160;
 
 /** Where the API is allowed to put things in object storage. */
@@ -213,4 +215,26 @@ export const JOBS = Object.freeze({
   processTrack: "process-track",
   bulkImport: "bulk-import",
   publishScheduled: "publish-scheduled",
+  syncStorageUsage: "sync-storage-usage",
 });
+
+/** Official = added by the Owner / staff; Community = uploaded by users (PRD 10.14, F51). */
+export const CATALOGS = Object.freeze(["official", "community"]);
+
+/**
+ * Cloudinary storage pools (PRD 10.13). "shared" accounts serve both pools
+ * (e.g. a single paid account).
+ */
+export const STORAGE_POOLS = Object.freeze(["official", "community", "shared"]);
+export const STORAGE_ACCOUNT_STATUS = Object.freeze(["active", "full", "paused"]);
+/** Accounts above this share of their quota get no new uploads (PRD 10.13 step 6). */
+export const STORAGE_FULL_PERCENT = 85;
+/** Default song space per account when CLOUDINARY_ACCOUNTS gives no quota (PRD 10.13.2). */
+export const STORAGE_DEFAULT_QUOTA_GB = 10;
+export const STORAGE_SYNC_EVERY_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Community upload limits per plan (PRD CRT-8): songs per user; null = unlimited.
+ * Moves to admin Settings when that page is built.
+ */
+export const UPLOAD_LIMITS = Object.freeze({ free: 20, premium: 20, creatorPro: null });

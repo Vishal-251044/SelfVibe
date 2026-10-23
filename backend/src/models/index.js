@@ -17,3 +17,4 @@ export { Album } from "./album.model.js";
 export { Report } from "./report.model.js";
 export { AuditLog } from "./auditLog.model.js";
 export { BulkImport } from "./bulkImport.model.js";
+export { StorageAccount } from "./storageAccount.model.js";

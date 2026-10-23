@@ -6,7 +6,9 @@ import { queue } from "../services/queue/index.js";
 import { processTrackJob } from "../services/trackProcessing.service.js";
 import { processBulkImportJob } from "../services/bulkImport.service.js";
 import { PUBLISH_SCHEDULED_EVERY_MS, publishScheduledJob } from "./publishScheduled.job.js";
-import { JOBS } from "../config/constants.js";
+import { syncStorageUsageJob } from "../services/storagePool.service.js";
+import { usesStoragePool } from "../services/storage/index.js";
+import { JOBS, STORAGE_SYNC_EVERY_MS } from "../config/constants.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -18,8 +20,18 @@ export async function startJobs() {
     [JOBS.processTrack]: processTrackJob,
     [JOBS.bulkImport]: processBulkImportJob,
     [JOBS.publishScheduled]: () => publishScheduledJob(),
+    [JOBS.syncStorageUsage]: () => syncStorageUsageJob(),
   });
   await queue.scheduleRepeating(JOBS.publishScheduled, PUBLISH_SCHEDULED_EVERY_MS);
+  // Cloudinary storage pool: real usage every 6 h, and once now (PRD 10.13 step 6)
+  if (usesStoragePool) {
+    await queue.scheduleRepeating(JOBS.syncStorageUsage, STORAGE_SYNC_EVERY_MS);
+    await queue.enqueue(
+      JOBS.syncStorageUsage,
+      {},
+      { jobId: `${JOBS.syncStorageUsage}-startup`, attempts: 1 }
+    );
+  }
   await queue.startWorker({ concurrency: 2 });
   logger.info(`[Jobs] background jobs running (${queue.name} queue)`);
 }

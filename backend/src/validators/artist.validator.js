@@ -10,9 +10,11 @@ const slug = z
   .trim()
   .toLowerCase()
   .regex(/^[a-z0-9-]{1,40}$/, { error: "Invalid option" });
-const imageKey = z.string().regex(/^incoming\/[su]-[0-9a-f]{24}\/[0-9a-f-]{36}\.(jpg|png|webp)$/, {
-  error: "Upload the image first",
-});
+const imageKey = z
+  .string()
+  .regex(/^(?:[a-z0-9-]{1,32}\/)?incoming\/[su]-[0-9a-f]{24}\/[0-9a-f-]{36}\.(jpg|png|webp)$/, {
+    error: "Upload the image first",
+  });
 const optionalUrl = z
   .union([
     z.url({ protocol: /^https?$/, error: "Enter a full link (https://…)" }).max(300),

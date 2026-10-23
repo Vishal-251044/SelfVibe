@@ -4,6 +4,7 @@
 import { z } from "zod";
 import {
   BULK_UPLOAD_MAX_FILES,
+  CATALOGS,
   LANGUAGES,
   MOODS,
   PROCESSING_STATES,
@@ -21,10 +22,13 @@ const slug = z
   .trim()
   .toLowerCase()
   .regex(/^[a-z0-9-]{1,40}$/, { error: "Invalid option" });
-// Storage keys issued by /uploads/sign (checked again against the owner in the service)
-const storageKey = z.string().regex(/^incoming\/[su]-[0-9a-f]{24}\/[0-9a-f-]{36}\.[a-z0-9]{2,5}$/, {
-  error: "Upload the file first",
-});
+// Storage keys issued by /uploads/sign, optionally on a storage pool account
+// ("<account>/incoming/…"); checked again against the owner in the service
+const storageKey = z
+  .string()
+  .regex(/^(?:[a-z0-9-]{1,32}\/)?incoming\/[su]-[0-9a-f]{24}\/[0-9a-f-]{36}\.[a-z0-9]{2,5}$/, {
+    error: "Upload the file first",
+  });
 
 export const signUploadSchema = z.object({
   kind: z.enum(["audio", "image"]),
@@ -58,6 +62,13 @@ export const creatorCreateTrackSchema = z.object({
   audioKey: storageKey,
   coverKey: storageKey.nullable().optional(),
   rightsConfirmed: z.literal(true, { error: "Confirm that you own the rights to this audio" }),
+  // Used for the creator profile made on a user's first upload (PRD CRT-1)
+  stageName: z
+    .string()
+    .trim()
+    .min(2, { error: "Use at least 2 characters" })
+    .max(60, { error: "Use at most 60 characters" })
+    .optional(),
 });
 
 /** PATCH /api/tracks/:id — creator edit (no artist / release fields). */
@@ -165,6 +176,7 @@ export const listTracksQuerySchema = z.object({
   artistId: objectId("artist").optional(),
   addedVia: z.enum(TRACK_ADDED_VIA).optional(),
   processing: z.enum(PROCESSING_STATES).optional(),
+  catalog: z.enum(CATALOGS).optional(),
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });

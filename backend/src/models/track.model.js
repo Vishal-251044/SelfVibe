@@ -7,6 +7,7 @@
  */
 import mongoose from "mongoose";
 import {
+  CATALOGS,
   PROCESSING_STATES,
   RELEASE_INTENTS,
   TRACK_ADDED_VIA,
@@ -51,6 +52,14 @@ const trackSchema = new mongoose.Schema(
     lyrics: { type: String, default: "" },
 
     source: { type: String, enum: TRACK_SOURCE, default: "upload" },
+    // Official (staff) vs Community (user uploads) — PRD 10.14
+    catalog: { type: String, enum: CATALOGS, default: "community" },
+    // Where the files live (PRD 10.13 step 4): provider + pool account, and total bytes stored
+    storage: {
+      provider: { type: String, default: null }, // "cloudinary" | "s3" | "local"
+      accountKey: { type: String, default: null }, // Cloudinary account key (pool) or null
+      bytes: { type: Number, default: 0, min: 0 }, // original + playback copy
+    },
     addedVia: { type: String, enum: TRACK_ADDED_VIA, default: "creator" },
     rightsConfirmed: { type: Boolean, default: false }, // PRD CRT-6
     // Royalty-free imports keep their licence and credit (e.g. CC BY)
@@ -90,6 +99,8 @@ trackSchema.index({ "audio.sourceKey": 1 });
 trackSchema.index({ coverSourceKey: 1 }, { sparse: true });
 trackSchema.index({ vibes: 1 });
 trackSchema.index({ status: 1 });
+trackSchema.index({ catalog: 1, status: 1 });
+trackSchema.index({ "storage.accountKey": 1 });
 trackSchema.index({ status: 1, scheduledAt: 1 });
 trackSchema.index({ artistId: 1, createdAt: -1 });
 trackSchema.index({ uploadedBy: 1, createdAt: -1 });
