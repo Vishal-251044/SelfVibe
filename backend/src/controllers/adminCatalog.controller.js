@@ -6,6 +6,7 @@ import * as artistService from "../services/artist.service.js";
 import * as albumService from "../services/album.service.js";
 import { assertUploaded, processCoverUpload } from "../services/mediaUpload.service.js";
 import { assertTagsExist } from "../services/track.service.js";
+import { getOnboardingOptions } from "../services/onboarding.service.js";
 import { toAlbum, toManagedArtist, toManagedTrack } from "../services/track.serializer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendSuccess } from "../utils/ApiResponse.js";
@@ -19,6 +20,12 @@ async function coverFromUpload(req, imageKey, kind, id) {
   await assertUploaded(imageKey, { staffId: req.staff.userId }, "image", "image");
   return (await processCoverUpload(imageKey, kind, String(id))).url;
 }
+
+/** GET /api/admin/taxonomy — active genres and vibes for the track and artist forms */
+export const getTaxonomy = asyncHandler(async (req, res) => {
+  const { genres, vibes } = await getOnboardingOptions();
+  return sendSuccess(res, { message: "Taxonomy fetched", data: { genres, vibes } });
+});
 
 /* ===== Artists ===== */
 

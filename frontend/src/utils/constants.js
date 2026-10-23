@@ -40,11 +40,14 @@ export const PROTECTED_APP_PATHS = [
   "/search",
   "/library",
   "/playlist",
-  "/artist",
   "/studio",
   "/profile",
   "/onboarding",
+  "/creator",
 ];
+
+/** App pages anyone can open (shared links); a session is used when there is one. */
+export const PUBLIC_APP_PATHS = ["/artist"];
 
 /** Primary in-app destinations (MOB-2: Home · Search · Library · AI Studio · Profile). */
 export const APP_NAV_ITEMS = [
@@ -137,6 +140,17 @@ export const QUERY_KEYS = {
   onboardingOptions: ["onboarding", "options"],
   taste: ["users", "me", "taste"],
   /** @param {string[]} genres @param {string[]} vibes */
+  myArtist: ["creator", "me"],
+  myTracks: (page) => ["creator", "tracks", page],
+  /** @param {string} idOrSlug */
+  artistPage: (idOrSlug) => ["artists", idOrSlug],
+  adminTaxonomy: ["admin", "taxonomy"],
+  adminTracks: (filters) => ["admin", "tracks", filters],
+  adminTrack: (trackId) => ["admin", "track", trackId],
+  adminArtists: (filters) => ["admin", "artists", filters],
+  adminArtist: (artistId) => ["admin", "artist", artistId],
+  adminAlbum: (albumId) => ["admin", "album", albumId],
+  adminBulk: (bulkId) => ["admin", "bulk", bulkId],
   artistSuggestions: (genres, vibes) => [
     "onboarding",
     "artists",

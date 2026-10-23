@@ -55,3 +55,31 @@ export const pageTransition = {
 /** Hover / tap feedback for cards and buttons. */
 export const hoverLift = { y: -4, transition: { duration: DURATION.fast } };
 export const tapPress = { scale: 0.97 };
+
+/** Backdrop behind sheets and dialogs. */
+export const overlayFade = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: DURATION.base } },
+  exit: { opacity: 0, transition: { duration: DURATION.fast } },
+};
+
+/** Bottom sheet on phones: slides up from the bottom edge. */
+export const sheetUp = {
+  hidden: { y: "100%" },
+  visible: { y: 0, transition: { duration: DURATION.slow, ease: EASE_OUT } },
+  exit: { y: "100%", transition: { duration: DURATION.base, ease: EASE_OUT } },
+};
+
+/** Centred dialog on larger screens: fades and scales in. */
+export const dialogPop = {
+  hidden: { opacity: 0, scale: 0.96, y: 8 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: DURATION.base, ease: EASE_OUT } },
+  exit: { opacity: 0, scale: 0.98, transition: { duration: DURATION.fast } },
+};
+
+/** Rows that enter and leave a list (uploads, results). */
+export const listItem = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: DURATION.base, ease: EASE_OUT } },
+  exit: { opacity: 0, transition: { duration: DURATION.fast } },
+};

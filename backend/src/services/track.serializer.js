@@ -38,6 +38,7 @@ export function toPublicTrack(track) {
     genres: track.genres ?? [],
     vibes: track.vibes ?? [],
     mood: track.mood ?? null,
+    bpm: track.bpm ?? null,
     language: track.language ?? null,
     explicit: Boolean(track.explicit),
     lyrics: track.lyrics ?? "",

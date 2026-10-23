@@ -61,15 +61,15 @@ export const ADMIN_NAV_SECTIONS = [
         label: "Music",
         href: "/admin/music",
         icon: Music4,
-        permission: "music.manage",
-        ready: false,
+        permission: "catalog.edit",
+        ready: true,
       },
       {
         label: "Artists & Albums",
         href: "/admin/artists",
         icon: Disc3,
         permission: "catalog.edit",
-        ready: false,
+        ready: true,
       },
       {
         label: "Genres & Vibes",

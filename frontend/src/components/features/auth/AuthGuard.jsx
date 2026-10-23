@@ -6,6 +6,8 @@
  *   (src/proxy.js already redirects most of them before the page renders).
  * - Sends signed-in users who have not done the taste quiz to /onboarding
  *   first (PRD ONB-1), unless the page itself is the quiz.
+ * - `optional` pages (e.g. public artist pages) render for everyone: the
+ *   session is restored when there is one, but nobody is redirected.
  */
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,8 +20,13 @@ import { getPostAuthRedirect } from "@/utils/genericFunctions";
  * @param {Object} props
  * @param {React.ReactNode} props.children
  * @param {boolean} [props.allowIncompleteOnboarding=false] - true for the quiz page itself
+ * @param {boolean} [props.optional=false] - Public page: never redirect or block
  */
-export default function AuthGuard({ children, allowIncompleteOnboarding = false }) {
+export default function AuthGuard({
+  children,
+  allowIncompleteOnboarding = false,
+  optional = false,
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const status = useAuthStore((state) => state.status);
@@ -35,12 +42,15 @@ export default function AuthGuard({ children, allowIncompleteOnboarding = false 
   }, [bootstrap]);
 
   useEffect(() => {
+    if (optional) return;
     if (status === "unauthenticated") {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
     } else if (needsOnboarding) {
       router.replace(getPostAuthRedirect(user, pathname));
     }
-  }, [status, needsOnboarding, user, pathname, router]);
+  }, [optional, status, needsOnboarding, user, pathname, router]);
+
+  if (optional) return children;
 
   if (status === "error") return <SessionErrorState onRetry={retryBootstrap} />;
   if (status !== "authenticated" || needsOnboarding) {

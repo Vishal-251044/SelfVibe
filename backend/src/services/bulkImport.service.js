@@ -231,6 +231,21 @@ export async function processBulkImportJob({ data }) {
 async function createTrackFromRow(bulk, file, row, { validGenres, validVibes }) {
   const { defaults } = bulk;
 
+  // Check everything first and report all problems of the row at once — and
+  // before anything is created, so a bad row never leaves an orphan artist
+  const problems = [];
+  const unknownGenres = (row?.genres ?? []).filter((slug) => !validGenres.has(slug));
+  const unknownVibes = (row?.vibes ?? []).filter((slug) => !validVibes.has(slug));
+  if (!row?.artist && !defaults.artistId) {
+    problems.push("No artist — add an artist column or choose a default artist");
+  }
+  if (unknownGenres.length) problems.push(`Unknown genre: ${unknownGenres.join(", ")}`);
+  if (unknownVibes.length) problems.push(`Unknown vibe: ${unknownVibes.join(", ")}`);
+  if (!row?.genres?.length && !defaults.genres.length) {
+    problems.push("No genre — add a genres column or choose default genres");
+  }
+  if (problems.length) throw new Error(problems.join(" · "));
+
   // Artist: CSV name (found or created as an official artist), else the default
   let artistId = defaults.artistId;
   if (row?.artist) {
@@ -239,12 +254,6 @@ async function createTrackFromRow(bulk, file, row, { validGenres, validVibes }) 
       (await createOfficialArtist({ stageName: row.artist }, bulk.createdBy));
     artistId = artist._id;
   }
-  if (!artistId) throw new Error("No artist — add an artist column or choose a default artist");
-
-  const unknownGenres = (row?.genres ?? []).filter((slug) => !validGenres.has(slug));
-  const unknownVibes = (row?.vibes ?? []).filter((slug) => !validVibes.has(slug));
-  if (unknownGenres.length) throw new Error(`Unknown genre: ${unknownGenres.join(", ")}`);
-  if (unknownVibes.length) throw new Error(`Unknown vibe: ${unknownVibes.join(", ")}`);
 
   // Album: found or created for this artist
   let albumId = null;

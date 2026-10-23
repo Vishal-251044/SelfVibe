@@ -42,6 +42,9 @@ const idParams = validate({ params: idParamsSchema });
 const withTrackBody = (body) => validate({ params: trackIdParamsSchema, body });
 const withIdBody = (body) => validate({ params: idParamsSchema, body });
 
+// Genres and vibes for the forms
+router.get("/taxonomy", canEditCatalog, adminCatalog.getTaxonomy);
+
 // Uploads
 router.post("/uploads/sign", canEditCatalog, validate({ body: signUploadSchema }), signStaffUpload);
 

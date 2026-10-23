@@ -1,21 +1,25 @@
 "use client";
 
 /**
- * Avatar button with a dropdown: who is signed in, Profile, Log out.
+ * Avatar button with a dropdown: who is signed in, Profile, Creator studio,
+ * Log out. Guests on public pages (e.g. an artist page) see "Log in" instead.
  * Closes on outside click, Escape and navigation.
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, UserRound } from "lucide-react";
+import { LogIn, LogOut, Mic2, UserRound } from "lucide-react";
+import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 import { useAuthStore } from "@/store/authStore";
 import { slideDown } from "@/utils/animations";
 
 export default function UserMenu() {
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
+  const status = useAuthStore((state) => state.status);
   const logout = useAuthStore((state) => state.logout);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -44,7 +48,16 @@ export default function UserMenu() {
     router.replace("/login");
   };
 
-  if (!user) return null;
+  if (!user) {
+    if (status !== "unauthenticated") return null;
+    return (
+      <Button href={`/login?next=${encodeURIComponent(pathname)}`} variant="outline">
+        <LogIn size={16} aria-hidden />
+        Log in
+      </Button>
+    );
+  }
+  const isCreator = user.roles?.includes("creator");
 
   return (
     <div ref={menuRef} className="relative">
@@ -81,6 +94,15 @@ export default function UserMenu() {
             >
               <UserRound size={18} aria-hidden />
               Profile
+            </Link>
+            <Link
+              href="/creator"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+              className="flex min-h-11 items-center gap-3 px-4 text-sm text-fg-muted transition hover:bg-neon-dim hover:text-neon"
+            >
+              <Mic2 size={18} aria-hidden />
+              {isCreator ? "Creator studio" : "Become a creator"}
             </Link>
             <button
               type="button"
