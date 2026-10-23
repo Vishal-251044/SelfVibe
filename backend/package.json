@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "test": "node --test --import ./tests/setup.js \"tests/**/*.test.js\"",
     "create-owner": "node scripts/createOwner.js",
-    "seed:taxonomy": "node scripts/seedTaxonomy.js"
+    "seed:taxonomy": "node scripts/seedTaxonomy.js",
+    "seed:artists": "node scripts/seedArtists.js"
   },
   "type": "module",
   "private": true,

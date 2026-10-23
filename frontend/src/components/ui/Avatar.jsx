@@ -13,13 +13,14 @@ const SIZES = {
   sm: { box: "size-9 text-xs", px: 36 },
   md: { box: "size-11 text-sm", px: 44 },
   lg: { box: "size-20 text-2xl", px: 80 },
+  xl: { box: "size-24 text-3xl sm:size-28", px: 112 },
 };
 
 /**
  * @param {Object} props
  * @param {string} [props.name] - Used for initials and alt text
  * @param {string|null} [props.src] - Photo URL
- * @param {"sm"|"md"|"lg"} [props.size="md"]
+ * @param {"sm"|"md"|"lg"|"xl"} [props.size="md"]
  * @param {string} [props.className]
  */
 export default function Avatar({ name, src, size = "md", className }) {

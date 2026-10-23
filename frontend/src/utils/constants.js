@@ -136,4 +136,11 @@ export const ONBOARDING_LIMITS = {
 export const QUERY_KEYS = {
   onboardingOptions: ["onboarding", "options"],
   taste: ["users", "me", "taste"],
+  /** @param {string[]} genres @param {string[]} vibes */
+  artistSuggestions: (genres, vibes) => [
+    "onboarding",
+    "artists",
+    [...genres].sort(),
+    [...vibes].sort(),
+  ],
 };

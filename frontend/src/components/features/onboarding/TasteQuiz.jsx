@@ -20,7 +20,7 @@ import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import SelectableTile from "@/components/features/onboarding/SelectableTile";
 import ArtistPicker from "@/components/features/onboarding/ArtistPicker";
 import { useAuthStore } from "@/store/authStore";
-import { getOnboardingOptions } from "@/services/onboarding.service";
+import { getArtistSuggestions, getOnboardingOptions } from "@/services/onboarding.service";
 import * as userService from "@/services/user.service";
 import { ONBOARDING_LIMITS, QUERY_KEYS } from "@/utils/constants";
 import { cn, getSafeRedirect } from "@/utils/genericFunctions";
@@ -47,7 +47,7 @@ const STEPS = [
     key: "artists",
     command: "selfvibe taste --artists",
     title: "Any artists you love?",
-    hint: "Optional — pick a few, or finish now.",
+    hint: "Picked for your genres and vibes. Optional — choose a few, or finish now.",
     min: 0,
     max: ONBOARDING_LIMITS.maxArtists,
   },
@@ -88,6 +88,16 @@ export default function TasteQuiz() {
   };
 
   const step = STEPS[stepIndex];
+  const pickedGenres = [...selectionFor("genres")];
+  const pickedVibes = [...selectionFor("vibes")];
+
+  // Step 3 suggests artists that match steps 1–2 (refetched if the picks change)
+  const artistsQuery = useQuery({
+    queryKey: QUERY_KEYS.artistSuggestions(pickedGenres, pickedVibes),
+    queryFn: ({ signal }) =>
+      getArtistSuggestions({ genres: pickedGenres, vibes: pickedVibes }, { signal }),
+    enabled: step.key === "artists",
+  });
   const selected = selectionFor(step.key);
   const isLastStep = stepIndex === STEPS.length - 1;
   const canContinue = selected.size >= step.min;
@@ -239,7 +249,16 @@ export default function TasteQuiz() {
               )}
 
               {options && !isLoading && step.key === "artists" && (
-                <ArtistPicker artists={options.artists} selected={selected} onToggle={toggle} />
+                <ArtistPicker
+                  suggestions={artistsQuery.data}
+                  isLoading={artistsQuery.isPending}
+                  isError={artistsQuery.isError}
+                  onRetry={() => artistsQuery.refetch()}
+                  selected={selected}
+                  onToggle={toggle}
+                  genres={options.genres}
+                  pickedGenres={pickedGenres}
+                />
               )}
             </div>
           </motion.div>

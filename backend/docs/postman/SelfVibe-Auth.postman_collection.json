@@ -436,6 +436,33 @@
           }
         },
         {
+          "name": "Artist suggestions for picks (India first)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/onboarding/artists?genres=punjabi,hip-hop,pop&vibes=gym,party",
+              "host": ["{{baseUrl}}"],
+              "path": ["onboarding", "artists"],
+              "query": [
+                {
+                  "key": "genres",
+                  "value": "punjabi,hip-hop,pop"
+                },
+                {
+                  "key": "vibes",
+                  "value": "gym,party"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Submit quiz",
           "request": {
             "method": "POST",

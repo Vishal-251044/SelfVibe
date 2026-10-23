@@ -12,7 +12,11 @@ import { ERROR_CODES, QUIZ_TASTE_WEIGHTS } from "../config/constants.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
 
-const QUIZ_ARTIST_LIMIT = 24;
+const QUIZ_ARTISTS_PER_GROUP = 12;
+const ARTIST_CANDIDATE_LIMIT = 300;
+const ARTIST_FIELDS = "stageName avatar avatarCredit verified country genres vibes popularity";
+/** Points per matching tag when ranking artists for the quiz. */
+const ARTIST_MATCH_WEIGHTS = Object.freeze({ genre: 3, vibe: 2 });
 const TAXONOMY_FIELDS = "slug name icon colour description";
 
 /**
@@ -33,30 +37,74 @@ export function buildQuizTasteWeights({ genres, vibes, artists = [] }) {
 }
 
 /**
- * Everything the quiz can offer: active genres and vibes, plus popular artists.
- * @returns {Promise<{ genres: Object[], vibes: Object[], artists: Object[] }>}
+ * The genres and vibes the quiz can offer (artists come from getArtistSuggestions,
+ * because they depend on what the user picked).
+ * @returns {Promise<{ genres: Object[], vibes: Object[] }>}
  */
 export async function getOnboardingOptions() {
-  const [genres, vibes, artists] = await Promise.all([
+  const [genres, vibes] = await Promise.all([
     Genre.find({ active: true }).sort({ order: 1 }).select(TAXONOMY_FIELDS).lean(),
     Vibe.find({ active: true }).sort({ order: 1 }).select(TAXONOMY_FIELDS).lean(),
-    ArtistProfile.find()
-      .sort({ followersCount: -1, createdAt: -1 })
-      .limit(QUIZ_ARTIST_LIMIT)
-      .select("stageName avatar verified")
-      .lean(),
   ]);
 
   const stripId = ({ _id, ...rest }) => rest; // slugs are the public ids for taxonomy
-  return {
-    genres: genres.map(stripId),
-    vibes: vibes.map(stripId),
-    artists: artists.map((artist) => ({
+  return { genres: genres.map(stripId), vibes: vibes.map(stripId) };
+}
+
+/**
+ * How well an artist matches the quiz picks (pure — unit tested).
+ * Genre matches count most, then vibes; popularity only breaks ties.
+ * @param {{ genres?: string[], vibes?: string[], popularity?: number }} artist
+ * @param {{ genres: string[], vibes: string[] }} picks
+ * @returns {number} 0 when nothing matches (before the popularity tie-breaker)
+ */
+export function scoreArtistForTaste(artist, picks) {
+  const overlap = (tags = [], wanted = []) => tags.filter((tag) => wanted.includes(tag)).length;
+  const genreHits = overlap(artist.genres, picks.genres);
+  const vibeHits = overlap(artist.vibes, picks.vibes);
+  const relevance = genreHits * ARTIST_MATCH_WEIGHTS.genre + vibeHits * ARTIST_MATCH_WEIGHTS.vibe;
+  return relevance + (artist.popularity ?? 0) / 100; // popularity adds < 1 point
+}
+
+/**
+ * Rank artists for the quiz: best matches first, topped up with popular
+ * artists, split into India (shown first) and the rest of the world.
+ * @param {{ genres: string[], vibes: string[] }} picks - Genre / vibe slugs chosen so far
+ * @returns {Promise<{ india: Object[], world: Object[] }>}
+ */
+export async function getArtistSuggestions(picks) {
+  const hasPicks = picks.genres.length > 0 || picks.vibes.length > 0;
+  const matchFilter = hasPicks
+    ? { $or: [{ genres: { $in: picks.genres } }, { vibes: { $in: picks.vibes } }] }
+    : {};
+
+  // Matching artists, plus the most popular ones so short lists are topped up
+  const [matches, popular] = await Promise.all([
+    ArtistProfile.find(matchFilter).limit(ARTIST_CANDIDATE_LIMIT).select(ARTIST_FIELDS).lean(),
+    ArtistProfile.find()
+      .sort({ popularity: -1, followersCount: -1 })
+      .limit(QUIZ_ARTISTS_PER_GROUP * 2)
+      .select(ARTIST_FIELDS)
+      .lean(),
+  ]);
+
+  const unique = new Map([...matches, ...popular].map((artist) => [String(artist._id), artist]));
+  const ranked = [...unique.values()]
+    .map((artist) => ({ artist, score: scoreArtistForTaste(artist, picks) }))
+    .sort((a, b) => b.score - a.score)
+    .map(({ artist }) => ({
       id: String(artist._id),
       stageName: artist.stageName,
       avatar: artist.avatar ?? null,
+      avatarCreditUrl: artist.avatarCredit?.url ?? null,
       verified: artist.verified,
-    })),
+      country: artist.country,
+      genres: artist.genres ?? [],
+    }));
+
+  return {
+    india: ranked.filter((artist) => artist.country === "IN").slice(0, QUIZ_ARTISTS_PER_GROUP),
+    world: ranked.filter((artist) => artist.country !== "IN").slice(0, QUIZ_ARTISTS_PER_GROUP),
   };
 }
 

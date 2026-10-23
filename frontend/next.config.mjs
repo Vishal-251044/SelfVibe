@@ -19,11 +19,13 @@ const nextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
 
-  // Avatars: Cloudinary uploads and Google profile photos
+  // Avatars: Cloudinary uploads, Google profile photos, Wikimedia Commons artist photos
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "upload.wikimedia.org" },
+      { protocol: "https", hostname: "thumb.wikimedia.org" },
     ],
   },
 

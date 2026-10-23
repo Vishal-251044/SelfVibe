@@ -47,3 +47,16 @@ export const onboardingSchema = z.object({
     .optional()
     .default([]),
 });
+
+/** Comma-separated slugs in a query string, e.g. ?genres=lo-fi,indie */
+const slugListQuery = (max) =>
+  z
+    .string()
+    .optional()
+    .transform((value) => (value ? value.split(",").filter(Boolean) : []))
+    .pipe(z.array(slugField).max(max, { error: `Up to ${max} values` }));
+
+export const artistSuggestionsQuerySchema = z.object({
+  genres: slugListQuery(ONBOARDING_LIMITS.maxGenres),
+  vibes: slugListQuery(ONBOARDING_LIMITS.maxVibes),
+});
