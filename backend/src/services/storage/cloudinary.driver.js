@@ -25,6 +25,7 @@ const ROOT_FOLDER = "selfvibe"; // keeps SelfVibe files together in each account
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
 const REQUEST_TIMEOUT_MS = 60_000;
 const UPLOAD_SIGNATURE_TTL_SECONDS = 60 * 60; // Cloudinary accepts a signature for 1 hour
+const DEFAULT_DOWNLOAD_TTL_SECONDS = 60 * 60; // server-side downloads (processing)
 
 /**
  * The configured account for a key (or by key name).
@@ -90,6 +91,29 @@ export function signedDeliveryUrl({ account, publicId, format, resourceType }) {
     .replace(/\//g, "_")
     .slice(0, 8);
   return `${CDN_BASE}/${account.cloudName}/${resourceType}/authenticated/s--${signature}--/${toSign}`;
+}
+
+/**
+ * Expiring private download URL for an authenticated file (Upload API "download").
+ * @param {ReturnType<typeof locate>} location
+ * @param {number} ttlSeconds
+ * @returns {string}
+ */
+export function privateDownloadUrl({ account, publicId, format, resourceType, type }, ttlSeconds) {
+  const now = Math.floor(Date.now() / 1000);
+  const params = {
+    public_id: publicId,
+    format,
+    type,
+    expires_at: now + ttlSeconds,
+    timestamp: now,
+  };
+  const query = new URLSearchParams({
+    ...params,
+    api_key: account.apiKey,
+    signature: signParams(params, account.apiSecret),
+  });
+  return `${API_BASE}/${account.cloudName}/${resourceType}/download?${query}`;
 }
 
 /**
@@ -187,13 +211,13 @@ export const cloudinaryDriver = {
     };
   },
 
-  // Signed URL for an authenticated file. Cloudinary signed URLs do not expire on their own
-  // (expiring tokens need a paid "token-based authentication" add-on), but they cannot be
-  // guessed or edited, and our API only hands them to signed-in listeners.
-  async createDownloadUrl(key) {
+  // Audio: a signed, EXPIRING private download link (PRD 10.13 step 5). Verified against
+  // Cloudinary: it supports range requests (seeking), allows browser playback (CORS) and
+  // answers 401 once expired. Images are public CDN URLs.
+  async createDownloadUrl(key, { ttlSeconds = DEFAULT_DOWNLOAD_TTL_SECONDS } = {}) {
     const location = locate(key);
     return location.type === "authenticated"
-      ? signedDeliveryUrl(location)
+      ? privateDownloadUrl(location, ttlSeconds)
       : cloudinaryDriver.publicUrl(key);
   },
 
