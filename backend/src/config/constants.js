@@ -128,6 +128,8 @@ export const ERROR_CODES = Object.freeze({
   STORAGE_FULL: "STORAGE_FULL",
   UPLOAD_LIMIT_REACHED: "UPLOAD_LIMIT_REACHED",
   RATE_LIMITED: "RATE_LIMITED",
+  ALREADY_EXISTS: "ALREADY_EXISTS",
+  IN_USE: "IN_USE",
 });
 
 /* ===== Onboarding & taste profile ===== */
@@ -287,3 +289,70 @@ export const COMMENT_SORTS = Object.freeze(["newest", "top"]);
 export const COMMENT_RATE_LIMIT = Object.freeze({ max: 10, windowMs: 10 * 60 * 1000 });
 /** More links than this in one comment is treated as spam. */
 export const COMMENT_MAX_LINKS = 2;
+
+/* ===== Search, browse & voice (Day 7) ===== */
+
+/** The All · Official · Community switch (PRD CAT-2). */
+export const CATALOG_FILTERS = Object.freeze(["all", "official", "community"]);
+/** Icons the Admin Console can pick for genres / vibes (same list as the web app's registry). */
+export const TAXONOMY_ICONS = Object.freeze([
+  "Clapperboard",
+  "CodeXml",
+  "Coffee",
+  "Drum",
+  "Dumbbell",
+  "Flame",
+  "Guitar",
+  "Headphones",
+  "Heart",
+  "MicVocal",
+  "Moon",
+  "Music2",
+  "PartyPopper",
+  "Piano",
+  "Plane",
+  "Radio",
+  "Smile",
+  "Sparkles",
+  "Sun",
+  "Target",
+  "Waves",
+  "Zap",
+]);
+export const SEARCH_QUERY_MAX = 100;
+export const SEARCH_RESULTS = Object.freeze({ tracks: 20, artists: 8, playlists: 8, genres: 8 });
+export const RECENT_SEARCHES_MAX = 10;
+/** Trending = most plays in the last 7 days (roadmap Day 7), cached 10 minutes. */
+export const TRENDING_WINDOW_DAYS = 7;
+export const TRENDING_CACHE_SECONDS = 10 * 60;
+export const BROWSE_PAGE_SIZE = 30;
+/** Voice command log keeps text only, for 30 days (PRD VOC-7). */
+export const VOICE_LOG_TTL_SECONDS = 30 * 24 * 60 * 60;
+export const VOICE_LANGUAGES = Object.freeze(["en-IN", "hi-IN"]);
+/** "Play <name>": below this score the app shows the top 3 to choose from (PRD VOC-4). */
+export const VOICE_CONFIDENT_SCORE = 0.82;
+/** What a voice command was understood as (frontend parser → POST /voice/log). */
+export const VOICE_INTENTS = Object.freeze([
+  "next",
+  "previous",
+  "pause",
+  "resume",
+  "volumeUp",
+  "volumeDown",
+  "volumeSet",
+  "mute",
+  "unmute",
+  "like",
+  "unlike",
+  "shuffleOn",
+  "shuffleOff",
+  "repeatOne",
+  "repeatOff",
+  "whatsPlaying",
+  "play",
+  "addToPlaylist",
+  "unknown",
+]);
+/** How a voice command ended. */
+export const VOICE_OUTCOMES = Object.freeze(["done", "picker", "not_found", "failed"]);
+export const VOICE_TRANSCRIPT_MAX = 200;

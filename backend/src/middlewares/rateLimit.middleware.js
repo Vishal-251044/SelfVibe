@@ -155,3 +155,21 @@ export const libraryWriteLimiter = createLimiter({
   message: "Too many changes at once. Please slow down.",
   keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
 });
+
+/** Search-as-you-type and voice lookups: 120 per minute per user / IP. */
+export const searchLimiter = createLimiter({
+  name: "search",
+  windowMs: 60 * 1000,
+  limit: 120,
+  message: "Too many searches. Please wait a moment.",
+  keyGenerator: (req) => (req.auth?.userId ? `user:${req.auth.userId}` : ipKeyGenerator(req.ip)),
+});
+
+/** Voice command log: 60 per minute per user / IP. */
+export const voiceLogLimiter = createLimiter({
+  name: "voice-log",
+  windowMs: 60 * 1000,
+  limit: 60,
+  message: "Too many voice commands. Please wait a moment.",
+  keyGenerator: (req) => (req.auth?.userId ? `user:${req.auth.userId}` : ipKeyGenerator(req.ip)),
+});

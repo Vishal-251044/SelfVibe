@@ -4,7 +4,13 @@
  * and stripped from JSON output.
  */
 import mongoose from "mongoose";
-import { PLANS, STAFF_ROLES, USER_ROLES, USER_STATUS } from "../config/constants.js";
+import {
+  PLANS,
+  STAFF_ROLES,
+  USER_ROLES,
+  USER_STATUS,
+  CATALOG_FILTERS,
+} from "../config/constants.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -50,6 +56,13 @@ const userSchema = new mongoose.Schema(
     plan: { type: String, enum: PLANS, default: "free" },
     aiCredits: { type: Number, default: 0, min: 0 },
     onboardingDone: { type: Boolean, default: false },
+    // All · Official · Community switch, remembered per user (PRD CAT-2)
+    catalogFilter: { type: String, enum: CATALOG_FILTERS, default: "all" },
+    // Last searches, newest first (PRD SRC-3)
+    recentSearches: {
+      type: [{ _id: false, query: { type: String, maxlength: 100 }, at: { type: Date } }],
+      default: [],
+    },
     lastLoginAt: { type: Date, default: null },
   },
   {

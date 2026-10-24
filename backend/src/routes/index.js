@@ -18,6 +18,10 @@ import trackRoutes from "./track.routes.js";
 import creatorRoutes from "./creator.routes.js";
 import artistRoutes from "./artist.routes.js";
 import reportRoutes from "./report.routes.js";
+import searchRoutes from "./search.routes.js";
+import browseRoutes from "./browse.routes.js";
+import voiceRoutes from "./voice.routes.js";
+import adminTaxonomyRoutes from "./adminTaxonomy.routes.js";
 import { requireDatabase } from "../middlewares/database.middleware.js";
 
 const router = Router();
@@ -41,7 +45,11 @@ router.use(listeningRoutes); // /events, /history
 router.use(libraryRoutes); // /likes, /follow, /follows
 router.use("/playlists", playlistRoutes);
 router.use("/comments", commentRoutes);
+router.use("/search", searchRoutes);
+router.use(browseRoutes); // /browse/*, /trending, /new-releases
+router.use("/voice", voiceRoutes);
 router.use("/admin/auth", adminAuthRoutes);
 router.use("/admin", adminMusicRoutes);
+router.use("/admin", adminTaxonomyRoutes); // /admin/genres, /admin/vibes
 
 export default router;

@@ -2,7 +2,7 @@
  * Zod schemas for /api/users/me (profile edit and taste onboarding).
  */
 import { z } from "zod";
-import { ONBOARDING_LIMITS } from "../config/constants.js";
+import { CATALOG_FILTERS, ONBOARDING_LIMITS } from "../config/constants.js";
 
 const slugField = z
   .string()
@@ -25,6 +25,10 @@ export const updateProfileSchema = z
     // A Cloudinary URL from the avatar upload, or null to remove the photo
     avatar: z
       .union([z.url({ protocol: /^https$/, error: "Invalid photo URL" }).max(500), z.null()])
+      .optional(),
+    // All · Official · Community switch, remembered per user (PRD CAT-2)
+    catalogFilter: z
+      .enum(CATALOG_FILTERS, { error: "Choose all, official or community" })
       .optional(),
   })
   .strict()

@@ -44,7 +44,7 @@ async function getOwnedPlaylist(playlistId, userId) {
  * @param {Object[]} playlists - Lean playlists
  * @returns {Promise<Map<string, string[]>>} playlistId → cover URLs
  */
-async function mosaicCovers(playlists) {
+export async function mosaicCovers(playlists) {
   const firstIds = playlists.flatMap((playlist) =>
     playlist.coverUrl ? [] : playlist.tracks.slice(0, 12).map((entry) => entry.trackId)
   );

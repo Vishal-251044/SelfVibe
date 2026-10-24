@@ -52,6 +52,17 @@ artistProfileSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string" } } }
 );
 artistProfileSchema.index({ stageName: 1 });
+
+// A renamed artist renames itself on every track (search matches "song by artist")
+artistProfileSchema.pre("save", function rememberRename() {
+  this.$locals.isRenamed = !this.isNew && this.isModified("stageName");
+});
+artistProfileSchema.post("save", async function renameOnTracks(artist) {
+  if (!artist.$locals.isRenamed) return;
+  await mongoose
+    .model("Track")
+    .updateMany({ artistId: artist._id }, { $set: { artistName: artist.stageName } });
+});
 artistProfileSchema.index({ genres: 1 });
 artistProfileSchema.index({ vibes: 1 });
 

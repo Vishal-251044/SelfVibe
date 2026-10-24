@@ -25,6 +25,7 @@ export function toPublicUser(user) {
     roles: user.roles,
     plan: user.plan,
     onboardingDone: user.onboardingDone,
+    catalogFilter: user.catalogFilter ?? "all",
     createdAt: user.createdAt,
   };
 }
@@ -62,7 +63,7 @@ export async function getUserById(userId) {
 /**
  * Update the signed-in user's profile (PATCH /users/me).
  * @param {string} userId
- * @param {{ name?: string, bio?: string, avatar?: string|null }} changes - Validated input
+ * @param {{ name?: string, bio?: string, avatar?: string|null, catalogFilter?: string }} changes - Validated input
  * @returns {Promise<Object>} The updated user document
  * @throws {ApiError} 400 INVALID_UPLOAD when the avatar URL is not this user's upload
  */
@@ -71,6 +72,7 @@ export async function updateProfile(userId, changes) {
 
   if (changes.name !== undefined) user.name = changes.name;
   if (changes.bio !== undefined) user.bio = changes.bio;
+  if (changes.catalogFilter !== undefined) user.catalogFilter = changes.catalogFilter;
 
   if (changes.avatar !== undefined && changes.avatar !== user.avatar) {
     // Only null (remove) or this user's own Cloudinary upload are accepted

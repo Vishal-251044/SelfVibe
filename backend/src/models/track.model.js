@@ -29,6 +29,8 @@ const trackSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 150 },
     artistId: { type: mongoose.Schema.Types.ObjectId, ref: "ArtistProfile", required: true },
+    // Copy of the artist's stage name, so search can match "song by artist" (kept in sync on rename)
+    artistName: { type: String, trim: true, default: "" },
     albumId: { type: mongoose.Schema.Types.ObjectId, ref: "Album", default: null },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
@@ -107,13 +109,31 @@ trackSchema.index({ uploadedBy: 1, createdAt: -1 });
 // Our `language` field holds values like "hindi", which MongoDB would otherwise read as the
 // text-search language and reject — point the override at a field we never set.
 trackSchema.index(
-  { title: "text" },
-  { name: "title_search", default_language: "none", language_override: "textSearchLanguage" }
+  { title: "text", artistName: "text" },
+  {
+    name: "title_artist_search",
+    weights: { title: 3, artistName: 1 },
+    default_language: "none",
+    language_override: "textSearchLanguage",
+  }
 );
+// New releases and trending fallbacks
+trackSchema.index({ status: 1, catalog: 1, publishedAt: -1 });
 // One copy per imported external track
 trackSchema.index(
   { "external.provider": 1, "external.id": 1 },
   { unique: true, partialFilterExpression: { "external.id": { $type: "string" } } }
 );
+
+// Keep artistName (used by search) in step with the track's artist
+trackSchema.pre("save", async function syncArtistName() {
+  if (!this.isNew && !this.isModified("artistId")) return;
+  const artist = await mongoose
+    .model("ArtistProfile")
+    .findById(this.artistId)
+    .select("stageName")
+    .lean();
+  this.artistName = artist?.stageName ?? "";
+});
 
 export const Track = mongoose.model("Track", trackSchema);
