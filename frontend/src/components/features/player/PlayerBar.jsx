@@ -11,6 +11,7 @@ import CoverArt from "@/components/features/music/CoverArt";
 import PlayerControls from "@/components/features/player/PlayerControls";
 import SeekBar from "@/components/features/player/SeekBar";
 import VolumeControl from "@/components/features/player/VolumeControl";
+import LikeButton from "@/components/features/music/LikeButton";
 import { usePlayerStore } from "@/store/playerStore";
 import { cn } from "@/utils/genericFunctions";
 
@@ -21,6 +22,7 @@ import { cn } from "@/utils/genericFunctions";
  */
 export default function PlayerBar({ track, className }) {
   const error = usePlayerStore((state) => state.error);
+  const isListener = usePlayerStore((state) => state.scope === "user");
   const isQueueOpen = usePlayerStore((state) => state.isQueueOpen);
   const setQueueOpen = usePlayerStore((state) => state.setQueueOpen);
   const setNowPlayingOpen = usePlayerStore((state) => state.setNowPlayingOpen);
@@ -64,6 +66,7 @@ export default function PlayerBar({ track, className }) {
             )
           )}
         </div>
+        {isListener && <LikeButton track={track} />}
       </div>
 
       {/* Transport */}

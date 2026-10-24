@@ -19,6 +19,7 @@ const playlistSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true, maxlength: 100 },
     description: { type: String, trim: true, maxlength: 500, default: "" },
     coverUrl: { type: String, default: null },
+    coverKey: { type: String, default: null }, // storage key behind coverUrl (for cleanup)
     isPublic: { type: Boolean, default: false },
     type: { type: String, enum: PLAYLIST_TYPES, default: "user" },
     tracks: { type: [playlistTrackSchema], default: [] },
@@ -27,5 +28,6 @@ const playlistSchema = new mongoose.Schema(
 );
 
 playlistSchema.index({ ownerId: 1, updatedAt: -1 });
+playlistSchema.index({ "tracks.trackId": 1 }); // "which playlists contain this song"
 
 export const Playlist = mongoose.model("Playlist", playlistSchema);

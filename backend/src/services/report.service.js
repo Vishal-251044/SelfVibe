@@ -6,11 +6,12 @@ import mongoose from "mongoose";
 import { Report } from "../models/report.model.js";
 import { Track } from "../models/track.model.js";
 import { ArtistProfile } from "../models/artistProfile.model.js";
+import { Comment } from "../models/comment.model.js";
 import { ERROR_CODES } from "../config/constants.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
 
-const TARGET_MODELS = { track: Track, artist: ArtistProfile };
+const TARGET_MODELS = { track: Track, artist: ArtistProfile, comment: Comment };
 
 /**
  * File a report. Reporting the same item again updates the open report.

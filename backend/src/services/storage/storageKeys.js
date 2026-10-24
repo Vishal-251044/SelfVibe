@@ -89,7 +89,7 @@ export function audioRenditionKey(trackId, bitrateKbps, version) {
 }
 
 /**
- * @param {"tracks"|"artists"|"albums"} kind
+ * @param {"tracks"|"artists"|"albums"|"playlists"} kind
  * @param {string} id
  * @param {string} version
  * @returns {string}

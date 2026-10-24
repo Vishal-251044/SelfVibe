@@ -14,6 +14,7 @@ import PlayButton from "@/components/features/music/PlayButton";
 import Badge from "@/components/ui/Badge";
 import { CATALOG_META } from "@/utils/musicConstants";
 import TrackQueueMenu from "@/components/features/music/TrackQueueMenu";
+import LikeButton from "@/components/features/music/LikeButton";
 import { usePlayerStore } from "@/store/playerStore";
 import { cn, formatDuration } from "@/utils/genericFunctions";
 
@@ -26,7 +27,7 @@ import { cn, formatDuration } from "@/utils/genericFunctions";
  * @param {boolean} [props.canPlay=true] - false disables it (e.g. still processing)
  * @param {string} [props.source] - Listening-event source, e.g. "artist"
  * @param {"user"|"staff"} [props.scope="user"] - "staff" for Admin Console previews
- * @param {boolean} [props.showQueueMenu=false] - Play next / Add to queue menu
+ * @param {boolean} [props.showQueueMenu=false] - Heart + menu (Play next, Add to queue / playlist, Comments)
  * @param {string} [props.href] - Makes the title a link (e.g. admin detail page)
  * @param {boolean} [props.showArtist=true]
  * @param {boolean} [props.showCatalog=false] - Official / Community badge (PRD 10.14)
@@ -137,6 +138,7 @@ export default function TrackRow({
       </span>
       {(showQueueMenu || actions) && (
         <div className="flex shrink-0 items-center">
+          {showQueueMenu && canPlay && <LikeButton track={track} />}
           {showQueueMenu && canPlay && <TrackQueueMenu track={track} showArtistLink={showArtist} />}
           {actions}
         </div>

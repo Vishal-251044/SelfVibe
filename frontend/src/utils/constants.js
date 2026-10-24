@@ -39,7 +39,6 @@ export const PROTECTED_APP_PATHS = [
   "/home",
   "/search",
   "/library",
-  "/playlist",
   "/studio",
   "/profile",
   "/onboarding",
@@ -47,7 +46,7 @@ export const PROTECTED_APP_PATHS = [
 ];
 
 /** App pages anyone can open (shared links); a session is used when there is one. */
-export const PUBLIC_APP_PATHS = ["/artist"];
+export const PUBLIC_APP_PATHS = ["/artist", "/playlist"];
 
 /** Primary in-app destinations (MOB-2: Home · Search · Library · AI Studio · Profile). */
 export const APP_NAV_ITEMS = [
@@ -143,6 +142,18 @@ export const QUERY_KEYS = {
   myArtist: ["creator", "me"],
   myTracks: (page) => ["creator", "tracks", page],
   myUploadUsage: ["creator", "usage"],
+  likedIds: ["library", "likes", "ids"],
+  likedTracks: ["library", "likes", "list"],
+  followIds: ["library", "follows", "ids"],
+  follows: ["library", "follows", "list"],
+  history: ["library", "history"],
+  myPlaylists: ["playlists", "mine"],
+  /** @param {string} id */
+  playlist: (id) => ["playlists", "detail", id],
+  /** @param {string} trackId @param {string} sort */
+  comments: (trackId, sort) => ["comments", trackId, sort],
+  /** @param {string} commentId */
+  replies: (commentId) => ["comments", "replies", commentId],
   /** @param {string} idOrSlug */
   artistPage: (idOrSlug) => ["artists", idOrSlug],
   adminTaxonomy: ["admin", "taxonomy"],

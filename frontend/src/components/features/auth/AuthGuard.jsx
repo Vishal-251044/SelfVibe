@@ -50,7 +50,15 @@ export default function AuthGuard({
     }
   }, [optional, status, needsOnboarding, user, pathname, router]);
 
-  if (optional) return children;
+  // Public pages still wait for the session to be restored (a quick refresh;
+  // instant for guests), so their first request is made as the right person —
+  // otherwise a reload of your own private playlist would load as a guest
+  if (optional) {
+    if (status === "idle" || status === "loading") {
+      return <ScreenLoader label="restoring your session" />;
+    }
+    return children;
+  }
 
   if (status === "error") return <SessionErrorState onRetry={retryBootstrap} />;
   if (status !== "authenticated" || needsOnboarding) {

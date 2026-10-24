@@ -5,8 +5,8 @@
  * with status, preview and actions. Refreshes automatically while any track
  * is still processing.
  */
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Headphones, Loader2, Music2, Radio, Upload } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
@@ -30,6 +30,7 @@ const PAGE_SIZE = 20;
  * @param {Object} props.artist - My artist profile
  */
 export default function CreatorDashboard({ artist }) {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const { data, isPending, isError, error, refetch, isFetching } = useQuery({
     queryKey: QUERY_KEYS.myTracks(page),
@@ -45,13 +46,22 @@ export default function CreatorDashboard({ artist }) {
   });
 
   const tracks = data?.tracks ?? [];
+  const processingCount = tracks.filter((t) =>
+    ["queued", "running"].includes(t.processing?.state)
+  ).length;
+
+  // Storage used is only known once processing finishes: refresh the allowance then
+  useEffect(() => {
+    if (processingCount === 0)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myUploadUsage });
+  }, [processingCount, queryClient]);
   const stats = [
     { icon: Music2, label: "Tracks", value: data?.meta?.total ?? "–" },
     { icon: Radio, label: "Live", value: tracks.filter((t) => t.status === "published").length },
     {
       icon: Loader2,
       label: "Processing",
-      value: tracks.filter((t) => ["queued", "running"].includes(t.processing?.state)).length,
+      value: processingCount,
     },
   ];
 

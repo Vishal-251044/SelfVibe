@@ -1,13 +1,22 @@
 "use client";
 
 /**
- * "More" menu on a track row (PRD PLY-3): Play next, Add to queue, Go to
- * artist. Closes on outside tap / Escape; shows a short confirmation.
+ * "More" menu on a track row: Play next, Add to queue (PRD PLY-3), Add to
+ * playlist (LIB-2), Comments (CMT-1), Go to artist. Closes on outside tap / Escape; shows a short confirmation.
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ListEnd, ListStart, MoreHorizontal, UserRound } from "lucide-react";
+import {
+  Check,
+  ListEnd,
+  ListPlus,
+  ListStart,
+  MessageCircle,
+  MoreHorizontal,
+  UserRound,
+} from "lucide-react";
+import { useLibrarySheetsStore } from "@/store/librarySheetsStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { slideDown } from "@/utils/animations";
 
@@ -21,6 +30,8 @@ const CONFIRM_MS = 1600;
 export default function TrackQueueMenu({ track, showArtistLink = true }) {
   const playNext = usePlayerStore((state) => state.playNext);
   const addToQueue = usePlayerStore((state) => state.addToQueue);
+  const openPlaylistPicker = useLibrarySheetsStore((state) => state.openPlaylistPicker);
+  const openComments = useLibrarySheetsStore((state) => state.openComments);
   const [isOpen, setIsOpen] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
   const menuRef = useRef(null);
@@ -97,6 +108,28 @@ export default function TrackQueueMenu({ track, showArtistLink = true }) {
               className={itemClass}
             >
               <ListEnd size={16} aria-hidden /> Add to queue
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                openPlaylistPicker(track);
+              }}
+              className={itemClass}
+            >
+              <ListPlus size={16} aria-hidden /> Add to playlist
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                openComments(track);
+              }}
+              className={itemClass}
+            >
+              <MessageCircle size={16} aria-hidden /> Comments
             </button>
             {showArtistLink && track.artist && (
               <Link

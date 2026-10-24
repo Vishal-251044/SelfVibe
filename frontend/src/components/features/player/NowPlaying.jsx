@@ -9,7 +9,9 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
-import { BadgeCheck, ChevronDown, ListMusic } from "lucide-react";
+import { BadgeCheck, ChevronDown, ListMusic, ListPlus, MessageCircle } from "lucide-react";
+import LikeButton from "@/components/features/music/LikeButton";
+import { useLibrarySheetsStore } from "@/store/librarySheetsStore";
 import CoverArt from "@/components/features/music/CoverArt";
 import TerminalWindow from "@/components/ui/TerminalWindow";
 import PlayerControls from "@/components/features/player/PlayerControls";
@@ -53,6 +55,9 @@ export default function NowPlaying() {
   const isOpen = usePlayerStore((state) => state.isNowPlayingOpen);
   const track = usePlayerStore((state) => state.queue[state.index] ?? null);
   const error = usePlayerStore((state) => state.error);
+  const isListener = usePlayerStore((state) => state.scope === "user");
+  const openPlaylistPicker = useLibrarySheetsStore((state) => state.openPlaylistPicker);
+  const openComments = useLibrarySheetsStore((state) => state.openComments);
   const upNext = usePlayerStore((state) => state.queue[state.index + 1] ?? null);
   const setNowPlayingOpen = usePlayerStore((state) => state.setNowPlayingOpen);
   const setQueueOpen = usePlayerStore((state) => state.setQueueOpen);
@@ -185,6 +190,27 @@ export default function NowPlaying() {
               </TerminalWindow>
               <Visualizer isActive={isOpen} className="h-16 sm:hidden" />
 
+              {isListener && (
+                <div className="flex items-center justify-center gap-2 lg:justify-start">
+                  <LikeButton track={track} size={22} />
+                  <button
+                    type="button"
+                    onClick={() => openPlaylistPicker(track)}
+                    aria-label="Add to playlist"
+                    className="flex size-11 items-center justify-center rounded-full text-fg-subtle transition hover:text-fg"
+                  >
+                    <ListPlus size={22} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openComments(track)}
+                    aria-label="Comments"
+                    className="flex size-11 items-center justify-center rounded-full text-fg-subtle transition hover:text-fg"
+                  >
+                    <MessageCircle size={22} />
+                  </button>
+                </div>
+              )}
               <SeekBar />
               <PlayerControls size="large" />
               <div className="hidden items-center justify-between gap-4 md:flex">

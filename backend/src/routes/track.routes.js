@@ -3,7 +3,10 @@
  */
 import { Router } from "express";
 import * as trackController from "../controllers/track.controller.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { optionalAuth, requireAuth } from "../middlewares/auth.middleware.js";
+import { commentLimiter } from "../middlewares/rateLimit.middleware.js";
+import * as commentController from "../controllers/comment.controller.js";
+import { createCommentSchema, listCommentsQuerySchema } from "../validators/library.validator.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   creatorCreateTrackSchema,
@@ -28,6 +31,21 @@ router.post(
   trackController.getStreams
 );
 router.get("/:id", idParams, trackController.getTrack);
+
+// Comments (PRD CMT-1): anyone can read, signed-in users post (10 per 10 min, CMT-3)
+router.get(
+  "/:id/comments",
+  optionalAuth,
+  validate({ params: trackIdParamsSchema, query: listCommentsQuerySchema }),
+  commentController.list
+);
+router.post(
+  "/:id/comments",
+  requireAuth,
+  commentLimiter,
+  validate({ params: trackIdParamsSchema, body: createCommentSchema }),
+  commentController.create
+);
 router.get(
   "/:id/stream",
   requireAuth,

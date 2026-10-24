@@ -58,6 +58,8 @@ export const getArtistPage = asyncHandler(async (req, res) => {
       artist: toPublicArtist(artist),
       tracks: tracks.map(toPublicTrack),
       albums: albums.map(toAlbum),
+      // Hides the Follow button on your own artist page
+      isOwnPage: Boolean(req.auth && artist.userId && String(artist.userId) === req.auth.userId),
     },
   });
 });

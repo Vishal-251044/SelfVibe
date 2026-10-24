@@ -42,6 +42,17 @@ export function requireAuth(req, res, next) {
 }
 
 /**
+ * Allow guests, but recognise a signed-in listener (e.g. public playlists and
+ * comments: guests can read, owners see more). With no token `req.auth` stays
+ * undefined; a token that is present but expired still gets 401, so the client
+ * refreshes its session and retries.
+ * @type {import("express").RequestHandler}
+ */
+export function optionalAuth(req, res, next) {
+  return getBearerToken(req) ? requireAuth(req, res, next) : next();
+}
+
+/**
  * Require at least one of the given public roles (use after requireAuth).
  * @param {...("listener"|"creator")} allowedRoles
  * @returns {import("express").RequestHandler}

@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * Public artist page (/artist/[id], PRD F23 / CRT-1): hero with photo, name,
- * genres and bio; popular tracks you can play; albums; report.
+ * Public artist page (/artist/[id], PRD F23 / CRT-1, LIB-4): hero with photo,
+ * name, followers, Follow, genres and bio; popular tracks you can play, like
+ * and add to playlists; albums; report.
  * Works for guests (shared links) — they are asked to log in to listen.
  */
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, Globe, Headphones, MapPin, Mic2, Play } from "lucide-react";
+import { BadgeCheck, Globe, Headphones, MapPin, Mic2, Play, Users } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -16,10 +17,12 @@ import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import TrackRow from "@/components/features/music/TrackRow";
 import CoverArt from "@/components/features/music/CoverArt";
 import ReportButton from "@/components/features/music/ReportButton";
+import FollowButton from "@/components/features/artist/FollowButton";
 import { getArtistPage } from "@/services/creator.service";
 import { useAuthStore } from "@/store/authStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { QUERY_KEYS } from "@/utils/constants";
+import { pluralize } from "@/utils/genericFunctions";
 
 /** Loading skeleton with the same layout as the page. */
 function ArtistPageSkeleton() {
@@ -115,6 +118,9 @@ export default function ArtistPageView({ idOrSlug }) {
                 <Headphones size={15} aria-hidden /> {tracks.length}{" "}
                 {tracks.length === 1 ? "track" : "tracks"}
               </span>
+              <span className="flex items-center gap-1.5">
+                <Users size={15} aria-hidden /> {pluralize(artist.followersCount ?? 0, "follower")}
+              </span>
               {artist.country && (
                 <span className="flex items-center gap-1.5">
                   <MapPin size={15} aria-hidden /> {artist.country}
@@ -134,7 +140,7 @@ export default function ArtistPageView({ idOrSlug }) {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-3 sm:justify-start">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
           {tracks.length > 0 &&
             (isSignedIn ? (
               <Button size="lg" onClick={() => playQueue(tracks, 0, { source: "artist" })}>
@@ -145,6 +151,7 @@ export default function ArtistPageView({ idOrSlug }) {
                 Log in to listen
               </Button>
             ))}
+          {!data.isOwnPage && <FollowButton artist={artist} />}
           <ReportButton targetType="artist" targetId={artist.id} targetName={artist.stageName} />
         </div>
 

@@ -225,7 +225,7 @@ export const LANGUAGES = Object.freeze([
 
 /** Report reasons (PRD F32 / §7 copyright risk). */
 export const REPORT_REASONS = Object.freeze(["copyright", "abuse", "explicit", "spam", "other"]);
-export const REPORT_TARGET_TYPES = Object.freeze(["track", "artist"]);
+export const REPORT_TARGET_TYPES = Object.freeze(["track", "artist", "comment"]);
 
 export const ALBUM_TYPES = Object.freeze(["album", "ep", "single"]);
 
@@ -260,3 +260,30 @@ export const STORAGE_SYNC_EVERY_MS = 6 * 60 * 60 * 1000;
  * Moves to admin Settings when that page is built.
  */
 export const UPLOAD_LIMITS = Object.freeze({ free: 20, premium: 20, creatorPro: null });
+
+/* ===== Library & comments (Day 6) ===== */
+
+/** Taste-profile changes from library actions (PRD 10.4.1 signal weights). */
+export const TASTE_SIGNALS = Object.freeze({
+  like: 5,
+  unlike: -5,
+  playlistAdd: 4,
+  follow: 4,
+  unfollow: -4,
+});
+
+export const PLAYLIST_MAX_TRACKS = 1000;
+export const PLAYLISTS_PER_USER_MAX = 200;
+export const PLAYLIST_NAME_MAX = 100;
+export const PLAYLIST_DESCRIPTION_MAX = 500;
+/** Liked-song / followed-artist id lists returned in one go (heart / follow state in the UI). */
+export const LIBRARY_IDS_MAX = 5000;
+
+/** Comments (PRD 10.15.1, CMT-1–3). */
+export const COMMENT_MAX_LENGTH = 1000;
+export const COMMENT_STATUS = Object.freeze(["visible", "hidden", "removed"]);
+export const COMMENT_SORTS = Object.freeze(["newest", "top"]);
+/** Rate limit (CMT-3): 10 comments per 10 minutes per user. */
+export const COMMENT_RATE_LIMIT = Object.freeze({ max: 10, windowMs: 10 * 60 * 1000 });
+/** More links than this in one comment is treated as spam. */
+export const COMMENT_MAX_LINKS = 2;

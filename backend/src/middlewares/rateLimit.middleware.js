@@ -4,7 +4,7 @@
  * when Redis is added on Day 4 so limits hold across instances.
  */
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
-import { ERROR_CODES, LOGIN_RATE_LIMIT } from "../config/constants.js";
+import { COMMENT_RATE_LIMIT, ERROR_CODES, LOGIN_RATE_LIMIT } from "../config/constants.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
 
@@ -136,4 +136,22 @@ export const listenEventsLimiter = createLimiter({
   windowMs: 10 * 60 * 1000,
   limit: 120,
   message: "Too many requests. Please slow down.",
+});
+
+/** Comments (PRD CMT-3): 10 per 10 minutes per signed-in user. */
+export const commentLimiter = createLimiter({
+  name: "comment",
+  windowMs: COMMENT_RATE_LIMIT.windowMs,
+  limit: COMMENT_RATE_LIMIT.max,
+  message: "You're commenting too fast. Please wait a few minutes.",
+  keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
+});
+
+/** Likes, follows and playlist edits: generous, just stops runaway scripts. */
+export const libraryWriteLimiter = createLimiter({
+  name: "library-write",
+  windowMs: 60 * 1000,
+  limit: 120,
+  message: "Too many changes at once. Please slow down.",
+  keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
 });

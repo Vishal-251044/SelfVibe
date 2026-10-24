@@ -170,3 +170,34 @@ export function slugify(text = "") {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * Short relative time: "just now", "5m", "3h", "2d", else a date.
+ * @param {string|Date} value
+ * @param {Date} [now]
+ * @returns {string}
+ */
+export function formatRelativeTime(value, now = new Date()) {
+  const date = new Date(value);
+  const seconds = Math.max(0, Math.round((now - date) / 1000));
+  if (seconds < 45) return "just now";
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)}h`;
+  if (seconds < 7 * 86400) return `${Math.round(seconds / 86400)}d`;
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
+  });
+}
+
+/**
+ * Count with a word: "1 song", "3 songs".
+ * @param {number} count
+ * @param {string} singular
+ * @param {string} [plural]
+ * @returns {string}
+ */
+export function pluralize(count, singular, plural = `${singular}s`) {
+  return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
+}
