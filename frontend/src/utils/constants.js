@@ -43,6 +43,7 @@ export const PROTECTED_APP_PATHS = [
   "/profile",
   "/onboarding",
   "/creator",
+  "/browse",
 ];
 
 /** App pages anyone can open (shared links); a session is used when there is one. */
@@ -157,6 +158,19 @@ export const QUERY_KEYS = {
   /** @param {string} idOrSlug */
   artistPage: (idOrSlug) => ["artists", idOrSlug],
   adminTaxonomy: ["admin", "taxonomy"],
+  /** @param {string} q @param {string} catalog */
+  search: (q, catalog) => ["search", q, catalog],
+  recentSearches: ["search", "recent"],
+  /** @param {"genre"|"vibe"} kind @param {string} catalog */
+  categories: (kind, catalog) => ["browse", kind, "list", catalog],
+  /** @param {"genre"|"vibe"} kind @param {string} slug @param {string} catalog @param {string} sort */
+  category: (kind, slug, catalog, sort) => ["browse", kind, slug, catalog, sort],
+  /** @param {string} catalog */
+  trending: (catalog) => ["browse", "trending", catalog],
+  /** @param {string} catalog */
+  newReleases: (catalog) => ["browse", "new", catalog],
+  /** @param {"genre"|"vibe"} kind */
+  adminCategories: (kind) => ["admin", "categories", kind],
   adminTracks: (filters) => ["admin", "tracks", filters],
   adminTrack: (trackId) => ["admin", "track", trackId],
   adminArtists: (filters) => ["admin", "artists", filters],

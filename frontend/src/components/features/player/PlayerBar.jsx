@@ -11,6 +11,7 @@ import CoverArt from "@/components/features/music/CoverArt";
 import PlayerControls from "@/components/features/player/PlayerControls";
 import SeekBar from "@/components/features/player/SeekBar";
 import VolumeControl from "@/components/features/player/VolumeControl";
+import MicButton from "@/components/features/voice/MicButton";
 import LikeButton from "@/components/features/music/LikeButton";
 import { usePlayerStore } from "@/store/playerStore";
 import { cn } from "@/utils/genericFunctions";
@@ -77,6 +78,7 @@ export default function PlayerBar({ track, className }) {
 
       {/* Extras */}
       <div className="flex items-center justify-end gap-1">
+        {isListener && <MicButton />}
         <button
           type="button"
           onClick={() => setQueueOpen(!isQueueOpen)}

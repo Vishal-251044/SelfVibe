@@ -13,6 +13,7 @@ import AppTopNav from "@/components/layout/AppTopNav";
 import BottomNav from "@/components/layout/BottomNav";
 import PlayerDock from "@/components/features/player/PlayerDock";
 import LibrarySheets from "@/components/features/library/LibrarySheets";
+import VoiceLayer from "@/components/features/voice/VoiceLayer";
 import Logo from "@/components/ui/Logo";
 import AuthGuard from "@/components/features/auth/AuthGuard";
 import UserMenu from "@/components/features/auth/UserMenu";
@@ -52,6 +53,7 @@ export default function AppShell({ children }) {
 
       <PlayerDock variant="app" />
       <LibrarySheets />
+      <VoiceLayer />
       <BottomNav />
     </div>
   );

@@ -67,6 +67,7 @@ export const usePlayerStore = create(
       repeat: "off",
       volume: 0.9,
       muted: false,
+      ducked: false, // not saved: only while the voice mic is open
 
       /* ----- reported by the engine ----- */
       ...INITIAL_PLAYBACK,
@@ -207,6 +208,21 @@ export const usePlayerStore = create(
       cycleRepeat() {
         const next = REPEAT_MODES[(REPEAT_MODES.indexOf(get().repeat) + 1) % REPEAT_MODES.length];
         set({ repeat: next });
+      },
+
+      /** @param {"off"|"all"|"one"} mode - e.g. from a voice command */
+      setRepeat(mode) {
+        if (REPEAT_MODES.includes(mode)) set({ repeat: mode });
+      },
+
+      /** @param {boolean} isOn */
+      setShuffle(isOn) {
+        if (get().shuffle !== isOn) get().toggleShuffle();
+      },
+
+      /** @param {boolean} isDucked - lower the music while the mic listens (PRD VOC-8) */
+      setDucked(isDucked) {
+        set({ ducked: isDucked });
       },
 
       /**

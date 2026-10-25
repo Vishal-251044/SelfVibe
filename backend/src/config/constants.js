@@ -46,6 +46,8 @@ export const LISTEN_SOURCES = Object.freeze([
   "history",
   "queue",
   "studio",
+  "browse",
+  "voice",
   "other",
 ]);
 export const LISTEN_DEVICES = Object.freeze(["mobile", "tablet", "desktop"]);

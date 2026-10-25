@@ -130,3 +130,33 @@ export const LISTEN_QUEUE_MAX = 500;
 /** Browser storage keys: saved queue / settings, and unsent listening events. */
 export const PLAYER_STORAGE_KEY = "sv_player";
 export const LISTEN_QUEUE_STORAGE_KEY = "sv_listen_queue";
+
+/* ===== Search, browse & voice (Day 7) ===== */
+
+/** The All · Official · Community switch (PRD CAT-2), remembered per user. */
+export const CATALOG_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "official", label: "Official" },
+  { value: "community", label: "Community" },
+];
+/** Search waits this long after the last keystroke (roadmap Day 7). */
+export const SEARCH_DEBOUNCE_MS = 300;
+/** Songs shown in a search group before "Show all". */
+export const SEARCH_TRACKS_PREVIEW = 5;
+/** Songs in a Home row (Trending, New Releases…). */
+export const HOME_ROW_SIZE = 20;
+/** Songs per page on genre / vibe pages. */
+export const BROWSE_PAGE_SIZE = 30;
+/** Voice recognition languages (PRD VOC-2: English + Hindi; Hinglish works in both). */
+export const VOICE_LANGUAGES = [
+  { value: "en-IN", label: "English", short: "EN" },
+  { value: "hi-IN", label: "हिन्दी", short: "HI" },
+];
+/** Holding the mic this long switches from "tap" to "hold to talk" (ms). */
+export const VOICE_HOLD_MS = 350;
+/** Stop listening after this long without a result (ms). */
+export const VOICE_TIMEOUT_MS = 8000;
+/** How long a voice toast stays on screen (ms). */
+export const VOICE_TOAST_MS = 3500;
+/** Volume step for "volume up / down". */
+export const VOICE_VOLUME_STEP = 0.15;

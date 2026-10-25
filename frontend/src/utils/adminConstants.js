@@ -76,7 +76,7 @@ export const ADMIN_NAV_SECTIONS = [
         href: "/admin/genres",
         icon: Shapes,
         permission: "genres.manage",
-        ready: false,
+        ready: true,
       },
       {
         label: "Curation",

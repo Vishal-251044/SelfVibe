@@ -49,6 +49,35 @@ let analyser = null;
 /** @returns {ReturnType<typeof usePlayerStore.getState>} */
 const store = () => usePlayerStore.getState();
 
+const DUCK_LEVEL = 0.2; // music volume while the mic listens (PRD VOC-8)
+const VOLUME_FADE_MS = 180;
+let volumeFrame = 0;
+
+/**
+ * Volume the element should have: the user's volume, lowered while ducked.
+ * @param {{ volume: number, ducked: boolean }} state
+ * @returns {number}
+ */
+function effectiveVolume(state) {
+  return state.volume * (state.ducked ? DUCK_LEVEL : 1);
+}
+
+/**
+ * Fade the element to a volume (short, so ducking doesn't feel like a jump).
+ * @param {number} target - 0–1
+ */
+function fadeVolume(target) {
+  cancelAnimationFrame(volumeFrame);
+  const from = audio.volume;
+  const startedAt = performance.now();
+  const step = (now) => {
+    const progress = Math.min(1, (now - startedAt) / VOLUME_FADE_MS);
+    audio.volume = from + (target - from) * progress;
+    if (progress < 1) volumeFrame = requestAnimationFrame(step);
+  };
+  volumeFrame = requestAnimationFrame(step);
+}
+
 /** Whether this browser should get the live Web Audio visualiser. */
 export function canUseWebAudio() {
   if (typeof window === "undefined" || !window.AudioContext) return false;
@@ -304,7 +333,8 @@ export function initAudioEngine(element) {
         audio.pause();
       }
     }
-    if (state.volume !== previous.volume) audio.volume = state.volume;
+    if (state.ducked !== previous.ducked) fadeVolume(effectiveVolume(state));
+    else if (state.volume !== previous.volume) audio.volume = effectiveVolume(state);
     if (state.muted !== previous.muted) audio.muted = state.muted;
     if (state.seekRequest && state.seekRequest !== previous.seekRequest) {
       audio.currentTime = state.seekRequest.time;

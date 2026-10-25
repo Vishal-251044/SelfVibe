@@ -3,11 +3,13 @@
 /**
  * Phone mini player (PRD MOB-3/4), fixed above the bottom navigation:
  * cover, title, play / pause and next, with a thin progress line.
- * Tap opens the full-screen player; swipe left / right changes the song.
+ * Tap opens the full-screen player; swipe left / right changes the song;
+ * the mic takes voice commands (roadmap Day 7).
  */
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { Loader2, Pause, Play, SkipForward } from "lucide-react";
 import CoverArt from "@/components/features/music/CoverArt";
+import MicButton from "@/components/features/voice/MicButton";
 import { usePlayerStore } from "@/store/playerStore";
 import { cn } from "@/utils/genericFunctions";
 import { tapPress } from "@/utils/animations";
@@ -31,6 +33,7 @@ export default function MiniPlayer({ track, className }) {
   const next = usePlayerStore((state) => state.next);
   const previous = usePlayerStore((state) => state.previous);
   const setNowPlayingOpen = usePlayerStore((state) => state.setNowPlayingOpen);
+  const isListener = usePlayerStore((state) => state.scope === "user");
 
   const x = useMotionValue(0);
   const opacity = useTransform(x, [-140, 0, 140], [0.4, 1, 0.4]);
@@ -73,6 +76,7 @@ export default function MiniPlayer({ track, className }) {
             </span>
           </span>
         </button>
+        {isListener && <MicButton />}
         <motion.button
           type="button"
           whileTap={tapPress}
