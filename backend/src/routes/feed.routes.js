@@ -11,10 +11,17 @@ import {
   notInterestedParamsSchema,
   notInterestedSchema,
 } from "../validators/feed.validator.js";
+import { catalogOnlyQuerySchema } from "../validators/adminPlatform.validator.js";
 
 const router = Router();
 
 router.get("/for-you", requireAuth, validate({ query: forYouQuerySchema }), feedController.forYou);
+router.get(
+  "/daily-mix",
+  requireAuth,
+  validate({ query: catalogOnlyQuerySchema }),
+  feedController.dailyMix
+);
 router.post(
   "/not-interested",
   requireAuth,

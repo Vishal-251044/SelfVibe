@@ -49,3 +49,65 @@ export async function recordAudit(entry) {
     logger.error({ err: error }, `[AuditService] failed to record ${entry.action}`);
   }
 }
+
+/**
+ * Search the audit log (roadmap Day 9 Audit log viewer): filter by person,
+ * action (prefix, e.g. "track." for every song action), target and dates.
+ * @param {{ staffId?: string, action?: string, targetType?: string, targetId?: string, from?: Date, to?: Date, page: number, limit: number }} query
+ * @returns {Promise<{ items: Object[], meta: Object, actions: string[] }>}
+ */
+export async function listAuditLogs({
+  staffId,
+  action,
+  targetType,
+  targetId,
+  from,
+  to,
+  page = 1,
+  limit = 50,
+}) {
+  const where = {};
+  if (staffId) where.staffId = staffId;
+  if (action) where.action = new RegExp(`^${action.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+  if (targetType) where.targetType = targetType;
+  if (targetId) where.targetId = targetId;
+  if (from || to) where.createdAt = { ...(from && { $gte: from }), ...(to && { $lte: to }) };
+
+  const [rows, total, actions] = await Promise.all([
+    AuditLog.find(where)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("staffId", "name email")
+      .lean(),
+    AuditLog.countDocuments(where),
+    AuditLog.distinct("action", { action: { $not: /^(get|post|put|patch|delete) \// } }),
+  ]);
+  return {
+    items: rows.map((row) => ({
+      id: String(row._id),
+      staff: row.staffId?._id
+        ? { id: String(row.staffId._id), name: row.staffId.name, email: row.staffId.email }
+        : null,
+      staffRole: row.staffRole,
+      action: row.action,
+      targetType: row.targetType,
+      targetId: row.targetId,
+      before: row.before,
+      after: row.after,
+      method: row.method,
+      path: row.path,
+      statusCode: row.statusCode,
+      ip: row.ip,
+      createdAt: row.createdAt,
+    })),
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+      hasNext: page * limit < total,
+    },
+    actions: actions.sort(),
+  };
+}

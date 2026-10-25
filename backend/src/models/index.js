@@ -22,3 +22,8 @@ export { Comment } from "./comment.model.js";
 export { CommentLike } from "./commentLike.model.js";
 export { VoiceLog } from "./voiceLog.model.js";
 export { FeedCache } from "./feedCache.model.js";
+export { TrackDailyStats } from "./trackDailyStats.model.js";
+export { TrackSimilarity } from "./trackSimilarity.model.js";
+export { HomeSection } from "./homeSection.model.js";
+export { Setting } from "./setting.model.js";
+export { StaffInvite } from "./staffInvite.model.js";

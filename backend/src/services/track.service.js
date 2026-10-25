@@ -18,6 +18,7 @@ import { PROCESS_TRACK_MAX_ATTEMPTS } from "./trackProcessing.service.js";
 import { getPagination, buildPageMeta } from "../helpers/genericFunctions.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
+import { getSettings } from "./settings.service.js";
 
 const ARTIST_REF_FIELDS = "stageName slug avatar verified";
 const PAID_PLANS = ["premium", "creatorPro"];
@@ -74,7 +75,9 @@ export async function getUploadUsage({ userId, plan = "free" }) {
       { $group: { _id: null, total: { $sum: "$storage.bytes" } } },
     ]),
   ]);
-  const songLimit = Object.hasOwn(UPLOAD_LIMITS, plan) ? UPLOAD_LIMITS[plan] : UPLOAD_LIMITS.free;
+  // Limits are an Owner setting (PRD CRT-8), with the built-in defaults as a fallback
+  const limits = { ...UPLOAD_LIMITS, ...(await getSettings()).uploadLimits };
+  const songLimit = Object.hasOwn(limits, plan) ? limits[plan] : limits.free;
   return { songsUsed, songLimit, bytesUsed: bytes?.total ?? 0 };
 }
 

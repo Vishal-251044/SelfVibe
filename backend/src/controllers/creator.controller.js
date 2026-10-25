@@ -28,7 +28,15 @@ export const getMyArtist = asyncHandler(async (req, res) => {
   const artist = await creatorService.getMyArtistProfile(req.auth.userId);
   return sendSuccess(res, {
     message: "Artist profile fetched",
-    data: { artist: artist ? toPublicArtist(artist) : null },
+    data: {
+      artist: artist
+        ? {
+            ...toPublicArtist(artist),
+            // Own profile only: where the verified-badge request stands (Day 9)
+            verificationStatus: artist.verification?.status ?? "none",
+          }
+        : null,
+    },
   });
 });
 

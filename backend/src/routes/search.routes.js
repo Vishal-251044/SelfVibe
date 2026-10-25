@@ -12,12 +12,20 @@ import {
   recentSearchDeleteQuerySchema,
   searchQuerySchema,
 } from "../validators/search.validator.js";
+import { requireFeature } from "../middlewares/platform.middleware.js";
 
 const router = Router();
 const searchQuery = validate({ query: searchQuerySchema });
 
 router.get("/", optionalAuth, searchLimiter, searchQuery, searchController.search);
-router.get("/voice", optionalAuth, searchLimiter, searchQuery, searchController.voiceSearch);
+router.get(
+  "/voice",
+  optionalAuth,
+  requireFeature("voice"),
+  searchLimiter,
+  searchQuery,
+  searchController.voiceSearch
+);
 
 router.get("/recent", requireAuth, searchController.listRecent);
 router.post(

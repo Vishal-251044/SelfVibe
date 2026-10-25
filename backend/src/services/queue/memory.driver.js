@@ -5,6 +5,7 @@
  * inside the API process and are lost if it restarts.
  */
 import { logger } from "../../utils/logger.js";
+import { msUntilDailyRun } from "../../utils/dates.js";
 
 const processors = new Map();
 const activeJobIds = new Set();
@@ -96,6 +97,28 @@ export const memoryQueue = {
     );
     timer.unref();
     timers.add(timer);
+  },
+
+  /**
+   * Run a job every day at a fixed time ("M H * * *" cron only, in the given zone).
+   * @param {string} name
+   * @param {string} pattern - e.g. "0 3 * * *"
+   * @param {string} timeZone
+   */
+  async scheduleDaily(name, pattern, timeZone) {
+    const run = () => memoryQueue.enqueue(name, {}, { jobId: `${name}-daily` });
+    const arm = () => {
+      const timer = setTimeout(
+        () => {
+          run();
+          arm();
+        },
+        msUntilDailyRun(pattern, timeZone)
+      );
+      timer.unref();
+      timers.add(timer);
+    };
+    arm();
   },
 
   async startWorker() {

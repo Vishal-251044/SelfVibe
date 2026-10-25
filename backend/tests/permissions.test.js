@@ -26,6 +26,7 @@ const EXPECTED = {
   "audit.view": { moderator: false, contentManager: false, admin: true, owner: true },
   "settings.manage": { moderator: false, contentManager: false, admin: false, owner: true },
   "team.manage": { moderator: false, contentManager: false, admin: false, owner: true },
+  "storage.manage": { moderator: false, contentManager: false, admin: true, owner: true },
 };
 
 describe("staff permission matrix", () => {

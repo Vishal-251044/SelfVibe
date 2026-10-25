@@ -21,6 +21,9 @@ import { getTrending, publishedFilter } from "../browse.service.js";
 import { getListeningHistory } from "../listening.service.js";
 import { applyTrackSignal } from "../taste.service.js";
 import { pickDiverse, pickRightNowVibe } from "./feedRules.js";
+import { getCandidatePool, resetCandidatePools } from "./candidatePool.js";
+import { similarTrackIds } from "./similarity.service.js";
+import { Like } from "../../models/like.model.js";
 import { prepareTaste, rankTracks } from "./scoring.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { logger } from "../../utils/logger.js";
@@ -35,8 +38,6 @@ import {
 } from "../../config/constants.js";
 
 const ARTIST_REF_FIELDS = "stageName slug avatar verified";
-const POOL_FIELDS = "artistId genres vibes mood energy catalog playCount publishedAt";
-const POOL_CACHE_MS = 2 * 60 * 1000;
 const HISTORY_DAYS = 30;
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -49,37 +50,12 @@ const DAY_PART_LABELS = [
   "Late-night picks",
   "After midnight",
 ];
-const poolCache = new Map(); // catalog → { at, tracks }
 
 /* ===== Inputs ===== */
 
-/**
- * Every published song that can be recommended (light fields), cached briefly.
- * @param {string} catalog
- * @returns {Promise<Object[]>}
- */
-async function getCandidatePool(catalog) {
-  const cached = poolCache.get(catalog);
-  if (cached && Date.now() - cached.at < POOL_CACHE_MS) return cached.tracks;
-  const docs = await Track.find(publishedFilter(catalog)).select(POOL_FIELDS).lean();
-  const tracks = docs.map((doc) => ({
-    id: String(doc._id),
-    artistId: String(doc.artistId),
-    genres: doc.genres ?? [],
-    vibes: doc.vibes ?? [],
-    mood: doc.mood ?? null,
-    energy: doc.energy ?? null,
-    catalog: doc.catalog ?? "community",
-    playCount: doc.playCount ?? 0,
-    publishedAt: doc.publishedAt,
-  }));
-  poolCache.set(catalog, { at: Date.now(), tracks });
-  return tracks;
-}
-
 /** Forget cached candidate pools (tests). */
 export function resetFeedPools() {
-  poolCache.clear();
+  resetCandidatePools();
 }
 
 /**
@@ -151,6 +127,60 @@ async function describeReasons(items, { section, vibeName }) {
 }
 
 /* ===== Building the cached sections ===== */
+
+/**
+ * "Because you liked <song>": songs like the listener's most recent like.
+ * @param {string} userId
+ * @param {{ catalog: string, exclude: Set<string>, ownArtistId: string|null, communityShare: number|null }} options
+ * @returns {Promise<Object|null>} A section, or null without a recent like
+ */
+async function buildBecauseYouLiked(userId, { catalog, exclude, ownArtistId, communityShare }) {
+  const likes = await Like.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select("trackId")
+    .lean();
+  const seeds = likes.length
+    ? await Track.find({
+        _id: { $in: likes.map((like) => like.trackId) },
+        ...publishedFilter(catalog),
+      })
+        .select("title")
+        .lean()
+    : [];
+  const seedById = new Map(seeds.map((seed) => [String(seed._id), seed]));
+  const seed = likes.map((like) => seedById.get(String(like.trackId))).find(Boolean);
+  if (!seed) return null;
+
+  const pool = new Map((await getCandidatePool(catalog)).map((track) => [track.id, track]));
+  const similar = await similarTrackIds(String(seed._id), { catalog, limit: 40, exclude });
+  const ranked = similar
+    .filter((entry) => pool.has(entry.id) && pool.get(entry.id).artistId !== ownArtistId)
+    .map((entry) => ({
+      track: pool.get(entry.id),
+      score: entry.score,
+      familiar: true,
+      reason: {
+        text:
+          entry.why === "cooccurrence"
+            ? `Fans of ${seed.title} also like this`
+            : `Sounds like ${seed.title}`,
+      },
+    }));
+  const items = pickDiverse(ranked, {
+    size: FEED_SECTION_SIZES.becauseYouLiked,
+    familiarShare: null,
+    communityShare,
+  });
+  if (items.length === 0) return null;
+  return {
+    key: "becauseYouLiked",
+    title: `Because you liked ${seed.title}`,
+    subtitle: "More like a song you loved",
+    seedTrackId: String(seed._id),
+    items,
+  };
+}
 
 /**
  * Build the recommendation sections (not Jump back in).
@@ -262,6 +292,15 @@ async function buildSections(userId, { catalog, hour, taste, hidden }) {
     });
   }
 
+  // Because you liked <song> — neighbours of the most recent like (PRD 10.4.3)
+  const becauseYouLiked = await buildBecauseYouLiked(userId, {
+    catalog,
+    exclude: new Set([...hidden, ...listening.last24h]),
+    ownArtistId,
+    communityShare,
+  });
+  if (becauseYouLiked) sections.splice(1, 0, becauseYouLiked);
+
   // Store ids + "why this?" text only
   for (const section of sections) {
     const labels =
@@ -269,10 +308,12 @@ async function buildSections(userId, { catalog, hour, taste, hidden }) {
         ? section.items.map((_, index) =>
             index < 3 ? `#${index + 1} this week` : "Trending this week"
           )
-        : await describeReasons(section.items, {
-            section: section.key,
-            vibeName: section.vibeName,
-          });
+        : section.key === "becauseYouLiked"
+          ? section.items.map((item) => item.reason.text)
+          : await describeReasons(section.items, {
+              section: section.key,
+              vibeName: section.vibeName,
+            });
     section.items = section.items.map((item, index) => ({
       trackId: item.track.id,
       reason: labels[index],

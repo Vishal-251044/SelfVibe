@@ -56,6 +56,20 @@ export const bullmqQueue = {
     );
   },
 
+  /**
+   * Run a job on a cron schedule (e.g. nightly batch), in a time zone.
+   * @param {string} name
+   * @param {string} pattern - Cron, e.g. "0 3 * * *"
+   * @param {string} timeZone - e.g. "Asia/Kolkata"
+   */
+  async scheduleDaily(name, pattern, timeZone) {
+    await getQueue().upsertJobScheduler(
+      `${name}-scheduler`,
+      { pattern, tz: timeZone },
+      { name, data: {} }
+    );
+  },
+
   /** Start processing jobs (worker process only). */
   async startWorker({ concurrency = 2 } = {}) {
     worker = new Worker(

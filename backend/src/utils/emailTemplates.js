@@ -107,3 +107,40 @@ export function storageFullEmail({ name, pool, consoleUrl }) {
     text: `Hi ${name},\n\n${line}\n\n${consoleUrl}`,
   };
 }
+
+/**
+ * "You're invited to the SelfVibe team" email (roadmap Day 9, Team).
+ * @param {{ inviterName: string, roleLabel: string, acceptUrl: string, ttlDays: number }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function staffInviteEmail({ inviterName, roleLabel, acceptUrl, ttlDays }) {
+  const line = `${inviterName} invited you to help run SelfVibe as ${roleLabel}. Accept the invite to set up your console access — you'll also set up two-factor authentication.`;
+  return {
+    subject: "You're invited to the SelfVibe team",
+    html: layout({
+      title: "Join the SelfVibe team",
+      bodyHtml: `<p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Accept invite", url: acceptUrl },
+      footnote: `This invite expires in ${ttlDays} days. If you weren't expecting it, ignore this email.`,
+    }),
+    text: `${line}\n\n${acceptUrl}\n\nThis invite expires in ${ttlDays} days.`,
+  };
+}
+
+/**
+ * Moderation warning to an uploader / commenter (roadmap Day 9, Moderation).
+ * @param {{ name: string, what: string, reason: string, appUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function moderationWarningEmail({ name, what, reason, appUrl }) {
+  const line = `We received a report about ${what} and our team reviewed it (reason: ${reason}). Please make sure what you share follows the SelfVibe community rules. Repeated problems can lead to content being removed or the account being suspended.`;
+  return {
+    subject: "A note from the SelfVibe team",
+    html: layout({
+      title: "Please review our community rules",
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">Hi ${escapeHtml(name)},</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Open SelfVibe", url: appUrl },
+    }),
+    text: `Hi ${name},\n\n${line}\n\n${appUrl}`,
+  };
+}

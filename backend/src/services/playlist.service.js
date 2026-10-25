@@ -104,8 +104,9 @@ export async function createPlaylist(userId, input) {
 export async function getPlaylist(playlistId, viewerId) {
   if (!mongoose.isValidObjectId(playlistId)) throw playlistNotFound();
   const playlist = await Playlist.findById(playlistId).populate("ownerId", "name avatar").lean();
+  // Editorial playlists are edited in the console, never from a listener account
   const isOwner = Boolean(
-    viewerId && playlist && String(playlist.ownerId?._id) === String(viewerId)
+    viewerId && playlist?.type === "user" && String(playlist.ownerId?._id) === String(viewerId)
   );
   if (!playlist || (!playlist.isPublic && !isOwner)) throw playlistNotFound();
 
@@ -122,6 +123,9 @@ export async function getPlaylist(playlistId, viewerId) {
   const covers = (await mosaicCovers([{ ...playlist, ownerId: playlist.ownerId?._id }])).get(
     String(playlist._id)
   );
+  if (playlist.type === "editorial") {
+    playlist.ownerId = { _id: playlist.ownerId?._id, name: "SelfVibe", avatar: null }; // curated by the team
+  }
   return { playlist, tracks: ordered, covers, isOwner };
 }
 

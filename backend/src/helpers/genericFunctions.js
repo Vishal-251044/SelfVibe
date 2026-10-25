@@ -68,3 +68,22 @@ export function getSafeRedirectPath(target, fallback = null) {
   if (!target.startsWith("/") || target.startsWith("//") || target.includes("\\")) return fallback;
   return target;
 }
+
+/**
+ * Build CSV text (RFC 4180: quotes doubled, fields with , " or newlines quoted).
+ * Cells starting with = + - @ are prefixed with ' so spreadsheets don't run them.
+ * @param {Array<Object>} rows
+ * @param {Array<{ key: string, label: string }>} columns
+ * @returns {string}
+ */
+export function toCsv(rows, columns) {
+  const cell = (value) => {
+    if (value === null || value === undefined) return "";
+    let text = value instanceof Date ? value.toISOString() : String(value);
+    if (/^[=+\-@]/.test(text)) text = `'${text}`;
+    return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  };
+  const header = columns.map((column) => cell(column.label)).join(",");
+  const lines = rows.map((row) => columns.map((column) => cell(row[column.key])).join(","));
+  return [header, ...lines].join("\r\n");
+}

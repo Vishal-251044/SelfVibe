@@ -64,6 +64,18 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
     lastLoginAt: { type: Date, default: null },
+    // Moderation warnings sent to this user (roadmap Day 9)
+    warnings: {
+      type: [
+        {
+          _id: false,
+          reason: { type: String, maxlength: 200 },
+          at: { type: Date, default: Date.now },
+          by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -15,6 +15,9 @@ import {
   trackIdParamsSchema,
 } from "../validators/track.validator.js";
 import { streamBatchSchema } from "../validators/listening.validator.js";
+import { requireFeature } from "../middlewares/platform.middleware.js";
+import * as feedController from "../controllers/feed.controller.js";
+import { similarQuerySchema } from "../validators/adminPlatform.validator.js";
 
 const router = Router();
 const idParams = validate({ params: trackIdParamsSchema });
@@ -31,6 +34,12 @@ router.post(
   trackController.getStreams
 );
 router.get("/:id", idParams, trackController.getTrack);
+// Similar tracks (Day 9): co-listened songs, then tag matches
+router.get(
+  "/:id/similar",
+  validate({ params: trackIdParamsSchema, query: similarQuerySchema }),
+  feedController.similar
+);
 
 // Comments (PRD CMT-1): anyone can read, signed-in users post (10 per 10 min, CMT-3)
 router.get(
@@ -42,6 +51,7 @@ router.get(
 router.post(
   "/:id/comments",
   requireAuth,
+  requireFeature("comments"),
   commentLimiter,
   validate({ params: trackIdParamsSchema, body: createCommentSchema }),
   commentController.create
@@ -57,6 +67,7 @@ router.get(
 router.post(
   "/",
   uploaderOnly,
+  requireFeature("uploads"),
   validate({ body: creatorCreateTrackSchema }),
   trackController.createTrack
 );

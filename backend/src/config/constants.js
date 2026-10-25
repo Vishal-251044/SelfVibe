@@ -26,7 +26,7 @@ export const TRACK_SOURCE = Object.freeze(["upload", "ai", "import"]);
 
 export const TRACK_ADDED_VIA = Object.freeze(["creator", "admin", "ai"]);
 
-export const PLAYLIST_TYPES = Object.freeze(["user", "system"]);
+export const PLAYLIST_TYPES = Object.freeze(["user", "system", "editorial"]);
 
 export const LISTEN_EVENT_TYPES = Object.freeze(["play", "skip", "complete", "repeat"]);
 
@@ -131,6 +131,11 @@ export const ERROR_CODES = Object.freeze({
   UPLOAD_LIMIT_REACHED: "UPLOAD_LIMIT_REACHED",
   RATE_LIMITED: "RATE_LIMITED",
   ALREADY_EXISTS: "ALREADY_EXISTS",
+  MAINTENANCE: "MAINTENANCE",
+  FEATURE_OFF: "FEATURE_OFF",
+  INVITE_INVALID: "INVITE_INVALID",
+  OWNER_PROTECTED: "OWNER_PROTECTED",
+  IP_NOT_ALLOWED: "IP_NOT_ALLOWED",
   IN_USE: "IN_USE",
 });
 
@@ -242,6 +247,9 @@ export const JOBS = Object.freeze({
   bulkImport: "bulk-import",
   publishScheduled: "publish-scheduled",
   syncStorageUsage: "sync-storage-usage",
+  trackDailyStats: "track-daily-stats",
+  trackSimilarity: "track-similarity",
+  moveTrackStorage: "move-track-storage",
 });
 
 /** Official = added by the Owner / staff; Community = uploaded by users (PRD 10.14, F51). */
@@ -392,6 +400,7 @@ export const FEED_RULES = Object.freeze({
 export const FEED_SECTION_SIZES = Object.freeze({
   jumpBackIn: 6,
   madeForYou: 20,
+  becauseYouLiked: 12,
   rightNow: 12,
   trending: 15,
   freshCreators: 10,
@@ -409,3 +418,58 @@ export const RIGHT_NOW_VIBES = Object.freeze([
   { from: 21, to: 24, vibes: ["chill", "sleep"] }, // late night
   { from: 0, to: 5, vibes: ["sleep", "chill"] },
 ]);
+
+/* ===== Owner Console, song performance & smarter recs (Day 9) ===== */
+
+/** Calendar days for stats are counted in India time (the launch market). */
+export const STATS_TIMEZONE = "Asia/Kolkata";
+/** Hourly stats job re-counts today and yesterday (late events land in either). */
+export const STATS_RECOMPUTE_DAYS = 2;
+export const STATS_JOB_EVERY_MS = 60 * 60 * 1000;
+/** Nightly similarity job: 03:00 India time. */
+export const SIMILARITY_JOB_CRON = "0 3 * * *";
+/** Likes / completes / playlist adds in the last N days feed "users who liked X also liked Y". */
+export const SIMILARITY_WINDOW_DAYS = 90;
+export const SIMILARITY_MAX_ITEMS_PER_USER = 200;
+export const SIMILARITY_TOP_K = 30;
+export const SIMILAR_TRACKS_LIMIT = 20;
+export const DAILY_MIX_COUNT = 3;
+export const DAILY_MIX_SIZE = 30;
+/** Performance list date ranges (days; 0 = all time). */
+export const PERFORMANCE_RANGES = Object.freeze([7, 30, 90, 0]);
+export const PERFORMANCE_SORTS = Object.freeze([
+  "plays",
+  "listeners",
+  "completionRate",
+  "skipRate",
+  "likes",
+  "saves",
+  "comments",
+  "publishedAt",
+]);
+/** Home page sections staff can arrange (PRD §13 homeSections). */
+export const HOME_SECTION_TYPES = Object.freeze([
+  "hero",
+  "featuredTracks",
+  "featuredArtists",
+  "editorial",
+]);
+export const HOME_SECTION_MAX_ITEMS = 30;
+/** Moderation actions on a report (roadmap Day 9). */
+export const MODERATION_ACTIONS = Object.freeze(["dismiss", "takeDown", "warn", "restore"]);
+export const ADMIN_COMMENT_ACTIONS = Object.freeze(["hide", "unhide", "delete", "pin", "unpin"]);
+export const VERIFICATION_STATUS = Object.freeze(["none", "pending", "approved", "rejected"]);
+/** Staff invites expire after 7 days. */
+export const STAFF_INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** Roles the Owner can give (there is only ever one Owner — ADL-8). */
+export const INVITABLE_STAFF_ROLES = Object.freeze(["admin", "contentManager", "moderator"]);
+/** Platform settings (PRD §13 settings) with their defaults. */
+export const SETTINGS_DEFAULTS = Object.freeze({
+  maintenance: {
+    enabled: false,
+    message: "SelfVibe is getting an upgrade. We'll be back shortly.",
+  },
+  features: { comments: true, uploads: true, voice: true },
+  uploadLimits: { free: 20, premium: 20, creatorPro: null },
+  adminIpAllowlist: [],
+});
