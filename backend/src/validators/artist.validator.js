@@ -125,3 +125,8 @@ export const albumTracksSchema = z.object({
 });
 
 export const idParamsSchema = z.object({ id: objectId("id") });
+
+/** GET /api/artists/:idOrSlug — an artist id or slug (Day 10 security review). */
+export const artistPageParamsSchema = z.object({
+  idOrSlug: z.string().regex(/^[a-z0-9-]{1,100}$/i, { error: "Artist not found" }),
+});

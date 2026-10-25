@@ -11,6 +11,8 @@ const OMITTED_FIELDS = new Set([
   "twoFactorPendingSecret",
   "twoFactorBackupCodes",
   "passwordResetTokenHash",
+  "failedLoginCount",
+  "staffDevices",
   "waveform",
   "lyrics",
   "__v",

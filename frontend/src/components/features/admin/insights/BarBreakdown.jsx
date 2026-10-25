@@ -18,6 +18,7 @@ const LABELS = {
   queue: "Queue",
   browse: "Browse",
   studio: "Studio",
+  share: "Shared links",
   other: "Other",
   mobile: "Phone",
   tablet: "Tablet",

@@ -4,12 +4,15 @@
  * Console → Team (Owner only, roadmap Day 9): staff members and their roles,
  * invite by email (with a copyable link when email isn't set up), change a
  * role, remove access, cancel pending invites. The Owner can't be changed.
+ * Day 10: a "Locked" badge after failed sign-ins, and a security sheet per
+ * member (unlock, sign out everywhere, reset 2FA).
  */
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Copy,
   Crown,
+  KeyRound,
   Mail,
   ShieldCheck,
   ShieldOff,
@@ -30,6 +33,7 @@ import Sheet from "@/components/ui/Sheet";
 import Skeleton from "@/components/ui/Skeleton";
 import TextField from "@/components/ui/TextField";
 import { Stagger, StaggerItem } from "@/components/animations/Stagger";
+import MemberSecuritySheet from "@/components/features/admin/team/MemberSecuritySheet";
 import {
   changeStaffRole,
   getTeam,
@@ -139,6 +143,7 @@ export default function TeamManager() {
   const queryClient = useQueryClient();
   const [isInviting, setIsInviting] = useState(false);
   const [removing, setRemoving] = useState(null);
+  const [securityFor, setSecurityFor] = useState(null);
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.adminTeam,
     queryFn: ({ signal }) => getTeam({ signal }),
@@ -215,6 +220,7 @@ export default function TeamManager() {
                       {member.isOwner && (
                         <Crown size={14} className="text-warning" aria-label="Owner" />
                       )}
+                      {member.lockedUntil && <Badge tone="danger">Locked</Badge>}
                     </p>
                     <p className="truncate text-xs text-fg-subtle">
                       {member.email} ·{" "}
@@ -258,6 +264,14 @@ export default function TeamManager() {
                           </option>
                         ))}
                       </select>
+                      <button
+                        type="button"
+                        onClick={() => setSecurityFor(member)}
+                        aria-label={`Security for ${member.name}`}
+                        className="flex size-11 items-center justify-center rounded-full text-fg-muted transition hover:bg-neon-dim hover:text-neon"
+                      >
+                        <KeyRound size={18} aria-hidden />
+                      </button>
                       <button
                         type="button"
                         onClick={() => setRemoving(member)}
@@ -308,6 +322,7 @@ export default function TeamManager() {
         </>
       )}
       {isInviting && <InviteSheet open onClose={() => setIsInviting(false)} />}
+      <MemberSecuritySheet member={securityFor} onClose={() => setSecurityFor(null)} />
       <ConfirmSheet
         open={Boolean(removing)}
         onClose={() => setRemoving(null)}

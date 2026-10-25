@@ -179,7 +179,11 @@ export default function TasteQuiz() {
         </div>
       </header>
 
-      <main className="px-safe mx-auto w-full max-w-5xl flex-1 pt-8 pb-40 md:px-6">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="px-safe mx-auto w-full max-w-5xl flex-1 pt-8 pb-40 outline-none md:px-6"
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={step.key}

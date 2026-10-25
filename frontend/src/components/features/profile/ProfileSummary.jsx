@@ -2,7 +2,7 @@
 
 /**
  * Signed-in user's profile: avatar, name, bio with an inline edit form,
- * account details, taste summary, and Log out.
+ * account details, taste summary, app & privacy (Day 10), and Log out.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import ProfileEditForm from "@/components/features/profile/ProfileEditForm";
 import TasteSummary from "@/components/features/profile/TasteSummary";
+import AccountPrivacy from "@/components/features/profile/AccountPrivacy";
 import { useAuthStore } from "@/store/authStore";
 import { fadeUp } from "@/utils/animations";
 
@@ -119,6 +120,7 @@ export default function ProfileSummary() {
             </StaggerItem>
           ))}
         </Stagger>
+        <AccountPrivacy />
       </div>
     </div>
   );

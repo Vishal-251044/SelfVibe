@@ -204,6 +204,25 @@ router.post(
 router.delete("/team/invites/:id", can("team.manage"), idParams, platform.revokeInvite);
 router.patch("/team/:id", can("team.manage"), withId(staffRoleSchema), platform.changeStaffRole);
 router.delete("/team/:id", can("team.manage"), idParams, platform.removeStaff);
+// Day 10 admin security: Owner actions on a team member
+router.post(
+  "/team/:id/unlock",
+  can("team.manage"),
+  idParams,
+  platform.teamSecurityAction("unlock")
+);
+router.post(
+  "/team/:id/reset-2fa",
+  can("team.manage"),
+  idParams,
+  platform.teamSecurityAction("reset2fa")
+);
+router.post(
+  "/team/:id/sign-out",
+  can("team.manage"),
+  idParams,
+  platform.teamSecurityAction("signOut")
+);
 
 // Audit log (Admin / Owner)
 router.get(

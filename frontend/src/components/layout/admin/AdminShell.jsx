@@ -126,11 +126,13 @@ export default function AdminShell({ children }) {
       />
 
       <motion.main
+        id="main"
+        tabIndex={-1}
         key={pathname}
         variants={pageTransition}
         initial="hidden"
         animate="visible"
-        className="mx-auto w-full max-w-6xl px-4 pt-8 pb-[calc(var(--player-height)+env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:pt-10"
+        className="mx-auto w-full max-w-6xl px-4 pt-8 pb-[calc(var(--player-height)+env(safe-area-inset-bottom)+2rem)] outline-none sm:px-6 lg:pt-10"
       >
         {children}
       </motion.main>

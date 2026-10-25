@@ -11,15 +11,17 @@ const PRODUCT_LINKS = [
   { label: "Vibes", href: "/#vibes" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Get Started", href: "/signup" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
 ];
 
-// TODO: replace "#" with the real social profile URLs
+// TODO: add the real social profile URLs; links without one are hidden (no dead links)
 const SOCIAL_LINKS = [
   { label: "Instagram", href: "#", icon: Instagram },
   { label: "LinkedIn", href: "#", icon: Linkedin },
   { label: "GitHub", href: "#", icon: Github },
   { label: "X (Twitter)", href: "#", icon: Twitter },
-];
+].filter((link) => link.href !== "#");
 
 export default function SiteFooter() {
   return (
@@ -65,18 +67,20 @@ export default function SiteFooter() {
                 India
               </li>
             </ul>
-            <div className="mt-5 flex gap-2">
-              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="flex size-11 items-center justify-center rounded-xl border border-line text-neon transition hover:border-neon hover:shadow-glow-sm"
-                >
-                  <Icon size={18} />
-                </a>
-              ))}
-            </div>
+            {SOCIAL_LINKS.length > 0 && (
+              <div className="mt-5 flex gap-2">
+                {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    className="flex size-11 items-center justify-center rounded-xl border border-line text-neon transition hover:border-neon hover:shadow-glow-sm"
+                  >
+                    <Icon size={18} />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

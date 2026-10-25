@@ -23,7 +23,11 @@ export default function AuthLayout({ children }) {
         </Link>
       </header>
 
-      <main className="px-safe flex flex-1 items-center justify-center py-8 sm:py-12">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="px-safe flex flex-1 items-center justify-center py-8 outline-none sm:py-12"
+      >
         <FadeIn className="w-full max-w-md rounded-card border border-line-strong bg-black/85 p-6 shadow-glow-lg backdrop-blur-xl sm:p-10">
           {children}
         </FadeIn>

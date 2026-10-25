@@ -31,7 +31,8 @@ export const logger = pino({
           options: {
             colorize: true,
             translateTime: "SYS:HH:MM:ss",
-            ignore: "pid,hostname,service",
+            // Request fields are already in the message line; production keeps them as JSON
+            ignore: "pid,hostname,service,reqId,method,path,status,durationMs,userId",
           },
         },
       }),

@@ -4,7 +4,7 @@
  * here and never reads process.env directly.
  */
 import "dotenv/config";
-import { STORAGE_DEFAULT_QUOTA_GB, STORAGE_POOLS } from "./constants.js";
+import { APP_VERSION, STORAGE_DEFAULT_QUOTA_GB, STORAGE_POOLS } from "./constants.js";
 
 const PLACEHOLDER_PATTERN = /^your_.*_here$/;
 
@@ -154,6 +154,8 @@ const s3IsConfigured = ["bucket", "accessKeyId", "secretAccessKey"].every(
   (key) => !isUnset(s3[key])
 );
 const redisUrl = read("REDIS_URL");
+const sentryDsn = read("SENTRY_DSN");
+const tracesSampleRate = Number(read("SENTRY_TRACES_SAMPLE_RATE", "0"));
 
 export const env = Object.freeze({
   nodeEnv,
@@ -238,6 +240,17 @@ export const env = Object.freeze({
     jamendoClientId: isUnset(read("JAMENDO_CLIENT_ID")) ? null : read("JAMENDO_CLIENT_ID"),
   }),
 
+  // Error tracking (roadmap Day 10). Optional: errors are only logged until SENTRY_DSN is set.
+  sentry: Object.freeze({
+    dsn: isUnset(sentryDsn) ? null : sentryDsn,
+    release: read("SENTRY_RELEASE", `selfvibe-api@${APP_VERSION}`),
+    // Share of requests traced for performance (0 = errors only, 0.1 = 10%)
+    tracesSampleRate:
+      Number.isFinite(tracesSampleRate) && tracesSampleRate >= 0 && tracesSampleRate <= 1
+        ? tracesSampleRate
+        : 0,
+  }),
+
   // Used only by `npm run create-owner` (PRD ADL-3)
   owner: Object.freeze({
     email: read("OWNER_EMAIL"),
@@ -245,6 +258,38 @@ export const env = Object.freeze({
     name: read("OWNER_NAME", "SelfVibe Owner"),
   }),
 });
+
+/**
+ * Launch checks for NODE_ENV=production (roadmap Day 10): HTTPS URLs, secure
+ * cookies and a real database. Mistakes here would silently break sign-in on
+ * phones or leak cookies over HTTP, so the API refuses to start instead.
+ * @returns {string[]} Problems found (empty outside production)
+ */
+export function productionProblems() {
+  if (!env.isProduction) return [];
+  const problems = [];
+  if (isUnset(env.databaseUrl))
+    problems.push("DATABASE_URL must be your MongoDB Atlas connection string");
+  if (!env.appUrl.startsWith("https://")) {
+    problems.push(
+      `APP_URL must be the public https:// address of the web app (got "${env.appUrl}")`
+    );
+  }
+  const localOrigins = env.clientUrls.filter((origin) => /localhost|127.0.0.1/.test(origin));
+  if (env.clientUrls.length === 0 || localOrigins.length === env.clientUrls.length) {
+    problems.push("CLIENT_URL must list the public https:// address of the web app");
+  }
+  if (!env.auth.cookieSecure)
+    problems.push("COOKIE_SECURE must be true in production (HTTPS only)");
+  if (isUnset(env.google.callbackUrl) || !env.google.callbackUrl.startsWith("https://")) {
+    if (env.google.isConfigured) {
+      problems.push(
+        "GOOGLE_CALLBACK_URL must be the https:// address of the web app + /api/auth/google/callback"
+      );
+    }
+  }
+  return problems;
+}
 
 /**
  * Fail fast when secrets the API cannot run without are missing or weak.
@@ -280,6 +325,7 @@ export function assertRequiredEnv() {
   if (env.isProduction && env.queue.driver !== "bullmq") {
     problems.push("Production needs Redis for background jobs: set REDIS_URL (Upstash)");
   }
+  problems.push(...productionProblems());
 
   if (problems.length > 0) {
     throw new Error(

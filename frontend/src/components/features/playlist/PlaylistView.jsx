@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Globe, ListMusic, Lock, Pencil, Play, Share2, Shuffle, Trash2 } from "lucide-react";
+import { Globe, ListMusic, Lock, Pencil, Play, Shuffle, Trash2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ConfirmSheet from "@/components/ui/ConfirmSheet";
 import EmptyState from "@/components/ui/EmptyState";
@@ -17,8 +17,8 @@ import FadeIn from "@/components/animations/FadeIn";
 import PlaylistCover from "@/components/features/playlist/PlaylistCover";
 import PlaylistFormSheet from "@/components/features/playlist/PlaylistFormSheet";
 import PlaylistTrackList from "@/components/features/playlist/PlaylistTrackList";
+import ShareButton from "@/components/features/share/ShareButton";
 import { deletePlaylist, getPlaylist } from "@/services/playlist.service";
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { useAuthStore } from "@/store/authStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { QUERY_KEYS } from "@/utils/constants";
@@ -56,7 +56,6 @@ export default function PlaylistView({ playlistId }) {
   const playQueue = usePlayerStore((state) => state.playQueue);
   const shuffle = usePlayerStore((state) => state.shuffle);
   const toggleShuffle = usePlayerStore((state) => state.toggleShuffle);
-  const { copy, isCopied } = useCopyToClipboard();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteState, setDeleteState] = useState({ loading: false, error: null });
@@ -167,14 +166,13 @@ export default function PlaylistView({ playlistId }) {
               </Button>
             ))}
           {playlist.isPublic && (
-            <Button
-              variant="ghost"
-              onClick={() => copy(`${window.location.origin}/playlist/${playlist.id}`)}
-              aria-label="Copy link to this playlist"
-            >
-              {isCopied ? <Check size={16} aria-hidden /> : <Share2 size={16} aria-hidden />}
-              {isCopied ? "Link copied" : "Share"}
-            </Button>
+            <ShareButton
+              type="playlist"
+              id={playlist.id}
+              title={playlist.name}
+              text={`${playlist.name} on SelfVibe`}
+              variant="button"
+            />
           )}
           {playlist.isOwner && (
             <>

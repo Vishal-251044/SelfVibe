@@ -4,7 +4,7 @@
  * Reveal-on-scroll wrapper: fades and lifts its children into view once.
  */
 import { motion } from "framer-motion";
-import { fadeUp } from "@/utils/animations";
+import { fadeUp, riseIn } from "@/utils/animations";
 
 /**
  * @param {Object} props
@@ -12,14 +12,15 @@ import { fadeUp } from "@/utils/animations";
  * @param {string} [props.className]
  * @param {number} [props.delay=0] - Delay in seconds before the reveal
  * @param {string} [props.as="div"] - Element to render (div, section, li…)
+ * @param {boolean} [props.riseOnly=false] - Lift without fading (above-the-fold main text, keeps LCP fast)
  */
-export default function FadeIn({ children, className, delay = 0, as = "div" }) {
+export default function FadeIn({ children, className, delay = 0, as = "div", riseOnly = false }) {
   const Component = motion[as] ?? motion.div;
 
   return (
     <Component
       className={className}
-      variants={fadeUp}
+      variants={riseOnly ? riseIn : fadeUp}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-60px" }}

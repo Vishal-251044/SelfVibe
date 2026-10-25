@@ -23,6 +23,15 @@ export const fadeUp = {
   },
 };
 
+/**
+ * Lift only, no fade: for the largest text on a page (hero, page titles), so
+ * it counts as painted at once (LCP) while still moving in (Day 10 Lighthouse pass).
+ */
+export const riseIn = {
+  hidden: { y: 16 },
+  visible: { y: 0, transition: { duration: DURATION.slow, ease: EASE_OUT } },
+};
+
 export const fadeIn = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: DURATION.slow, ease: EASE_OUT } },

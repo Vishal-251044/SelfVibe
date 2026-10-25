@@ -2,6 +2,7 @@
  * Signed-in user API calls (/api/users/me/*).
  */
 import { api } from "@/services/api";
+import { downloadBlob } from "@/utils/genericFunctions";
 
 /**
  * Fetch the signed-in user's profile.
@@ -45,4 +46,22 @@ export function skipOnboarding() {
  */
 export function getTaste(options) {
   return api.get("/users/me/taste", options);
+}
+
+/**
+ * Download everything SelfVibe stores about me as a JSON file (Day 10 privacy).
+ * @returns {Promise<void>}
+ */
+export async function downloadMyData() {
+  const { blob, filename } = await api.get("/users/me/export", { responseType: "file" });
+  downloadBlob(blob, filename ?? "selfvibe-my-data.json");
+}
+
+/**
+ * Delete my account for good (Day 10 privacy).
+ * @param {string} confirmation - My password, or "DELETE" for Google-only accounts
+ * @returns {Promise<void>}
+ */
+export function deleteMyAccount(confirmation) {
+  return api.delete("/users/me", { body: { password: confirmation, confirm: confirmation } });
 }

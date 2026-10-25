@@ -222,7 +222,12 @@ describe("console validators", () => {
     assert.equal(settingsSchema.safeParse({ secret: 1 }).success, false);
   });
   it("home sections: empty dates stay empty (not 1970)", () => {
-    const parsed = createHomeSectionSchema.parse({ type: "featuredTracks", title: "Picks", startsAt: null, endsAt: null });
+    const parsed = createHomeSectionSchema.parse({
+      type: "featuredTracks",
+      title: "Picks",
+      startsAt: null,
+      endsAt: null,
+    });
     assert.equal(parsed.startsAt, null);
     assert.equal(parsed.endsAt, null);
   });

@@ -22,7 +22,7 @@
 
   --color-fg: #ffffff; /* primary text */
   --color-fg-muted: #9ca3af; /* body copy */
-  --color-fg-subtle: #6b7280; /* hints, captions */
+  --color-fg-subtle: #7f8794; /* hints, captions (5:1 on surfaces, WCAG AA — Day 10) */
   --color-danger: #f87171;
   --color-warning: #facc15;
 

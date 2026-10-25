@@ -142,6 +142,14 @@ export const changeStaffRole = (id, staffRole) => api.patch(`/admin/team/${id}`,
 /** @param {string} id */
 export const removeStaff = (id) => api.delete(`/admin/team/${id}`);
 
+/* Day 10 admin security: Owner actions on a team member */
+/** @param {string} id */
+export const unlockStaff = (id) => api.post(`/admin/team/${id}/unlock`);
+/** @param {string} id - They set up 2FA again at their next sign-in */
+export const resetStaffTwoFactor = (id) => api.post(`/admin/team/${id}/reset-2fa`);
+/** @param {string} id - Ends their console sessions on every device */
+export const signOutStaff = (id) => api.post(`/admin/team/${id}/sign-out`);
+
 /**
  * Invite page (public — the invitee isn't staff yet).
  * @param {string} token

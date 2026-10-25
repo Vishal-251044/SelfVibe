@@ -1,0 +1,80 @@
+# Render Blueprint (roadmap Day 10 deploy): the SelfVibe API and the background
+# worker. Render → New → Blueprint → pick this repo. Secrets are `sync: false`:
+# Render asks for each value once (in the "selfvibe-shared" group, used by both
+# services) and they never live in Git.
+# The frontend is deployed separately on Vercel (Root Directory: frontend).
+# Full steps: Doc/SelfVibe_Deployment_Guide_v1.0.md
+services:
+  - type: web
+    name: selfvibe-api
+    runtime: node
+    region: singapore # closest Render region to India
+    plan: starter # the free plan sleeps after 15 min idle (first request then takes ~1 min)
+    rootDir: backend
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false # deploy on purpose, after the smoke test
+    envVars:
+      - fromGroup: selfvibe-shared
+      # Browser → Vercel → Render's load balancer → API (check "Your IP" in Console → Settings)
+      - key: TRUST_PROXY
+        value: "2"
+
+  - type: worker
+    name: selfvibe-worker
+    runtime: node
+    region: singapore
+    plan: starter # background workers have no free plan on Render
+    rootDir: backend
+    buildCommand: npm ci --omit=dev
+    startCommand: npm run worker
+    autoDeploy: false
+    envVars:
+      - fromGroup: selfvibe-shared
+
+envVarGroups:
+  - name: selfvibe-shared
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: LOG_LEVEL
+        value: info
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: APP_URL
+        sync: false # https://your-vercel-domain
+      - key: CLIENT_URL
+        sync: false # the same https:// address (comma-separate extra domains)
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: STAFF_JWT_SECRET
+        sync: false
+      - key: TOTP_ENCRYPTION_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_ACCOUNTS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false # https://your-vercel-domain/api/auth/google/callback
+      - key: SENTRY_DSN
+        sync: false

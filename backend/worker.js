@@ -10,6 +10,7 @@ import { startJobs } from "./src/jobs/index.js";
 import { queue } from "./src/services/queue/index.js";
 import { logger } from "./src/utils/logger.js";
 import "./src/models/index.js";
+import { captureError, flushErrorTracking, initErrorTracking } from "./src/utils/errorTracking.js";
 
 async function start() {
   try {
@@ -25,6 +26,8 @@ async function start() {
     process.exit(1);
   }
 
+  initErrorTracking("worker");
+
   await connectDB();
   await startJobs();
 
@@ -37,5 +40,17 @@ async function start() {
   process.on("SIGINT", () => shutdown("SIGINT"));
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
+
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "[Worker] Unhandled promise rejection");
+  captureError(reason);
+});
+
+process.on("uncaughtException", async (error) => {
+  logger.fatal({ err: error }, "[Worker] Uncaught exception — exiting");
+  captureError(error);
+  await flushErrorTracking();
+  process.exit(1);
+});
 
 start();

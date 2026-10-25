@@ -27,3 +27,6 @@ Thumbs.db
 # local object storage (development, STORAGE_DRIVER=local)
 .storage/
 .storage-test/
+
+# database backups (npm run db:backup) contain personal data
+backups/

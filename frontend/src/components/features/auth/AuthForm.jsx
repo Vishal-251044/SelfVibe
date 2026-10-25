@@ -171,6 +171,19 @@ export default function AuthForm({ mode }) {
         <Button type="submit" fullWidth size="lg" className="mt-2" loading={isSubmitting}>
           {isSubmitting ? "Please wait…" : copy.submit}
         </Button>
+        {isSignup && (
+          <p className="text-center text-xs text-fg-subtle">
+            By creating an account you agree to the{" "}
+            <Link href="/terms" className="text-fg-muted underline hover:text-neon">
+              Terms of Use
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-fg-muted underline hover:text-neon">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        )}
       </form>
 
       <div className="my-6 flex items-center gap-3">

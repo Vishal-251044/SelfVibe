@@ -5,6 +5,7 @@
  * inside the API process and are lost if it restarts.
  */
 import { logger } from "../../utils/logger.js";
+import { captureError } from "../../utils/errorTracking.js";
 import { msUntilDailyRun } from "../../utils/dates.js";
 
 const processors = new Map();
@@ -53,6 +54,7 @@ async function runJob(job) {
       later(() => waiting.push(job) && drain(), delayMs);
     } else {
       logger.error({ err: error }, `[Queue] job ${job.name}#${job.id} failed permanently`);
+      captureError(error, { job: job.name, extra: { jobId: job.id } });
       activeJobIds.delete(job.id);
     }
   }

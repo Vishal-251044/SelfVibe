@@ -7,7 +7,13 @@ import { SESSION_KINDS } from "../config/constants.js";
 import { getRequestMeta as requestMeta } from "../helpers/genericFunctions.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendSuccess } from "../utils/ApiResponse.js";
-import { clearSessionCookies, readRefreshCookie, setSessionCookies } from "../utils/cookies.js";
+import {
+  clearSessionCookies,
+  readRefreshCookie,
+  readStaffDeviceCookie,
+  setSessionCookies,
+  setStaffDeviceCookie,
+} from "../utils/cookies.js";
 
 /** POST /api/admin/auth/login — password step; returns the 2FA challenge */
 export const login = asyncHandler(async (req, res) => {
@@ -26,8 +32,12 @@ export const setupTwoFactor = asyncHandler(async (req, res) => {
 
 /** POST /api/admin/auth/2fa/verify — code step; opens the staff session */
 export const verifyTwoFactor = asyncHandler(async (req, res) => {
-  const result = await staffAuthService.completeTwoFactor(req.body, requestMeta(req));
+  const result = await staffAuthService.completeTwoFactor(req.body, {
+    ...requestMeta(req),
+    deviceId: readStaffDeviceCookie(req),
+  });
   setSessionCookies(res, SESSION_KINDS.STAFF, result.refreshToken, result.expiresAt);
+  setStaffDeviceCookie(res, result.deviceId);
   return sendSuccess(res, {
     message: "Signed in to the console",
     data: {

@@ -1,11 +1,12 @@
 /**
  * Landing hero: status badge, headline, pitch, CTAs and the animated terminal.
  */
-import { ArrowRight, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import GridBackground from "@/components/ui/GridBackground";
 import Button from "@/components/ui/Button";
 import FadeIn from "@/components/animations/FadeIn";
 import HeroTerminal from "@/components/features/landing/HeroTerminal";
+import HeroPrimaryAction from "@/components/features/landing/HeroPrimaryAction";
 
 export default function Hero() {
   return (
@@ -26,14 +27,14 @@ export default function Hero() {
           </span>
         </FadeIn>
 
-        <FadeIn delay={0.08}>
+        <FadeIn riseOnly delay={0.08}>
           <h1 className="mt-8 font-display text-[clamp(2.75rem,11vw,5.5rem)] leading-[0.95] font-bold tracking-tight">
             <span className="block">Stream music.</span>
             <span className="text-glow block text-neon-bright">Feel the magic.</span>
           </h1>
         </FadeIn>
 
-        <FadeIn delay={0.16}>
+        <FadeIn riseOnly delay={0.16}>
           <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted sm:text-lg">
             A next-generation music platform for listeners and creators. A feed that learns your
             taste, background play on your phone, voice control, and an AI studio. All in one
@@ -43,10 +44,7 @@ export default function Hero() {
 
         <FadeIn delay={0.24}>
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-            <Button href="/signup" size="lg">
-              Start listening free
-              <ArrowRight size={18} aria-hidden />
-            </Button>
+            <HeroPrimaryAction />
             <Button href="#features" size="lg" variant="outline">
               <Play size={16} aria-hidden />
               See how it works

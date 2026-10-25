@@ -28,6 +28,13 @@ export const TRACK_ADDED_VIA = Object.freeze(["creator", "admin", "ai"]);
 
 export const PLAYLIST_TYPES = Object.freeze(["user", "system", "editorial"]);
 
+/** Released version (roadmap Day 10: v1.0.0). Also tags Sentry events. */
+export const APP_VERSION = "1.0.0";
+
+/** Share links (PRD F28, roadmap Day 10): what can be shared, and how. */
+export const SHARE_TARGET_TYPES = Object.freeze(["track", "playlist", "artist"]);
+export const SHARE_CHANNELS = Object.freeze(["native", "copy"]);
+
 export const LISTEN_EVENT_TYPES = Object.freeze(["play", "skip", "complete", "repeat"]);
 
 /** What the client reports for one listen (PRD PLY-7): it started, or it stopped. */
@@ -48,6 +55,7 @@ export const LISTEN_SOURCES = Object.freeze([
   "studio",
   "browse",
   "voice",
+  "share", // opened from a shared link (Day 10)
   "other",
 ]);
 export const LISTEN_DEVICES = Object.freeze(["mobile", "tablet", "desktop"]);
@@ -79,6 +87,8 @@ export const COOKIES = Object.freeze({
   STAFF_HINT: { name: "sv_staff", path: "/" },
   // Short-lived Google sign-in state (CSRF state + PKCE verifier + return path)
   OAUTH_STATE: { name: "sv_oauth", path: "/api/auth/google" },
+  // Long-lived random id per browser, so console logins from a new device can be spotted (ADL-5)
+  STAFF_DEVICE: { name: "sv_sdev", path: "/api/admin/auth" },
 });
 
 export const BCRYPT_ROUNDS = 12;
@@ -100,6 +110,25 @@ export const BACKUP_CODE_COUNT = 10;
 
 /** Login rate limit (PRD AUTH-5 / ADL-5): 5 failed attempts per 15 minutes. */
 export const LOGIN_RATE_LIMIT = Object.freeze({ windowMs: 15 * 60 * 1000, limit: 5 });
+
+/**
+ * Staff account lockout (PRD ADL-5, roadmap Day 10): this many wrong passwords or
+ * 2FA codes in a row lock the account, from any network, for lockMs. The rate
+ * limit above slows one network down; the lockout stops guessing spread over many.
+ */
+export const STAFF_LOCKOUT = Object.freeze({ maxFailures: 10, lockMs: 30 * 60 * 1000 });
+
+/** Devices remembered per staff member for new-device alerts (oldest dropped first). */
+export const STAFF_MAX_KNOWN_DEVICES = 10;
+
+/** Staff role names as people read them (emails, Team page). */
+export const STAFF_ROLE_LABELS = Object.freeze({
+  owner: "Owner",
+  admin: "Admin",
+  contentManager: "Content Manager",
+  moderator: "Moderator",
+});
+export const STAFF_DEVICE_COOKIE_MAX_AGE_MS = 400 * 24 * 60 * 60 * 1000; // browsers cap at 400 days
 
 /** Machine-readable error codes sent as `error.code` so the frontend can react. */
 export const ERROR_CODES = Object.freeze({
@@ -137,6 +166,7 @@ export const ERROR_CODES = Object.freeze({
   OWNER_PROTECTED: "OWNER_PROTECTED",
   IP_NOT_ALLOWED: "IP_NOT_ALLOWED",
   IN_USE: "IN_USE",
+  ACCOUNT_LOCKED: "ACCOUNT_LOCKED",
 });
 
 /* ===== Onboarding & taste profile ===== */

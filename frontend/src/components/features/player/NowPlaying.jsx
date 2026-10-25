@@ -11,6 +11,7 @@ import Link from "next/link";
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
 import { BadgeCheck, ChevronDown, ListMusic, ListPlus, MessageCircle } from "lucide-react";
 import LikeButton from "@/components/features/music/LikeButton";
+import ShareButton from "@/components/features/share/ShareButton";
 import MicButton from "@/components/features/voice/MicButton";
 import { useLibrarySheetsStore } from "@/store/librarySheetsStore";
 import CoverArt from "@/components/features/music/CoverArt";
@@ -211,6 +212,13 @@ export default function NowPlaying() {
                   >
                     <MessageCircle size={22} />
                   </button>
+                  <ShareButton
+                    type="track"
+                    id={track.id}
+                    title={track.title}
+                    text={`${track.title} by ${track.artist?.stageName ?? "SelfVibe"}`}
+                    size={22}
+                  />
                   <MicButton size={22} />
                 </div>
               )}

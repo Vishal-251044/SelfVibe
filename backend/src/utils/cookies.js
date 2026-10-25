@@ -4,7 +4,11 @@
  * - Hint cookie: non-secret "a session exists" flag the frontend route guard reads
  *   to avoid a flash of protected pages. It grants no access by itself.
  */
-import { COOKIES, OAUTH_STATE_TTL_MS } from "../config/constants.js";
+import {
+  COOKIES,
+  OAUTH_STATE_TTL_MS,
+  STAFF_DEVICE_COOKIE_MAX_AGE_MS,
+} from "../config/constants.js";
 import { env } from "../config/env.js";
 
 /**
@@ -99,4 +103,27 @@ export function consumeOAuthStateCookie(req, res) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Remember this browser for console new-device alerts (PRD ADL-5). httpOnly,
+ * random, only sent to the console auth routes; it grants no access.
+ * @param {import("express").Response} res
+ * @param {string} deviceId
+ */
+export function setStaffDeviceCookie(res, deviceId) {
+  const { name, path } = COOKIES.STAFF_DEVICE;
+  res.cookie(name, deviceId, {
+    ...baseOptions(path, true),
+    sameSite: "strict",
+    maxAge: STAFF_DEVICE_COOKIE_MAX_AGE_MS,
+  });
+}
+
+/**
+ * @param {import("express").Request} req
+ * @returns {string|undefined} The device id, if this browser has one
+ */
+export function readStaffDeviceCookie(req) {
+  return req.cookies?.[COOKIES.STAFF_DEVICE.name];
 }

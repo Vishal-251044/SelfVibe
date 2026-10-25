@@ -7,6 +7,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { sendError } from "../utils/ApiResponse.js";
 import { logger } from "../utils/logger.js";
 import { env } from "../config/env.js";
+import { captureError } from "../utils/errorTracking.js";
 
 /**
  * Catch-all for routes that do not exist.
@@ -71,6 +72,14 @@ export function errorHandler(error, req, res, next) {
       { err: error, reqId: req.id },
       `[ErrorHandler] ${req.method} ${req.originalUrl} failed`
     );
+    // Expected 5xx (e.g. 503 "database down", NOT_CONFIGURED) are logged but not reported
+    if (!isOperational) {
+      captureError(error, {
+        reqId: req.id,
+        userId: req.auth?.userId ?? req.staff?.userId ?? null,
+        route: `${req.method} ${req.route?.path ?? req.path}`,
+      });
+    }
   } else {
     logger.debug(
       `[ErrorHandler] ${statusCode} ${req.method} ${req.originalUrl}: ${normalised.message}`

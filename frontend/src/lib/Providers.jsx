@@ -14,6 +14,7 @@ import { MotionConfig } from "framer-motion";
 import { makeQueryClient } from "@/lib/queryClient";
 import PlayerEngine from "@/components/features/player/PlayerEngine";
 import ServiceWorkerRegister from "@/components/features/pwa/ServiceWorkerRegister";
+import InstallListener from "@/components/features/pwa/InstallListener";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -28,6 +29,7 @@ export default function Providers({ children }) {
         {children}
         <PlayerEngine />
         <ServiceWorkerRegister />
+        <InstallListener />
       </MotionConfig>
     </QueryClientProvider>
   );

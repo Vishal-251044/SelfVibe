@@ -7,6 +7,7 @@
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { env } from "../config/env.js";
 import { ERROR_CODES } from "../config/constants.js";
@@ -35,7 +36,8 @@ export function canSendEmail() {
  */
 async function saveToDevMailbox({ to, subject, html }) {
   await mkdir(DEV_MAILBOX_DIR, { recursive: true });
-  const fileName = `${new Date().toISOString().replace(/[:.]/g, "-")}-${subject
+  // Random part: two emails in the same millisecond (e.g. a lock alert to two people) must not collide
+  const fileName = `${new Date().toISOString().replace(/[:.]/g, "-")}-${randomBytes(2).toString("hex")}-${subject
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, 40)}.html`;

@@ -64,3 +64,9 @@ export const artistSuggestionsQuerySchema = z.object({
   genres: slugListQuery(ONBOARDING_LIMITS.maxGenres),
   vibes: slugListQuery(ONBOARDING_LIMITS.maxVibes),
 });
+
+/** DELETE /api/users/me (Day 10 privacy): password, or "DELETE" for Google-only accounts. */
+export const deleteAccountSchema = z.object({
+  password: z.string().max(200).optional(),
+  confirm: z.string().max(20).optional(),
+});

@@ -9,6 +9,7 @@ import { listReportGroups, moderate } from "../services/admin/moderation.service
 import * as commentsService from "../services/admin/adminComments.service.js";
 import { getSettings, updateSettings } from "../services/settings.service.js";
 import * as teamService from "../services/admin/team.service.js";
+import * as staffSecurity from "../services/staffSecurity.service.js";
 import { listAuditLogs } from "../services/audit.service.js";
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -241,6 +242,31 @@ export const removeStaff = asyncHandler(async (req, res) => {
   req.audit({ action: "team.remove", targetType: "user", targetId: id, ...change });
   return sendSuccess(res, { message: "Console access removed", data: change.after });
 });
+
+/**
+ * Owner security actions on a team member (roadmap Day 10): unlock, reset 2FA,
+ * sign out everywhere. Each one is audit-logged.
+ * @param {"unlock"|"reset2fa"|"signOut"} kind
+ * @returns {import("express").RequestHandler}
+ */
+export const teamSecurityAction = (kind) => {
+  const actions = {
+    unlock: [staffSecurity.unlockStaff, "team.unlock", "Account unlocked"],
+    reset2fa: [
+      staffSecurity.resetStaffTwoFactor,
+      "team.reset_2fa",
+      "2FA reset — they set it up again at their next sign-in",
+    ],
+    signOut: [staffSecurity.endStaffSessions, "team.sign_out", "Signed out of every device"],
+  };
+  const [run, action, message] = actions[kind];
+  return asyncHandler(async (req, res) => {
+    const { id } = req.validated.params;
+    const change = await run(id);
+    req.audit({ action, targetType: "user", targetId: id, ...change });
+    return sendSuccess(res, { message, data: change.after });
+  });
+};
 
 /** GET /api/admin/invites/:token — public (invite page) */
 export const getInvite = asyncHandler(async (req, res) => {

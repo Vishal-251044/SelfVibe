@@ -9,6 +9,7 @@ import { logger } from "./src/utils/logger.js";
 import "./src/models/index.js"; // register every model so its indexes are built on connect
 import { startJobs } from "./src/jobs/index.js";
 import { queue } from "./src/services/queue/index.js";
+import { captureError, flushErrorTracking, initErrorTracking } from "./src/utils/errorTracking.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10000;
 
@@ -22,6 +23,12 @@ async function start() {
   } catch (error) {
     logger.fatal(error.message);
     process.exit(1);
+  }
+  initErrorTracking("api");
+  if (env.isProduction && !env.email.isConfigured) {
+    logger.warn(
+      "[Server] RESEND_API_KEY is not set: password resets, staff invites and security alerts can't be emailed"
+    );
   }
 
   await connectDB();
@@ -67,10 +74,13 @@ async function start() {
 
 process.on("unhandledRejection", (reason) => {
   logger.error({ err: reason }, "[Process] Unhandled promise rejection");
+  captureError(reason);
 });
 
-process.on("uncaughtException", (error) => {
+process.on("uncaughtException", async (error) => {
   logger.fatal({ err: error }, "[Process] Uncaught exception — exiting");
+  captureError(error);
+  await flushErrorTracking();
   process.exit(1);
 });
 

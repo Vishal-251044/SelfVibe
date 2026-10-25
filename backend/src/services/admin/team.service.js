@@ -17,15 +17,10 @@ import { generateRandomToken, hashToken } from "../../utils/crypto.js";
 import { hashPassword, verifyPassword } from "../../utils/password.js";
 import { env } from "../../config/env.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { ERROR_CODES, STAFF_INVITE_TTL_MS } from "../../config/constants.js";
+import { ERROR_CODES, STAFF_INVITE_TTL_MS, STAFF_ROLE_LABELS } from "../../config/constants.js";
 import { logger } from "../../utils/logger.js";
 
-const ROLE_LABELS = {
-  owner: "Owner",
-  admin: "Admin",
-  contentManager: "Content Manager",
-  moderator: "Moderator",
-};
+const ROLE_LABELS = STAFF_ROLE_LABELS;
 
 /**
  * Staff member as the Team page shows them.
@@ -43,6 +38,9 @@ function toTeamMember(user) {
     twoFactorEnabled: Boolean(user.twoFactorEnabled),
     lastLoginAt: user.lastLoginAt ?? null,
     isOwner: user.staffRole === "owner",
+    // Day 10: locked after too many failed sign-ins (until this time)
+    lockedUntil:
+      user.lockedUntil && new Date(user.lockedUntil) > new Date() ? user.lockedUntil : null,
   };
 }
 

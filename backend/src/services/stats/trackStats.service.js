@@ -1,7 +1,7 @@
 /**
  * Song statistics (PRD PRF-1/2/3/4, roadmap Day 9).
- * - computeDailyStats(): the hourly job — listenEvents, likes, playlist saves
- *   and comments → one trackDailyStats row per song per day
+ * - computeDailyStats(): the hourly job — listenEvents, likes, playlist saves,
+ *   shares (Day 10) and comments → one trackDailyStats row per song per day
  * - summariseStats(): pure totals / rates from daily rows (unit tested)
  * - statsByTrack(): totals per song for a date range (performance lists, creators)
  * - dailySeries(): one song's (or a set of songs') day-by-day numbers
@@ -11,6 +11,7 @@ import { ListenEvent } from "../../models/listenEvent.model.js";
 import { Like } from "../../models/like.model.js";
 import { Playlist } from "../../models/playlist.model.js";
 import { Comment } from "../../models/comment.model.js";
+import { ShareEvent } from "../../models/shareEvent.model.js";
 import { TrackDailyStats } from "../../models/trackDailyStats.model.js";
 import { lastZonedDays, startOfZonedDay } from "../../utils/dates.js";
 import { STATS_RECOMPUTE_DAYS, STATS_TIMEZONE } from "../../config/constants.js";
@@ -64,7 +65,7 @@ export async function computeDailyStats({ days = STATS_RECOMPUTE_DAYS } = {}) {
   const dayList = lastZonedDays(days, STATS_TIMEZONE);
   const since = startOfZonedDay(dayList[0], STATS_TIMEZONE);
 
-  const [listens, likes, saves, comments] = await Promise.all([
+  const [listens, likes, saves, comments, shares] = await Promise.all([
     ListenEvent.aggregate([
       { $match: { createdAt: { $gte: since } } },
       {
@@ -128,6 +129,10 @@ export async function computeDailyStats({ days = STATS_RECOMPUTE_DAYS } = {}) {
       { $match: { createdAt: { $gte: since } } },
       { $group: { _id: { trackId: "$trackId", date: dayOf("$createdAt") }, count: { $sum: 1 } } },
     ]),
+    countPerDay(ShareEvent, [
+      { $match: { targetType: "track", createdAt: { $gte: since } } },
+      { $group: { _id: { trackId: "$targetId", date: dayOf("$createdAt") }, count: { $sum: 1 } } },
+    ]),
   ]);
 
   const rows = new Map(); // "trackId|date" → counters
@@ -154,6 +159,7 @@ export async function computeDailyStats({ days = STATS_RECOMPUTE_DAYS } = {}) {
   likes.forEach((entry) => (rowFor(entry._id).likes = entry.count));
   saves.forEach((entry) => (rowFor(entry._id).saves = entry.count));
   comments.forEach((entry) => (rowFor(entry._id).comments = entry.count));
+  shares.forEach((entry) => (rowFor(entry._id).shares = entry.count));
 
   if (rows.size > 0) {
     await TrackDailyStats.bulkWrite(

@@ -238,3 +238,16 @@ export function formatCount(value) {
     value ?? 0
   );
 }
+
+/**
+ * Public link to a song, playlist or artist (roadmap Day 10 share links).
+ * @param {"track"|"playlist"|"artist"} type
+ * @param {string} key - id (or artist slug)
+ * @param {string} [origin] - Defaults to this site
+ * @returns {string} e.g. "https://selfvibe.app/track/66f…"
+ */
+export function buildShareUrl(type, key, origin) {
+  const base = origin ?? (typeof window === "undefined" ? "" : window.location.origin);
+  const paths = { track: "/track", playlist: "/playlist", artist: "/artist" };
+  return `${base}${paths[type]}/${encodeURIComponent(key)}`;
+}

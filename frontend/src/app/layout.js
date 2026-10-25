@@ -19,7 +19,11 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+// Absolute base for link previews (Open Graph images must be full URLs)
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: `${APP_NAME} · ${APP_TAGLINE}`,
     template: `%s · ${APP_NAME}`,
@@ -32,6 +36,14 @@ export const metadata = {
     statusBarStyle: "black-translucent",
   },
   formatDetection: { telephone: false },
+  openGraph: {
+    type: "website",
+    siteName: APP_NAME,
+    title: `${APP_NAME} · ${APP_TAGLINE}`,
+    description: APP_DESCRIPTION,
+    locale: "en_IN",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport = {
@@ -46,6 +58,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${spaceGrotesk.variable}`}>
       <body>
+        {/* Keyboard users jump straight past the navigation (Day 10 accessibility pass) */}
+        <a
+          href="#main"
+          className="sr-only rounded-full bg-neon px-5 py-3 font-semibold text-black focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100]"
+        >
+          Skip to content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

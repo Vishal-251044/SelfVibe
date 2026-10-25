@@ -3,6 +3,8 @@
  * Flow: password → 2FA challenge → (first time: enrol authenticator) → code → session.
  * Staff sessions are separate from listener sessions: 15-minute access token,
  * 8-hour refresh token, 30-minute idle timeout.
+ * Day 10: wrong passwords / codes count towards the account lockout, and each
+ * successful sign-in records the device (new-device alert to the Owner).
  */
 import { User } from "../models/user.model.js";
 import { ERROR_CODES, SESSION_KINDS } from "../config/constants.js";
@@ -24,6 +26,12 @@ import {
   verifyTotpCode,
 } from "./twoFactor.service.js";
 import { toStaffUser } from "./user.service.js";
+import {
+  assertNotLocked,
+  clearFailedAttempts,
+  recordStaffDevice,
+  registerFailedAttempt,
+} from "./staffSecurity.service.js";
 import { verifyPassword } from "../utils/password.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
@@ -56,22 +64,28 @@ async function loadChallenge(challengeToken) {
       code: ERROR_CODES.NOT_STAFF,
     });
   }
+  assertNotLocked(user);
   return { user, purpose };
 }
 
 /**
  * Step 1: check email + password for a staff account.
  * @param {{ email: string, password: string }} input
- * @param {{ ip?: string }} meta
+ * @param {{ ip?: string, userAgent?: string }} meta
  * @returns {Promise<{ step: "setup"|"verify", challengeToken: string }>}
  *   "setup" when the account has no authenticator yet (first login)
- * @throws {ApiError} 401 INVALID_CREDENTIALS, 403 NOT_STAFF / ACCOUNT_SUSPENDED
+ * @throws {ApiError} 401 INVALID_CREDENTIALS, 403 NOT_STAFF / ACCOUNT_SUSPENDED, 423 ACCOUNT_LOCKED
  */
 export async function startStaffLogin({ email, password }, meta) {
   const user = await User.findOne({ email }).select("+passwordHash");
+  // A locked staff account refuses every attempt, right or wrong, until the lock ends
+  if (user?.staffRole) assertNotLocked(user);
   const isPasswordValid = await verifyPassword(password, user?.passwordHash);
 
   if (!user || !isPasswordValid) {
+    if (user?.staffRole && (await registerFailedAttempt(user, "password", meta))) {
+      assertNotLocked(await User.findById(user._id).select("lockedUntil").lean());
+    }
     logger.warn(`[StaffAuthService] console login failed (invalid credentials) ip=${meta.ip}`);
     throw ApiError.unauthorized("Incorrect email or password", {
       code: ERROR_CODES.INVALID_CREDENTIALS,
@@ -137,8 +151,8 @@ export async function beginTwoFactorSetup(challengeToken) {
  * - "setup" challenge: confirms the new authenticator and returns backup codes (shown once)
  * - "verify" challenge: accepts an authenticator code or an unused backup code
  * @param {{ challengeToken: string, code: string }} input
- * @param {{ userAgent?: string, ip?: string }} meta
- * @returns {Promise<{ staff: Object, accessToken: string, refreshToken: string, expiresAt: Date, backupCodes?: string[] }>}
+ * @param {{ userAgent?: string, ip?: string, deviceId?: string }} meta - deviceId from the device cookie
+ * @returns {Promise<{ staff: Object, accessToken: string, refreshToken: string, expiresAt: Date, deviceId: string, backupCodes?: string[] }>}
  */
 export async function completeTwoFactor({ challengeToken, code }, meta) {
   const { user, purpose } = await loadChallenge(challengeToken);
@@ -151,7 +165,7 @@ export async function completeTwoFactor({ challengeToken, code }, meta) {
       });
     }
     const result = await verifyTotpCode(user.twoFactorPendingSecret, code, null);
-    if (!result.valid) throw invalidCodeError();
+    if (!result.valid) await failCodeStep(user, meta);
 
     const generated = generateBackupCodes();
     backupCodes = generated.codes;
@@ -162,11 +176,20 @@ export async function completeTwoFactor({ challengeToken, code }, meta) {
     user.twoFactorBackupCodes = generated.stored;
     logger.debug(`[StaffAuthService] 2FA enabled userId=${user._id}`);
   } else {
-    await checkVerifyCode(user, code);
+    try {
+      await checkVerifyCode(user, code);
+    } catch (error) {
+      if (error.details?.code === ERROR_CODES.TWO_FACTOR_INVALID) await failCodeStep(user, meta);
+      throw error;
+    }
   }
 
   user.lastLoginAt = new Date();
   await user.save();
+  await clearFailedAttempts(user._id);
+  const { deviceId } = await recordStaffDevice(user, meta.deviceId, meta, {
+    isFirstLogin: purpose === "setup",
+  });
 
   const { session, refreshToken } = await createSession(user._id, SESSION_KINDS.STAFF, meta);
   logger.debug(`[StaffAuthService] console login ok userId=${user._id} role=${user.staffRole}`);
@@ -176,8 +199,23 @@ export async function completeTwoFactor({ challengeToken, code }, meta) {
     accessToken: signStaffAccessToken(user, session._id),
     refreshToken,
     expiresAt: session.expiresAt,
+    deviceId,
     ...(backupCodes && { backupCodes }),
   };
+}
+
+/**
+ * Count a wrong 2FA code towards the lockout, then refuse it (as "locked" when
+ * this attempt locked the account).
+ * @param {Object} user
+ * @param {{ ip?: string, userAgent?: string }} meta
+ * @returns {Promise<never>}
+ */
+async function failCodeStep(user, meta) {
+  if (await registerFailedAttempt(user, "2fa", meta)) {
+    assertNotLocked(await User.findById(user._id).select("lockedUntil").lean());
+  }
+  throw invalidCodeError();
 }
 
 /**

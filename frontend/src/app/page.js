@@ -12,7 +12,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteNavbar />
-      <main>
+      <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <Features />
         <VibeGrid />

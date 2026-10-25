@@ -144,3 +144,64 @@ export function moderationWarningEmail({ name, what, reason, appUrl }) {
     text: `Hi ${name},\n\n${line}\n\n${appUrl}`,
   };
 }
+
+/**
+ * "New console sign-in" alert to the Owner (PRD ADL-5, roadmap Day 10).
+ * @param {{ staffName: string, staffEmail: string, roleLabel: string, device: string, ip: string, at: string, consoleUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function staffNewDeviceEmail({
+  staffName,
+  staffEmail,
+  roleLabel,
+  device,
+  ip,
+  at,
+  consoleUrl,
+}) {
+  const rows = [
+    ["Who", `${staffName} (${staffEmail}) · ${roleLabel}`],
+    ["Device", device],
+    ["IP address", ip],
+    ["When", at],
+  ];
+  const tableHtml = rows
+    .map(
+      ([label, value]) =>
+        `<p style="margin:0 0 6px;line-height:1.6"><span style="color:#6b7280">${escapeHtml(label)}:</span> ${escapeHtml(value)}</p>`
+    )
+    .join("");
+  const line =
+    "Someone signed in to the SelfVibe console from a device we haven't seen for this account before.";
+  return {
+    subject: `New console sign-in: ${staffName}`,
+    html: layout({
+      title: "New device signed in",
+      bodyHtml: `<p style="margin:0 0 16px;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>${tableHtml}`,
+      button: { label: "Open the Team page", url: consoleUrl },
+      footnote:
+        'If this wasn\'t expected, open Team and use "Sign out everywhere" and "Reset 2FA" for this person.',
+    }),
+    text: `${line}\n\n${rows.map(([label, value]) => `${label}: ${value}`).join("\n")}\n\n${consoleUrl}`,
+  };
+}
+
+/**
+ * "Console account locked" alert (PRD ADL-5): sent to the Owner and the locked person.
+ * @param {{ staffName: string, staffEmail: string, minutes: number, ip: string, consoleUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function staffLockedEmail({ staffName, staffEmail, minutes, ip, consoleUrl }) {
+  const line = `The console account of ${staffName} (${staffEmail}) was locked for ${minutes} minutes after too many wrong passwords or codes. The last attempt came from IP ${ip}.`;
+  return {
+    subject: "SelfVibe console account locked",
+    html: layout({
+      title: "Account locked",
+      bodyHtml: `<p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Open the console", url: consoleUrl },
+      footnote:
+        "If these attempts weren't you, change the password. The Owner can unlock the account early from the Team page.",
+    }),
+    text: `${line}\n\n${consoleUrl}`,
+  };
+}

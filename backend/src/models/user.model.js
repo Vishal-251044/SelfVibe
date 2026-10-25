@@ -52,6 +52,25 @@ const userSchema = new mongoose.Schema(
       default: undefined,
     },
 
+    // Staff lockout (PRD ADL-5): wrong passwords / 2FA codes in a row, and the lock end
+    failedLoginCount: { type: Number, default: 0, select: false },
+    lockedUntil: { type: Date, default: null },
+    // Browsers a staff member signed in from (hashed device cookie) for new-device alerts
+    staffDevices: {
+      type: [
+        {
+          _id: false,
+          hash: String,
+          label: String,
+          ip: String,
+          firstSeenAt: Date,
+          lastSeenAt: Date,
+        },
+      ],
+      select: false,
+      default: undefined,
+    },
+
     status: { type: String, enum: USER_STATUS, default: "active" },
     plan: { type: String, enum: PLANS, default: "free" },
     aiCredits: { type: Number, default: 0, min: 0 },
@@ -90,6 +109,8 @@ const userSchema = new mongoose.Schema(
         delete ret.googleId;
         delete ret.passwordResetTokenHash;
         delete ret.passwordResetExpiresAt;
+        delete ret.failedLoginCount;
+        delete ret.staffDevices;
         delete ret.__v;
         return ret;
       },

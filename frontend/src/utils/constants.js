@@ -48,7 +48,10 @@ export const PROTECTED_APP_PATHS = [
 ];
 
 /** App pages anyone can open (shared links); a session is used when there is one. */
-export const PUBLIC_APP_PATHS = ["/artist", "/playlist"];
+export const PUBLIC_APP_PATHS = ["/artist", "/playlist", "/track"];
+
+/** Where a shared link opens (Day 10). These pages are public and have link previews. */
+export const SHARE_PATHS = { track: "/track", playlist: "/playlist", artist: "/artist" };
 
 /** Primary in-app destinations (MOB-2: Home · Search · Library · AI Studio · Profile). */
 export const APP_NAV_ITEMS = [
@@ -178,6 +181,8 @@ export const QUERY_KEYS = {
   dailyMixes: (catalog) => ["feed", "daily-mix", catalog],
   /** @param {string} trackId */
   similar: (trackId) => ["tracks", trackId, "similar"],
+  /** @param {string} trackId - Song page (Day 10) */
+  track: (trackId) => ["tracks", trackId, "page"],
   creatorAnalytics: (range) => ["creator", "analytics", range],
   publicSettings: ["settings", "public"],
   homeSections: (catalog) => ["home", "sections", catalog],

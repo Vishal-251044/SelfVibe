@@ -58,6 +58,36 @@ export function getRequestMeta(req) {
 }
 
 /**
+ * Short, human-readable device name from a User-Agent header, for security
+ * emails and the Team page (e.g. "Chrome on Android"). Not used for any check.
+ * @param {string|undefined} userAgent
+ * @returns {string}
+ */
+export function describeUserAgent(userAgent = "") {
+  const ua = String(userAgent);
+  // Order matters: Edge and Opera also say "Chrome"; Chrome also says "Safari"
+  const browser =
+    [
+      [/Edg\//, "Edge"],
+      [/OPR\/|Opera/, "Opera"],
+      [/SamsungBrowser/, "Samsung Internet"],
+      [/Firefox\/|FxiOS/, "Firefox"],
+      [/Chrome\/|CriOS/, "Chrome"],
+      [/Safari\//, "Safari"],
+    ].find(([pattern]) => pattern.test(ua))?.[1] ?? "Unknown browser";
+  const os =
+    [
+      [/Android/, "Android"],
+      [/iPhone|iPad|iPod/, "iOS"],
+      [/Windows/, "Windows"],
+      [/Mac OS X|Macintosh/, "macOS"],
+      [/CrOS/, "ChromeOS"],
+      [/Linux/, "Linux"],
+    ].find(([pattern]) => pattern.test(ua))?.[1] ?? "unknown system";
+  return `${browser} on ${os}`;
+}
+
+/**
  * Only allow redirects to paths on our own site (blocks open redirects via ?next=).
  * @param {unknown} target - e.g. "/library"
  * @param {string|null} [fallback=null]

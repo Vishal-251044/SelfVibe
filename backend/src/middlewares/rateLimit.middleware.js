@@ -1,12 +1,15 @@
 /**
  * Rate limiters for sensitive routes (PRD AUTH-5, ADL-5).
- * In-memory store for now (single API instance). Switch to the Redis store
- * when Redis is added on Day 4 so limits hold across instances.
+ * Counters live in Redis when REDIS_URL is set, so limits hold across API
+ * instances (Day 10); otherwise in memory (development). If Redis is briefly
+ * unreachable, requests are let through rather than locking everyone out.
  */
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
-import { COMMENT_RATE_LIMIT, ERROR_CODES, LOGIN_RATE_LIMIT } from "../config/constants.js";
+import { COMMENT_RATE_LIMIT, COOKIES, ERROR_CODES, LOGIN_RATE_LIMIT } from "../config/constants.js";
+import { hashToken } from "../utils/crypto.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
+import { createRateLimitStore } from "../utils/rateLimitStore.js";
 
 /**
  * Build a limiter that answers with the standard error envelope.
@@ -33,6 +36,8 @@ function createLimiter({
     skipSuccessfulRequests,
     standardHeaders: "draft-8",
     legacyHeaders: false,
+    store: createRateLimitStore(name),
+    passOnStoreError: true,
     keyGenerator: keyGenerator ?? ((req) => ipKeyGenerator(req.ip)),
     handler: (req, res, next, options) => {
       const retryAfterSec = Math.ceil(options.windowMs / 1000);
@@ -89,11 +94,26 @@ export const registerLimiter = createLimiter({
   message: "Too many accounts created from this network. Please try again later.",
 });
 
-/** General ceiling for token refresh calls: 60 per 15 minutes per IP. */
+/**
+ * Who a refresh call belongs to: the session (a hash of its refresh cookie)
+ * when there is one, otherwise the IP. Keying by IP alone (Day 2) signed out
+ * everyone on a shared network (college / office Wi-Fi) once 60 refreshes
+ * were made from it in 15 minutes (Day 10 bug bash).
+ * @param {import("express").Request} req
+ * @returns {string}
+ */
+function refreshKey(req) {
+  const token =
+    req.cookies?.[COOKIES.USER_REFRESH.name] ?? req.cookies?.[COOKIES.STAFF_REFRESH.name];
+  return token ? `session:${hashToken(token).slice(0, 32)}` : `ip:${ipKeyGenerator(req.ip)}`;
+}
+
+/** Token refresh: 60 per 15 minutes per session (per IP without a session cookie). */
 export const refreshLimiter = createLimiter({
   name: "refresh",
   windowMs: 15 * 60 * 1000,
   limit: 60,
+  keyGenerator: refreshKey,
   message: "Too many requests. Please slow down.",
 });
 
@@ -172,4 +192,22 @@ export const voiceLogLimiter = createLimiter({
   limit: 60,
   message: "Too many voice commands. Please wait a moment.",
   keyGenerator: (req) => (req.auth?.userId ? `user:${req.auth.userId}` : ipKeyGenerator(req.ip)),
+});
+
+/** Share counting: 30 per 10 minutes per user / IP (stops share-count inflation). */
+export const shareLimiter = createLimiter({
+  name: "share",
+  windowMs: 10 * 60 * 1000,
+  limit: 30,
+  message: "Too many shares. Please wait a few minutes.",
+  keyGenerator: (req) => (req.auth?.userId ? `user:${req.auth.userId}` : ipKeyGenerator(req.ip)),
+});
+
+/** Account deletion asks for the password: 5 tries per 15 minutes per user. */
+export const accountDeleteLimiter = createLimiter({
+  name: "account-delete",
+  ...LOGIN_RATE_LIMIT,
+  skipSuccessfulRequests: true,
+  message: "Too many attempts. Please wait 15 minutes and try again.",
+  keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
 });

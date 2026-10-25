@@ -25,6 +25,7 @@ import adminTaxonomyRoutes from "./adminTaxonomy.routes.js";
 import feedRoutes from "./feed.routes.js";
 import publicRoutes from "./public.routes.js";
 import adminPlatformRoutes from "./adminPlatform.routes.js";
+import shareRoutes from "./share.routes.js";
 import { adminIpAllowlist, maintenanceGate } from "../middlewares/platform.middleware.js";
 import { requireDatabase } from "../middlewares/database.middleware.js";
 
@@ -60,6 +61,7 @@ router.use("/search", searchRoutes);
 router.use(browseRoutes); // /browse/*, /trending, /new-releases
 router.use("/voice", voiceRoutes);
 router.use("/feed", feedRoutes);
+router.use("/shares", shareRoutes);
 router.use("/admin/auth", adminAuthRoutes);
 // Before the music routes: /admin/tracks/performance must not be read as /admin/tracks/:id
 router.use("/admin", adminPlatformRoutes); // stats, users, reports, comments, performance, storage, curation, settings, team, audit

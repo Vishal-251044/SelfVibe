@@ -12,8 +12,11 @@ const KEY_PREFIX = "selfvibe:cache:";
 const memory = new Map(); // key → { value, expiresAt }
 let redis = null;
 
-/** @returns {Redis|null} Lazily connected Redis client, or null without REDIS_URL */
-function getRedis() {
+/**
+ * Shared Redis client (also used by the rate-limit store, Day 10).
+ * @returns {Redis|null} Lazily connected Redis client, or null without REDIS_URL
+ */
+export function getRedis() {
   if (!env.queue.redisUrl) return null;
   if (!redis) {
     redis = new Redis(env.queue.redisUrl, { maxRetriesPerRequest: 1, lazyConnect: false });

@@ -25,7 +25,18 @@ export function requestLogger(req, res, next) {
   res.on("finish", () => {
     const durationMs = Math.round(Number(process.hrtime.bigint() - startedAt) / 1e6);
     const level = res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
-    logger[level](`${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`);
+    // Structured fields for log search in production (JSON); the message stays readable
+    logger[level](
+      {
+        reqId: req.id,
+        method: req.method,
+        path: req.originalUrl,
+        status: res.statusCode,
+        durationMs,
+        userId: req.auth?.userId ?? req.staff?.userId ?? undefined,
+      },
+      `${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`
+    );
   });
 
   return next();

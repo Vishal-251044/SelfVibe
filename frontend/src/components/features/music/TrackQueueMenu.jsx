@@ -2,7 +2,7 @@
 
 /**
  * "More" menu on a track row: Play next, Add to queue (PRD PLY-3), Add to
- * playlist (LIB-2), Comments (CMT-1), Go to artist. Closes on outside tap / Escape; shows a short confirmation.
+ * playlist (LIB-2), Comments (CMT-1), Share (Day 10), Go to artist. Closes on outside tap / Escape; shows a short confirmation.
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -14,10 +14,12 @@ import {
   ListStart,
   MessageCircle,
   MoreHorizontal,
+  Share2,
   UserRound,
 } from "lucide-react";
 import { useLibrarySheetsStore } from "@/store/librarySheetsStore";
 import { usePlayerStore } from "@/store/playerStore";
+import { useShare } from "@/hooks/useShare";
 import { slideDown } from "@/utils/animations";
 
 const CONFIRM_MS = 1600;
@@ -32,6 +34,7 @@ export default function TrackQueueMenu({ track, showArtistLink = true }) {
   const addToQueue = usePlayerStore((state) => state.addToQueue);
   const openPlaylistPicker = useLibrarySheetsStore((state) => state.openPlaylistPicker);
   const openComments = useLibrarySheetsStore((state) => state.openComments);
+  const share = useShare();
   const [isOpen, setIsOpen] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
   const menuRef = useRef(null);
@@ -130,6 +133,22 @@ export default function TrackQueueMenu({ track, showArtistLink = true }) {
               className={itemClass}
             >
               <MessageCircle size={16} aria-hidden /> Comments
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                share({
+                  type: "track",
+                  id: track.id,
+                  title: track.title,
+                  text: `${track.title} by ${track.artist?.stageName ?? "SelfVibe"}`,
+                });
+              }}
+              className={itemClass}
+            >
+              <Share2 size={16} aria-hidden /> Share
             </button>
             {showArtistLink && track.artist && (
               <Link

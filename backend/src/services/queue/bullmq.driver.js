@@ -7,6 +7,7 @@ import { Queue, Worker } from "bullmq";
 import IORedis from "ioredis";
 import { env } from "../../config/env.js";
 import { logger } from "../../utils/logger.js";
+import { captureError } from "../../utils/errorTracking.js";
 
 const QUEUE_NAME = "selfvibe-jobs";
 const processors = new Map();
@@ -86,11 +87,15 @@ export const bullmqQueue = {
       },
       { connection: getConnection(), concurrency }
     );
-    worker.on("failed", (job, error) =>
+    worker.on("failed", (job, error) => {
       logger.error(
         `[Queue] job ${job?.name}#${job?.id} failed (attempt ${job?.attemptsMade}): ${error.message}`
-      )
-    );
+      );
+      // Only the last attempt is an incident worth reporting
+      if (!job || job.attemptsMade >= (job.opts?.attempts ?? 1)) {
+        captureError(error, { job: job?.name, extra: { jobId: job?.id } });
+      }
+    });
   },
 
   async close() {

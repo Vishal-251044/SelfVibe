@@ -21,6 +21,7 @@ import { pageTransition } from "@/utils/animations";
 import { PUBLIC_APP_PATHS } from "@/utils/constants";
 import { isNavActive } from "@/utils/genericFunctions";
 import MaintenanceGate from "@/components/layout/MaintenanceGate";
+import InstallPrompt from "@/components/features/pwa/InstallPrompt";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -43,11 +44,13 @@ export default function AppShell({ children }) {
       <AppTopNav />
 
       <motion.main
+        id="main"
+        tabIndex={-1}
         key={pathname}
         variants={pageTransition}
         initial="hidden"
         animate="visible"
-        className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] md:px-6 md:pt-10 md:pb-[calc(var(--player-height)+4rem)]"
+        className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] outline-none md:px-6 md:pt-10 md:pb-[calc(var(--player-height)+4rem)]"
       >
         <MaintenanceGate>
           <AuthGuard optional={isPublicPage}>{children}</AuthGuard>
@@ -57,6 +60,7 @@ export default function AppShell({ children }) {
       <PlayerDock variant="app" />
       <LibrarySheets />
       <VoiceLayer />
+      <InstallPrompt />
       <BottomNav />
     </div>
   );

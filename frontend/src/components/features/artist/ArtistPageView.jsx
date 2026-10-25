@@ -18,6 +18,7 @@ import TrackRow from "@/components/features/music/TrackRow";
 import CoverArt from "@/components/features/music/CoverArt";
 import ReportButton from "@/components/features/music/ReportButton";
 import FollowButton from "@/components/features/artist/FollowButton";
+import ShareButton from "@/components/features/share/ShareButton";
 import { getArtistPage } from "@/services/creator.service";
 import { useAuthStore } from "@/store/authStore";
 import { usePlayerStore } from "@/store/playerStore";
@@ -152,6 +153,13 @@ export default function ArtistPageView({ idOrSlug }) {
               </Button>
             ))}
           {!data.isOwnPage && <FollowButton artist={artist} />}
+          <ShareButton
+            type="artist"
+            id={artist.id}
+            slug={artist.slug}
+            title={artist.stageName}
+            text={`${artist.stageName} on SelfVibe`}
+          />
           <ReportButton targetType="artist" targetId={artist.id} targetName={artist.stageName} />
         </div>
 

@@ -5,8 +5,12 @@
  * - /api/* is proxied to the Express API (Day 2). The browser only ever talks to
  *   its own origin, so the httpOnly refresh cookie is first-party everywhere
  *   (Safari / iOS block third-party cookies, which would break login on iPhone).
- * @type {import('next').NextConfig}
+ * - Security headers on every page (Day 10 security review): no framing
+ *   (clickjacking), no MIME sniffing, microphone only for this site (voice
+ *   control), strict referrer, HSTS in production.
  */
+import packageJson from "./package.json" with { type: "json" };
+
 const API_PROXY_TARGET = process.env.API_PROXY_TARGET;
 
 if (!API_PROXY_TARGET) {
@@ -15,9 +19,38 @@ if (!API_PROXY_TARGET) {
   );
 }
 
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Frame-Options", value: "DENY" },
+  {
+    key: "Content-Security-Policy",
+    value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+  },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "microphone=(self), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+  },
+  ...(process.env.NODE_ENV === "production"
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }]
+    : []),
+];
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
+  // Shown in error reports and the console (release v1.0.0)
+  env: { NEXT_PUBLIC_APP_VERSION: packageJson.version },
+
+  async headers() {
+    return [
+      { source: "/:path*", headers: SECURITY_HEADERS },
+      // The service worker must always be re-checked so updates reach installed apps
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+    ];
+  },
 
   // Avatars: Cloudinary uploads, Google profile photos, Wikimedia Commons artist photos
   images: {

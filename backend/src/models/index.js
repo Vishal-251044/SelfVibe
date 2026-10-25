@@ -27,3 +27,4 @@ export { TrackSimilarity } from "./trackSimilarity.model.js";
 export { HomeSection } from "./homeSection.model.js";
 export { Setting } from "./setting.model.js";
 export { StaffInvite } from "./staffInvite.model.js";
+export { ShareEvent } from "./shareEvent.model.js";
