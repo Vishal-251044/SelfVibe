@@ -49,6 +49,8 @@ export function proxy(request) {
   if (pathname === ADMIN_LOGIN) {
     return hasStaffSession ? redirectTo(request, "/admin") : NextResponse.next();
   }
+  // Staff invite links (Day 9): the invitee isn't staff yet
+  if (pathname.startsWith("/admin/invite/")) return NextResponse.next();
   if (matchesAny(pathname, ["/admin"])) {
     return hasStaffSession ? NextResponse.next() : redirectTo(request, ADMIN_LOGIN);
   }
@@ -71,6 +73,8 @@ export const config = {
     "/signup",
     "/home/:path*",
     "/search/:path*",
+    "/browse/:path*",
+    "/mix/:path*",
     "/library/:path*",
     "/playlist/:path*",
     "/artist/:path*",

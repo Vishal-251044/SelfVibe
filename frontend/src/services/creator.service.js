@@ -39,3 +39,22 @@ export function updateMyArtist(changes) {
 export function getArtistPage(idOrSlug, options) {
   return api.get(`/artists/${encodeURIComponent(idOrSlug)}`, options);
 }
+
+/**
+ * Own songs' numbers (Day 9, PRD CRT-7).
+ * @param {number} range - 7, 30, 90 or 0 (all time)
+ * @param {Object} [options]
+ * @returns {Promise<Object>}
+ */
+export function getCreatorAnalytics(range, options) {
+  return api.get("/creator/analytics", { ...options, query: { range } });
+}
+
+/**
+ * Ask for the verified badge.
+ * @param {string} [note]
+ * @returns {Promise<{ status: string, requestedAt: string }>}
+ */
+export function requestVerification(note = "") {
+  return api.post("/creator/verification-request", { note });
+}

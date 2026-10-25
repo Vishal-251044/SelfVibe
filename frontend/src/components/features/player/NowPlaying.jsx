@@ -19,6 +19,7 @@ import PlayerControls from "@/components/features/player/PlayerControls";
 import SeekBar from "@/components/features/player/SeekBar";
 import VolumeControl from "@/components/features/player/VolumeControl";
 import Visualizer from "@/components/features/player/Visualizer";
+import SimilarTracks from "@/components/features/player/SimilarTracks";
 import { usePlayerStore } from "@/store/playerStore";
 import { formatDuration, slugify } from "@/utils/genericFunctions";
 import { DURATION, EASE_OUT } from "@/utils/animations";
@@ -223,6 +224,7 @@ export default function NowPlaying() {
                   </p>
                 )}
               </div>
+              {isListener && <SimilarTracks track={track} />}
             </div>
           </div>
         </motion.div>

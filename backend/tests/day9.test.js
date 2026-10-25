@@ -221,6 +221,11 @@ describe("console validators", () => {
     assert.equal(settingsSchema.safeParse({ adminIpAllowlist: ["not an ip!"] }).success, false);
     assert.equal(settingsSchema.safeParse({ secret: 1 }).success, false);
   });
+  it("home sections: empty dates stay empty (not 1970)", () => {
+    const parsed = createHomeSectionSchema.parse({ type: "featuredTracks", title: "Picks", startsAt: null, endsAt: null });
+    assert.equal(parsed.startsAt, null);
+    assert.equal(parsed.endsAt, null);
+  });
   it("home sections: https images, app links, date order", () => {
     const base = { type: "hero", title: "Monsoon picks" };
     assert.equal(

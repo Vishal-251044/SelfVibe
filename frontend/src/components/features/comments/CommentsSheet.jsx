@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/authStore";
 import { getComments, postComment } from "@/services/comment.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { cn, pluralize } from "@/utils/genericFunctions";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 const PAGE_SIZE = 20;
 const SORTS = [
@@ -28,6 +29,7 @@ const SORTS = [
 ];
 
 export default function CommentsSheet() {
+  const { isFeatureOn } = useAppSettings();
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const track = useLibrarySheetsStore((state) => state.commentsTrack);
@@ -63,7 +65,9 @@ export default function CommentsSheet() {
       }
       className="sm:max-w-2xl"
       footer={
-        isSignedIn ? (
+        !isFeatureOn("comments") ? (
+          <p className="text-center text-sm text-fg-subtle">New comments are paused right now.</p>
+        ) : isSignedIn ? (
           <CommentComposer onSubmit={post} />
         ) : (
           <Button href={`/login?next=${encodeURIComponent(pathname)}`} fullWidth onClick={close}>

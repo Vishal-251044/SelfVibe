@@ -14,6 +14,7 @@ import { startListening, stopListening } from "@/lib/voice/voiceSession";
 import { VOICE_HOLD_MS } from "@/utils/musicConstants";
 import { tapPress } from "@/utils/animations";
 import { cn } from "@/utils/genericFunctions";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 const RING_DELAYS = [0, 0.5];
 
@@ -24,7 +25,10 @@ const RING_DELAYS = [0, 0.5];
  * @param {string} [props.className]
  */
 export default function MicButton({ size = 20, variant = "plain", className }) {
-  const isSupported = useSpeechSupport();
+  // Hidden where the browser can't listen, or while the Owner has voice switched off
+  const canListen = useSpeechSupport();
+  const { isFeatureOn } = useAppSettings();
+  const isSupported = canListen && isFeatureOn("voice");
   const status = useVoiceStore((state) => state.status);
   const prefersReducedMotion = useReducedMotion();
   const pressedAt = useRef(0);

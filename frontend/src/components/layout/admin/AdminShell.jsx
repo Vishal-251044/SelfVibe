@@ -18,6 +18,7 @@ import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { STAFF_HEARTBEAT_INTERVAL_MS, STAFF_IDLE_TIMEOUT_MS } from "@/utils/adminConstants";
 import { DURATION, EASE_OUT, pageTransition } from "@/utils/animations";
 import PlayerDock from "@/components/features/player/PlayerDock";
+import TerminalToaster from "@/components/ui/TerminalToaster";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -136,6 +137,8 @@ export default function AdminShell({ children }) {
 
       {/* Track previews play in the same player as the app */}
       <PlayerDock variant="console" />
+      {/* Confirmations for console actions (Day 9) */}
+      <TerminalToaster />
     </div>
   );
 }

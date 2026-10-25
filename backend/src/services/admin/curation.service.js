@@ -300,11 +300,19 @@ function toEditorial(playlist, covers = []) {
   };
 }
 
-/** @returns {Promise<Object[]>} */
+/** @returns {Promise<Object[]>} Editorial playlists, with song titles for the edit form */
 export async function listEditorialPlaylists() {
   const playlists = await Playlist.find({ type: "editorial" }).sort({ updatedAt: -1 }).lean();
   const covers = await mosaicCovers(playlists);
-  return playlists.map((playlist) => toEditorial(playlist, covers.get(String(playlist._id))));
+  const ids = playlists.flatMap((playlist) => playlist.tracks.map((entry) => entry.trackId));
+  const songs = await Track.find({ _id: { $in: ids } }).select("title").lean();
+  const titles = new Map(songs.map((song) => [String(song._id), song.title]));
+  return playlists.map((playlist) => ({
+    ...toEditorial(playlist, covers.get(String(playlist._id))),
+    tracks: playlist.tracks
+      .map((entry) => ({ id: String(entry.trackId), title: titles.get(String(entry.trackId)) }))
+      .filter((track) => track.title),
+  }));
 }
 
 /**

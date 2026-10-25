@@ -20,6 +20,7 @@ import UserMenu from "@/components/features/auth/UserMenu";
 import { pageTransition } from "@/utils/animations";
 import { PUBLIC_APP_PATHS } from "@/utils/constants";
 import { isNavActive } from "@/utils/genericFunctions";
+import MaintenanceGate from "@/components/layout/MaintenanceGate";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -48,7 +49,9 @@ export default function AppShell({ children }) {
         animate="visible"
         className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] md:px-6 md:pt-10 md:pb-[calc(var(--player-height)+4rem)]"
       >
-        <AuthGuard optional={isPublicPage}>{children}</AuthGuard>
+        <MaintenanceGate>
+          <AuthGuard optional={isPublicPage}>{children}</AuthGuard>
+        </MaintenanceGate>
       </motion.main>
 
       <PlayerDock variant="app" />

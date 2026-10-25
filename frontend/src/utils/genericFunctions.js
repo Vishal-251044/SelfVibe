@@ -201,3 +201,40 @@ export function formatRelativeTime(value, now = new Date()) {
 export function pluralize(count, singular, plural = `${singular}s`) {
   return `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
 }
+
+/**
+ * Save a file the browser received (e.g. a CSV export).
+ * @param {Blob} blob
+ * @param {string} filename
+ */
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * Percent text for a 0–1 rate, or "—" when unknown.
+ * @param {number|null|undefined} rate
+ * @param {number} [digits=0]
+ * @returns {string}
+ */
+export function formatRate(rate, digits = 0) {
+  return rate === null || rate === undefined ? "—" : `${(rate * 100).toFixed(digits)}%`;
+}
+
+/**
+ * Compact counts: 1234 → "1.2K", 2500000 → "2.5M".
+ * @param {number} value
+ * @returns {string}
+ */
+export function formatCount(value) {
+  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(
+    value ?? 0
+  );
+}

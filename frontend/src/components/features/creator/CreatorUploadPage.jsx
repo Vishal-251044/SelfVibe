@@ -4,15 +4,29 @@
  * /creator/upload: upload a song (any signed-in user — PRD CRT-1). Before the
  * first upload the form also asks for the artist name the songs appear under.
  */
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UploadCloud } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import Button from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
 import TrackUploadForm from "@/components/features/creator/TrackUploadForm";
 import { CreatorSkeleton, useMyArtist } from "@/components/features/creator/CreatorHome";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 export default function CreatorUploadPage() {
   const { data, isPending } = useMyArtist();
+  const { isFeatureOn } = useAppSettings();
   if (isPending) return <CreatorSkeleton />;
+  if (!isFeatureOn("uploads")) {
+    return (
+      <EmptyState
+        icon={UploadCloud}
+        command="selfvibe upload --track"
+        title="uploads are paused"
+        description="New uploads are switched off for a little while. Your songs are safe — please try again later."
+        action={<Button href="/creator">Back to Studio</Button>}
+      />
+    );
+  }
   const artist = data?.artist ?? null;
 
   return (

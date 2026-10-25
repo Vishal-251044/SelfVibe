@@ -129,8 +129,8 @@ const sectionFields = {
   playlistId: z.union([objectId("playlist"), z.null()]).optional(),
   itemIds: z.array(objectId("item")).max(HOME_SECTION_MAX_ITEMS).default([]),
   active: z.boolean().default(true),
-  startsAt: z.union([z.coerce.date(), z.null()]).optional(),
-  endsAt: z.union([z.coerce.date(), z.null()]).optional(),
+  startsAt: z.union([z.null(), z.coerce.date()]).optional(),
+  endsAt: z.union([z.null(), z.coerce.date()]).optional(),
 };
 export const createHomeSectionSchema = z
   .object({ type: z.enum(HOME_SECTION_TYPES), ...sectionFields })

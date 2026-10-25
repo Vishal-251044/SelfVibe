@@ -9,13 +9,17 @@ import { useVoiceStore } from "@/store/voiceStore";
 import { useSpeechSupport } from "@/hooks/useSpeechSupport";
 import { VOICE_LANGUAGES } from "@/utils/musicConstants";
 import { cn } from "@/utils/genericFunctions";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 /**
  * @param {Object} props
  * @param {string} [props.className]
  */
 export default function VoiceSettings({ className }) {
-  const isSupported = useSpeechSupport();
+  // Hidden where the browser can't listen, or while the Owner has voice switched off
+  const canListen = useSpeechSupport();
+  const { isFeatureOn } = useAppSettings();
+  const isSupported = canListen && isFeatureOn("voice");
   const language = useVoiceStore((state) => state.language);
   const speakReplies = useVoiceStore((state) => state.speakReplies);
   const setLanguage = useVoiceStore((state) => state.setLanguage);

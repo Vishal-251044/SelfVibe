@@ -30,3 +30,24 @@ export function markNotInterested(trackId) {
 export function undoNotInterested(trackId) {
   return api.delete(`/feed/not-interested/${trackId}`);
 }
+
+/**
+ * Daily Mix 1–3 (Day 9).
+ * @param {{ catalog: string }} query
+ * @param {Object} [options]
+ * @returns {Promise<{ mixes: Array<{ index: number, title: string, subtitle: string, tag: Object, coverUrls: string[], tracks: Object[] }> }>}
+ */
+export function getDailyMixes(query, options) {
+  return api.get("/feed/daily-mix", { ...options, query });
+}
+
+/**
+ * Songs like a song (co-listened first, then same genre / vibe).
+ * @param {string} trackId
+ * @param {{ catalog?: string, limit?: number }} [query]
+ * @param {Object} [options]
+ * @returns {Promise<{ seed: { id: string, title: string }, items: Object[] }>}
+ */
+export function getSimilarTracks(trackId, query = {}, options) {
+  return api.get(`/tracks/${trackId}/similar`, { ...options, query });
+}

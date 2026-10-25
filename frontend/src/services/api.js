@@ -39,6 +39,19 @@ export class ApiClientError extends Error {
  */
 const authBridges = { user: undefined, staff: undefined };
 
+/** Called when the API says the app is in maintenance mode (Owner setting, Day 9). */
+const maintenanceListeners = new Set();
+
+/**
+ * Listen for maintenance mode (503 MAINTENANCE from the API).
+ * @param {(message: string) => void} listener
+ * @returns {() => void} Unsubscribe
+ */
+export function onMaintenance(listener) {
+  maintenanceListeners.add(listener);
+  return () => maintenanceListeners.delete(listener);
+}
+
 /**
  * Connect a session store to the API client.
  * @param {"user"|"staff"} scope
@@ -104,6 +117,7 @@ function resolveAuthScope(path, auth) {
  * @param {AbortSignal} [options.signal] - Caller abort signal (e.g. from React Query)
  * @param {number} [options.timeoutMs] - Request timeout in ms
  * @param {boolean} [options.keepalive] - Let the request finish after the page is hidden / closed
+ * @param {"json"|"file"} [options.responseType="json"] - "file" returns { blob, filename } (CSV exports)
  * @returns {Promise<any>} The `data` field of the API response
  * @throws {ApiClientError} On network error, timeout or non-2xx response
  */
@@ -118,6 +132,7 @@ export async function request(path, options = {}) {
     timeoutMs = DEFAULT_TIMEOUT_MS,
     keepalive = false,
     isRetry = false,
+    responseType = "json",
   } = options;
 
   const scope = resolveAuthScope(path, auth);
@@ -151,8 +166,19 @@ export async function request(path, options = {}) {
     throw new ApiClientError("Can't reach SelfVibe. Check your connection and try again.", 0);
   }
 
+  // Downloads: hand back the file
+  if (responseType === "file" && response.ok) {
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? "selfvibe-export.csv";
+    return { blob: await response.blob(), filename };
+  }
+
   // 204 No Content has no body to parse
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
+
+  if (response.status === 503 && payload?.error?.code === "MAINTENANCE") {
+    maintenanceListeners.forEach((listener) => listener(payload.message));
+  }
 
   if (!response.ok || payload?.success === false) {
     // Expired / missing access token: refresh the session once, then retry.

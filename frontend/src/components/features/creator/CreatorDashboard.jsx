@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Creator studio home (/creator): artist card, quick stats, and "My tracks"
- * with status, preview and actions. Refreshes automatically while any track
+ * Creator studio home (/creator): artist card (with the verified-badge
+ * request), quick stats, analytics (Day 9) and "My tracks" with status,
+ * preview and actions. Refreshes automatically while any track
  * is still processing.
  */
 import { useEffect, useState } from "react";
@@ -19,6 +20,8 @@ import TrackRow from "@/components/features/music/TrackRow";
 import TrackStatusBadge from "@/components/features/music/TrackStatusBadge";
 import CreatorTrackActions from "@/components/features/creator/CreatorTrackActions";
 import UploadAllowance from "@/components/features/creator/UploadAllowance";
+import CreatorAnalytics from "@/components/features/creator/CreatorAnalytics";
+import VerificationRequest from "@/components/features/creator/VerificationRequest";
 import { listMyTracks } from "@/services/track.service";
 import { QUERY_KEYS } from "@/utils/constants";
 import { PROCESSING_POLL_MS } from "@/utils/musicConstants";
@@ -84,6 +87,7 @@ export default function CreatorDashboard({ artist }) {
           <div className="min-w-0 flex-1">
             <p className="text-xs tracking-widest text-neon uppercase">Artist</p>
             <p className="truncate font-display text-xl font-bold">{artist.stageName}</p>
+            <VerificationRequest artist={artist} />
             <Button
               href={`/artist/${artist.slug ?? artist.id}`}
               variant="ghost"
@@ -105,6 +109,8 @@ export default function CreatorDashboard({ artist }) {
       </div>
 
       <UploadAllowance className="mt-4" />
+
+      <CreatorAnalytics />
 
       <section className="mt-10" aria-labelledby="my-tracks-heading">
         <div className="mb-3 flex items-center justify-between">

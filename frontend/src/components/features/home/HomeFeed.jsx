@@ -1,8 +1,10 @@
 "use client";
 
 /**
- * Home / For You (roadmap Days 7–8, PRD 10.4.3, CAT-2/3):
- * - the catalog switch and vibe shortcuts
+ * Home / For You (roadmap Days 7–9, PRD 10.4.3, CAT-2/3):
+ * - staff hero banners, the catalog switch and vibe shortcuts
+ * - Daily Mix 1–3 and "Because you liked <song>" (Day 9)
+ * - staff-curated rows: featured songs / artists, editorial playlists (Day 9)
  * - personal sections from the recommendation engine: Jump back in,
  *   Made for You, Right now: <vibe>, Trending, Fresh creators — each card
  *   says why it's there and can be marked "Not interested"
@@ -14,6 +16,10 @@ import CatalogSwitch from "@/components/features/browse/CatalogSwitch";
 import VibeChips from "@/components/features/browse/VibeChips";
 import TrackShelf from "@/components/features/browse/TrackShelf";
 import JumpBackIn from "@/components/features/home/JumpBackIn";
+import HeroBanner from "@/components/features/home/HeroBanner";
+import DailyMixRow from "@/components/features/home/DailyMixRow";
+import CuratedRows from "@/components/features/home/CuratedRows";
+import { getHomeSections } from "@/services/platform.service";
 import { getNewReleases, getTrending } from "@/services/browse.service";
 import { getForYouFeed } from "@/services/feed.service";
 import { useCatalogFilter } from "@/hooks/useCatalogFilter";
@@ -25,6 +31,7 @@ const ROW_STALE_MS = 5 * 60 * 1000;
 /** Feed sections in display order, with their terminal eyebrow. */
 const FEED_SECTIONS = [
   { key: "madeForYou", command: "selfvibe recommend --for-you" },
+  { key: "becauseYouLiked", command: "selfvibe recommend --similar" },
   { key: "rightNow", command: "selfvibe vibe --now" },
   { key: "trending", command: "selfvibe trending --7d", ranked: true },
   { key: "freshCreators", command: "selfvibe discover --fresh-creators" },
@@ -63,12 +70,21 @@ export default function HomeFeed() {
   const official = useCatalogRow("official", showCatalogRows);
   const community = useCatalogRow("community", showCatalogRows);
 
+  const curated = useQuery({
+    queryKey: QUERY_KEYS.homeSections(catalog),
+    queryFn: ({ signal }) => getHomeSections({ catalog }, { signal }),
+    staleTime: ROW_STALE_MS,
+  });
+  const curatedSections = curated.data?.sections ?? [];
+
   const sections = feed.data?.sections ?? [];
   const sectionByKey = new Map(sections.map((section) => [section.key, section]));
   const jumpBackIn = sectionByKey.get("jumpBackIn");
 
   return (
     <>
+      <HeroBanner banners={curatedSections.filter((section) => section.type === "hero")} />
+
       <FadeIn className="mb-8 flex flex-col gap-4" delay={0.05}>
         <CatalogSwitch className="self-start" />
         <div>
@@ -78,6 +94,7 @@ export default function HomeFeed() {
       </FadeIn>
 
       {jumpBackIn && <JumpBackIn section={jumpBackIn} />}
+      <DailyMixRow />
 
       {feed.isPending || feed.isError ? (
         // One placeholder row while loading; one retry row on error
@@ -109,6 +126,11 @@ export default function HomeFeed() {
           }
         )
       )}
+
+      <CuratedRows
+        sections={curatedSections.filter((section) => section.type !== "hero")}
+        query={curated}
+      />
 
       <TrackShelf
         title="New Releases"

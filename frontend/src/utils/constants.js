@@ -44,6 +44,7 @@ export const PROTECTED_APP_PATHS = [
   "/onboarding",
   "/creator",
   "/browse",
+  "/mix",
 ];
 
 /** App pages anyone can open (shared links); a session is used when there is one. */
@@ -174,6 +175,26 @@ export const QUERY_KEYS = {
   newReleases: (catalog) => ["browse", "new", catalog],
   /** @param {"genre"|"vibe"} kind */
   adminCategories: (kind) => ["admin", "categories", kind],
+  dailyMixes: (catalog) => ["feed", "daily-mix", catalog],
+  /** @param {string} trackId */
+  similar: (trackId) => ["tracks", trackId, "similar"],
+  creatorAnalytics: (range) => ["creator", "analytics", range],
+  publicSettings: ["settings", "public"],
+  homeSections: (catalog) => ["home", "sections", catalog],
+  adminStats: ["admin", "stats"],
+  adminPerformance: (query) => ["admin", "performance", query],
+  adminTrackPerformance: (trackId, range) => ["admin", "performance", trackId, range],
+  adminComments: (query) => ["admin", "comments", query],
+  adminReports: (query) => ["admin", "reports", query],
+  adminUsers: (query) => ["admin", "users", query],
+  adminUser: (id) => ["admin", "user", id],
+  adminVerification: ["admin", "verification"],
+  adminStorage: ["admin", "storage"],
+  adminHomeSections: ["admin", "home-sections"],
+  adminEditorial: ["admin", "editorial"],
+  adminTeam: ["admin", "team"],
+  adminSettings: ["admin", "settings"],
+  adminAudit: (query) => ["admin", "audit", query],
   adminTracks: (filters) => ["admin", "tracks", filters],
   adminTrack: (trackId) => ["admin", "track", trackId],
   adminArtists: (filters) => ["admin", "artists", filters],

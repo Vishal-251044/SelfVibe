@@ -101,11 +101,12 @@ async function buildMixes(userId, catalog, day) {
     const inCluster = ranked.filter(
       (item) => item.track[field].includes(cluster.slug) && !used.has(item.track.id)
     );
-    const best = pickDiverse(inCluster, {
-      size: Math.round(DAILY_MIX_SIZE * 1.5),
-      maxPerArtist: 3,
-      familiarShare: null,
-    });
+    const size = Math.round(DAILY_MIX_SIZE * 1.5);
+    let best = pickDiverse(inCluster, { size, maxPerArtist: 3, familiarShare: null });
+    // Small catalogs: a short cluster may lean on a few artists rather than not exist
+    if (best.length < MIN_MIX_SONGS) {
+      best = pickDiverse(inCluster, { size, maxPerArtist: Infinity, familiarShare: null });
+    }
     if (best.length < MIN_MIX_SONGS) continue;
     const chosen = seededShuffle(best, `${userId}|${day}|${cluster.kind}:${cluster.slug}`).slice(
       0,
