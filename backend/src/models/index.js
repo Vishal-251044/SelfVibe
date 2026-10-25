@@ -21,3 +21,4 @@ export { StorageAccount } from "./storageAccount.model.js";
 export { Comment } from "./comment.model.js";
 export { CommentLike } from "./commentLike.model.js";
 export { VoiceLog } from "./voiceLog.model.js";
+export { FeedCache } from "./feedCache.model.js";

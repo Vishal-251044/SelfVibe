@@ -1,6 +1,6 @@
 /**
- * Home (/home): Trending, New Releases, SelfVibe Official and From the
- * Community (roadmap Day 7). The personalised For You rows arrive on Day 8.
+ * Home (/home): the personal For You feed (Day 8) plus New Releases,
+ * SelfVibe Official and From the Community rows (Day 7).
  */
 import PageHeader from "@/components/ui/PageHeader";
 import HomeFeed from "@/components/features/home/HomeFeed";

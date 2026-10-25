@@ -2,7 +2,8 @@
 
 /**
  * A titled horizontal row of song cards (Home: Trending, New Releases,
- * SelfVibe Official, From the Community). Swipe on phones (snap scrolling),
+ * SelfVibe Official, From the Community, and the For You sections). Swipe on
+ * phones (snap scrolling),
  * arrow buttons on desktop. Handles loading (skeleton cards), error and empty.
  */
 import { useRef } from "react";
@@ -22,22 +23,32 @@ const CARD_CLASS = "w-[42vw] max-w-48 shrink-0 snap-start sm:w-40 xl:w-48";
  * @param {Object} props
  * @param {string} props.title
  * @param {string} [props.command] - Terminal eyebrow, e.g. "selfvibe trending --7d"
- * @param {Object} props.query - React Query result whose data has `items`
+ * @param {string} [props.subtitle]
+ * @param {Object} props.query - React Query result (loading / error); its data.items are the songs…
+ * @param {Object[]} [props.items] - …unless the songs are given here (a feed section)
+ * @param {string} [props.source="browse"] - Listening-event source
+ * @param {boolean} [props.showReason=false] - "Why this?" label on cards
+ * @param {(track: Object) => void} [props.onNotInterested] - Adds "Not interested" to cards
  * @param {string} [props.href] - "See all" link
  * @param {boolean} [props.ranked=false] - Show chart numbers
  * @param {string} [props.emptyText="Nothing here yet."]
  */
 export default function TrackShelf({
   title,
+  subtitle,
   command,
   query,
+  items,
+  source = "browse",
+  showReason = false,
+  onNotInterested,
   href,
   ranked = false,
   emptyText = "Nothing here yet.",
 }) {
   const scroller = useRef(null);
   const playQueue = usePlayerStore((state) => state.playQueue);
-  const tracks = query.data?.items ?? [];
+  const tracks = items ?? query.data?.items ?? [];
 
   /** Scroll by most of a screen width. */
   const scrollBy = (direction) => {
@@ -53,12 +64,13 @@ export default function TrackShelf({
           <div className="min-w-0">
             {command && <p className="truncate font-mono text-xs text-neon">$ {command}</p>}
             <h2 className="truncate font-display text-xl font-bold sm:text-2xl">{title}</h2>
+            {subtitle && <p className="truncate text-xs text-fg-muted sm:text-sm">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {tracks.length > 0 && (
               <button
                 type="button"
-                onClick={() => playQueue(tracks, 0, { source: "browse" })}
+                onClick={() => playQueue(tracks, 0, { source })}
                 aria-label={`Play ${title}`}
                 className="flex size-11 items-center justify-center rounded-full text-neon transition hover:bg-neon-dim"
               >
@@ -131,6 +143,9 @@ export default function TrackShelf({
                     tracks={tracks}
                     index={index}
                     rank={ranked ? index + 1 : undefined}
+                    source={source}
+                    reason={showReason ? track.reason : undefined}
+                    onNotInterested={onNotInterested}
                   />
                 </StaggerItem>
               ))}

@@ -161,6 +161,9 @@ export const QUERY_KEYS = {
   /** @param {string} q @param {string} catalog */
   search: (q, catalog) => ["search", q, catalog],
   recentSearches: ["search", "recent"],
+  forYouAll: ["feed", "for-you"], // every catalog (prefix)
+  /** @param {string} catalog */
+  forYou: (catalog) => ["feed", "for-you", catalog],
   /** @param {"genre"|"vibe"} kind @param {string} catalog */
   categories: (kind, catalog) => ["browse", kind, "list", catalog],
   /** @param {"genre"|"vibe"} kind @param {string} slug @param {string} catalog @param {string} sort */

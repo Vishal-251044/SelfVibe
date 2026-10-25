@@ -6,16 +6,19 @@
  *    and the track's playCount goes up by one
  *  - "end"   → the play event gets the time listened and %, plus a `skip`
  *    event when under 30 s was heard, or a `complete` event at 80% or more
+ * New events also teach the taste profile (roadmap Day 8, PRD 10.4.1).
  * Batches can be re-sent (offline, page hidden): the unique sessionId + type
  * index makes duplicates harmless, and playCount only counts new plays.
  */
 import mongoose from "mongoose";
 import { ListenEvent } from "../models/listenEvent.model.js";
 import { Track } from "../models/track.model.js";
+import { applyListenSignals } from "./taste.service.js";
 import {
   LISTEN_COMPLETE_PERCENT,
   LISTEN_HISTORY_LIMIT,
   LISTEN_SKIP_MAX_MS,
+  LISTEN_TASTE_SIGNALS,
 } from "../config/constants.js";
 import { logger } from "../utils/logger.js";
 
@@ -120,15 +123,30 @@ export async function recordListenEvents(userId, events) {
 
   // Ends: time listened on the play event, plus a skip / complete event
   const outcomes = [];
+  const signals = [];
   for (const end of ends) {
-    await ListenEvent.updateOne(
+    const before = await ListenEvent.findOneAndUpdate(
       { sessionId: end.sessionId, userId, type: { $in: ["play", "repeat"] } },
-      { $max: { msListened: end.msListened, percent: end.percent } }
-    );
+      { $max: { msListened: end.msListened, percent: end.percent } },
+      { projection: { msListened: 1 } }
+    ).lean();
     const outcome = classifyListenEnd(end);
     if (outcome) outcomes.push({ ...end, type: outcome });
+    // A partial play counts once: only the first "end" of a listen (re-sent batches are ignored)
+    else if (before && !before.msListened)
+      signals.push({ trackId: end.trackId, weight: LISTEN_TASTE_SIGNALS.partial });
   }
   const insertedOutcomes = await insertNew(outcomes);
+
+  // Taste learning (PRD 10.4.1): complete +3, partial +1, skip −2, repeat +2
+  for (const doc of insertedOutcomes) {
+    signals.push({ trackId: String(doc.trackId), weight: LISTEN_TASTE_SIGNALS[doc.type] });
+  }
+  for (const doc of insertedStarts) {
+    if (doc.type === "repeat")
+      signals.push({ trackId: String(doc.trackId), weight: LISTEN_TASTE_SIGNALS.repeat });
+  }
+  await applyListenSignals(userId, signals);
 
   logger.debug(
     `[Listening] userId=${userId} accepted ${insertedStarts.length + insertedOutcomes.length} events (${events.length} sent)`

@@ -15,6 +15,8 @@ const tasteProfileSchema = new mongoose.Schema(
     artistWeights: weightMap,
     moodWeights: weightMap,
     energyPref: { type: Number, min: 0, max: 1, default: 0.5 }, // preferred energy band
+    // "Not interested" songs: never recommended again (newest last, capped)
+    hiddenTrackIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
   },
   { timestamps: true }
 );

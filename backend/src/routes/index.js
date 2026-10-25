@@ -22,6 +22,7 @@ import searchRoutes from "./search.routes.js";
 import browseRoutes from "./browse.routes.js";
 import voiceRoutes from "./voice.routes.js";
 import adminTaxonomyRoutes from "./adminTaxonomy.routes.js";
+import feedRoutes from "./feed.routes.js";
 import { requireDatabase } from "../middlewares/database.middleware.js";
 
 const router = Router();
@@ -48,6 +49,7 @@ router.use("/comments", commentRoutes);
 router.use("/search", searchRoutes);
 router.use(browseRoutes); // /browse/*, /trending, /new-releases
 router.use("/voice", voiceRoutes);
+router.use("/feed", feedRoutes);
 router.use("/admin/auth", adminAuthRoutes);
 router.use("/admin", adminMusicRoutes);
 router.use("/admin", adminTaxonomyRoutes); // /admin/genres, /admin/vibes

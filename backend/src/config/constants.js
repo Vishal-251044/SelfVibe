@@ -358,3 +358,54 @@ export const VOICE_INTENTS = Object.freeze([
 /** How a voice command ended. */
 export const VOICE_OUTCOMES = Object.freeze(["done", "picker", "not_found", "failed"]);
 export const VOICE_TRANSCRIPT_MAX = 200;
+
+/* ===== Recommendation engine v1 (Day 8, PRD 10.4) ===== */
+
+/** Listening signals (PRD 10.4.1), applied to the taste vector on each event batch. */
+export const LISTEN_TASTE_SIGNALS = Object.freeze({
+  complete: 3, // ≥ 80% heard
+  partial: 1, // 30 s – 80%
+  skip: -2, // < 30 s
+  repeat: 2, // per repeat play
+  notInterested: -5,
+});
+/** Score = Σ(tag affinity × share) + popularity + freshness − recently-played penalty. */
+export const FEED_SCORE_WEIGHTS = Object.freeze({
+  genre: 0.4,
+  vibe: 0.25,
+  artist: 0.2,
+  mood: 0.1,
+  energy: 0.05,
+  popularity: 0.15,
+  freshness: 0.1,
+  recentlyPlayed: 0.25, // penalty: heard in the last 7 days
+});
+/** Diversity rules (roadmap Day 8). */
+export const FEED_RULES = Object.freeze({
+  maxPerArtist: 2,
+  familiarShare: 0.7, // 70 / 30 familiar / discovery
+  communityShareWithAll: 0.2, // CAT-4: about 20% Community songs when the switch is on All
+  freshnessDays: 30,
+  noRepeatHours: 24, // don't recommend songs played in the last 24 h (except Jump back in)
+  recentlyPlayedDays: 7,
+});
+export const FEED_SECTION_SIZES = Object.freeze({
+  jumpBackIn: 6,
+  madeForYou: 20,
+  rightNow: 12,
+  trending: 15,
+  freshCreators: 10,
+});
+/** Feed cache (PRD 10.4.4): 1 hour, or until this many taste signals arrive. */
+export const FEED_CACHE_TTL_SECONDS = 60 * 60;
+export const FEED_INVALIDATE_AFTER_SIGNALS = 8;
+/** "Not interested" songs remembered per user. */
+export const FEED_HIDDEN_MAX = 500;
+/** Time of day → candidate vibes for "Right now" (local hour of the listener). */
+export const RIGHT_NOW_VIBES = Object.freeze([
+  { from: 5, to: 11, vibes: ["focus", "happy"] }, // morning
+  { from: 11, to: 17, vibes: ["code", "focus"] }, // working hours
+  { from: 17, to: 21, vibes: ["gym", "party", "travel"] }, // evening
+  { from: 21, to: 24, vibes: ["chill", "sleep"] }, // late night
+  { from: 0, to: 5, vibes: ["sleep", "chill"] },
+]);
