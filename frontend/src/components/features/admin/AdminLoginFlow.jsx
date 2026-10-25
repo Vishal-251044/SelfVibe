@@ -73,7 +73,7 @@ export default function AdminLoginFlow() {
 
         {step === "verify" && (
           <div>
-            <p className="text-sm text-neon">$ selfvibe console --verify</p>
+            <p className="font-mono text-sm text-neon">$ selfvibe console --verify</p>
             <h1 className="mt-3 font-display text-2xl font-bold sm:text-3xl">Two-factor check</h1>
             <p className="mt-2 mb-6 text-sm text-fg-muted">
               Enter the 6-digit code from your authenticator app.

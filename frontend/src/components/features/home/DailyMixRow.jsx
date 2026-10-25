@@ -31,10 +31,12 @@ export default function DailyMixRow() {
   if (query.isError || (!query.isPending && mixes.length === 0)) return null;
 
   return (
-    <FadeIn className="mb-10">
+    <FadeIn className="mb-7 sm:mb-10">
       <section aria-label="Daily Mixes">
-        <p className="font-mono text-xs text-neon">$ selfvibe mix --daily</p>
-        <h2 className="mb-4 font-display text-xl font-bold sm:text-2xl">Your Daily Mixes</h2>
+        <p className="font-mono text-[11px] text-neon sm:text-xs">$ selfvibe mix --daily</p>
+        <h2 className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl">
+          Your Daily Mixes
+        </h2>
         {query.isPending ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-busy="true">
             {Array.from({ length: 3 }, (_, index) => (

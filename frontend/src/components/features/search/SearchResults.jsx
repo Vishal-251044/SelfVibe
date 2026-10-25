@@ -22,7 +22,7 @@ import { hoverLift } from "@/utils/animations";
  */
 function Group({ id, title, children, action }) {
   return (
-    <section aria-labelledby={`results-${id}`} className="mb-10">
+    <section aria-labelledby={`results-${id}`} className="mb-7 sm:mb-10">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 id={`results-${id}`} className="font-display text-xl font-bold">
           {title}

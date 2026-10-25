@@ -88,7 +88,7 @@ export default function CategoryView({ kind, slug }) {
         <ArrowLeft size={16} aria-hidden /> Browse
       </Button>
 
-      <FadeIn className="relative mb-8 overflow-hidden rounded-card border border-line p-6 sm:p-8">
+      <FadeIn className="relative mb-6 overflow-hidden rounded-card border border-line p-4 sm:p-6">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
@@ -96,13 +96,13 @@ export default function CategoryView({ kind, slug }) {
             background: `radial-gradient(circle at 15% 0%, ${colour}55, transparent 60%), linear-gradient(160deg, ${colour}22, #000 75%)`,
           }}
         />
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+        <div className="flex items-center gap-4 sm:items-end sm:gap-5">
           <span
-            className="flex size-24 shrink-0 items-center justify-center rounded-card bg-black/50 shadow-panel backdrop-blur sm:size-32"
+            className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-black/50 shadow-panel backdrop-blur sm:size-24 sm:rounded-card"
             style={{ color: colour, boxShadow: `0 0 50px ${colour}40` }}
           >
             {category ? (
-              <TaxonomyIcon name={category.icon} size={48} aria-hidden />
+              <TaxonomyIcon name={category.icon} size={32} aria-hidden className="sm:size-11" />
             ) : (
               <Skeleton className="size-12" />
             )}
@@ -112,7 +112,7 @@ export default function CategoryView({ kind, slug }) {
               {kind}
             </p>
             {category ? (
-              <h1 className="mt-1 truncate font-display text-[clamp(2rem,6vw,3.5rem)] leading-none font-bold">
+              <h1 className="mt-1 truncate font-display text-[clamp(1.625rem,4vw,2.5rem)] leading-none font-bold tracking-tight">
                 {category.name}
               </h1>
             ) : (
@@ -127,12 +127,12 @@ export default function CategoryView({ kind, slug }) {
           </div>
         </div>
         {tracks.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" onClick={() => play(false)}>
-              <Play size={18} fill="currentColor" aria-hidden /> Play
+          <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-5">
+            <Button onClick={() => play(false)}>
+              <Play size={16} fill="currentColor" aria-hidden /> Play
             </Button>
-            <Button size="lg" variant="outline" onClick={() => play(true)}>
-              <Shuffle size={18} aria-hidden /> Shuffle
+            <Button variant="outline" onClick={() => play(true)}>
+              <Shuffle size={16} aria-hidden /> Shuffle
             </Button>
           </div>
         )}

@@ -36,7 +36,7 @@ export default function RecentSearches({ onSelect }) {
   if (query.isError || (!query.isPending && items.length === 0)) return null;
 
   return (
-    <section aria-labelledby="recent-heading" className="mb-10">
+    <section aria-labelledby="recent-heading" className="mb-7 sm:mb-10">
       <div className="mb-3 flex items-center justify-between">
         <h2 id="recent-heading" className="font-display text-lg font-bold">
           Recent searches

@@ -14,7 +14,7 @@ import FadeIn from "@/components/animations/FadeIn";
 export default function SectionHeading({ eyebrow, title, highlight, description }) {
   return (
     <FadeIn className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-      <p className="mb-4 text-xs tracking-[0.3em] text-neon uppercase sm:text-sm">{`// ${eyebrow}`}</p>
+      <p className="mb-4 font-mono text-xs tracking-[0.3em] text-neon uppercase sm:text-sm">{`// ${eyebrow}`}</p>
       <h2 className="font-display text-[clamp(2rem,6vw,3.5rem)] leading-[1.05] font-bold">
         {title} {highlight && <span className="text-glow text-neon-bright">{highlight}</span>}
       </h2>

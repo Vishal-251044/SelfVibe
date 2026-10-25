@@ -6,6 +6,7 @@
  */
 import { motion } from "framer-motion";
 import TerminalWindow from "@/components/ui/TerminalWindow";
+import EqualizerBars from "@/components/animations/EqualizerBars";
 import { formatDuration } from "@/utils/genericFunctions";
 
 const COMMAND = "selfvibe play --vibe code";
@@ -47,22 +48,7 @@ export default function HeroTerminal() {
         </p>
 
         {/* Equalizer */}
-        <div className="flex h-12 items-end gap-1 pt-4 sm:h-16" aria-hidden>
-          {EQ_BARS.map((height, index) => (
-            <motion.span
-              key={index}
-              className="h-full flex-1 origin-bottom rounded-sm bg-linear-to-t from-neon/40 to-neon-bright"
-              initial={{ scaleY: 0.15 }}
-              animate={{ scaleY: [0.15, height, 0.3, height * 0.7, 0.15] }}
-              transition={{
-                duration: 1.6 + (index % 4) * 0.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.05,
-              }}
-            />
-          ))}
-        </div>
+        <EqualizerBars bars={EQ_BARS} className="h-12 pt-4 sm:h-16" />
 
         {/* Progress */}
         <div className="flex items-center gap-3 pt-3 text-xs text-fg-subtle sm:gap-4 sm:text-sm">

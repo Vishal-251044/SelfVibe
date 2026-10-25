@@ -12,7 +12,6 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import FadeIn from "@/components/animations/FadeIn";
-import CatalogSwitch from "@/components/features/browse/CatalogSwitch";
 import VibeChips from "@/components/features/browse/VibeChips";
 import TrackShelf from "@/components/features/browse/TrackShelf";
 import JumpBackIn from "@/components/features/home/JumpBackIn";
@@ -85,12 +84,11 @@ export default function HomeFeed() {
     <>
       <HeroBanner banners={curatedSections.filter((section) => section.type === "hero")} />
 
-      <FadeIn className="mb-8 flex flex-col gap-4" delay={0.05}>
-        <CatalogSwitch className="self-start" />
-        <div>
-          <h2 className="mb-3 text-sm text-fg-muted">What&apos;s the vibe right now?</h2>
-          <VibeChips />
-        </div>
+      <FadeIn className="mb-7 sm:mb-9" delay={0.05}>
+        <h2 className="mb-2 text-[13px] font-medium text-fg-muted">
+          What&apos;s the vibe right now?
+        </h2>
+        <VibeChips />
       </FadeIn>
 
       {jumpBackIn && <JumpBackIn section={jumpBackIn} />}

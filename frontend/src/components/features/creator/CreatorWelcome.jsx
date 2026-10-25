@@ -34,10 +34,10 @@ export default function CreatorWelcome() {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12">
       <motion.div variants={fadeUp} initial="hidden" animate="visible">
-        <p className="mb-2 text-xs tracking-widest text-neon uppercase sm:text-sm">
+        <p className="mb-2 font-mono text-[11px] tracking-widest text-neon uppercase sm:text-xs">
           $ selfvibe studio --init
         </p>
-        <h1 className="font-display text-[clamp(2rem,6vw,3.25rem)] leading-tight font-bold">
+        <h1 className="font-display text-[clamp(1.75rem,5vw,2.75rem)] leading-tight font-bold tracking-tight">
           Share your music with the world
         </h1>
         <p className="mt-3 max-w-xl text-fg-muted">

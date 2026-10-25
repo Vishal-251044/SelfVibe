@@ -27,16 +27,22 @@ export default function VibeChips() {
     <div className="no-scrollbar -mx-4 flex snap-x gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
       {query.isPending
         ? Array.from({ length: 8 }, (_, index) => (
-            <Skeleton key={index} className="h-11 w-24 shrink-0 rounded-full" />
+            <Skeleton key={index} className="my-1 h-9 w-24 shrink-0 rounded-full" />
           ))
         : (query.data?.items ?? []).map((vibe) => (
             <Link
               key={vibe.slug}
               href={`/browse/vibe/${vibe.slug}`}
-              className="inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm text-fg-muted transition hover:border-neon hover:text-neon hover:shadow-glow-sm"
+              className="relative inline-flex min-h-11 shrink-0 snap-start items-center gap-1.5 px-3.5 text-[13px] font-medium text-fg-muted transition before:absolute before:inset-x-0 before:inset-y-1 before:rounded-full before:border before:border-white/10 before:bg-surface-raised before:transition before:content-[''] hover:text-fg hover:before:border-neon/60 active:scale-95"
             >
-              <TaxonomyIcon name={vibe.icon} size={16} style={{ color: vibe.colour }} aria-hidden />
-              {vibe.name}
+              <TaxonomyIcon
+                name={vibe.icon}
+                size={15}
+                style={{ color: vibe.colour }}
+                aria-hidden
+                className="relative"
+              />
+              <span className="relative">{vibe.name}</span>
             </Link>
           ))}
     </div>

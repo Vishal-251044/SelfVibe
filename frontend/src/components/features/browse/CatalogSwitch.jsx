@@ -24,7 +24,11 @@ export default function CatalogSwitch({ className }) {
     <div
       role="radiogroup"
       aria-label="Which music to show"
-      className={cn("inline-flex rounded-full border border-line bg-surface p-1", className)}
+      className={cn(
+        // 44px tall for touch; the visible track (::before) is slimmer
+        "relative inline-flex rounded-full px-0.5 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-1 before:rounded-full before:border before:border-white/10 before:bg-surface-raised before:content-['']",
+        className
+      )}
     >
       {CATALOG_FILTERS.map((option) => {
         const isActive = option.value === catalog;
@@ -36,14 +40,14 @@ export default function CatalogSwitch({ className }) {
             aria-checked={isActive}
             onClick={() => setCatalog(option.value)}
             className={cn(
-              "relative min-h-10 rounded-full px-4 text-sm font-medium transition-colors",
+              "relative min-h-11 rounded-full px-3.5 text-[13px] font-medium transition-colors",
               isActive ? "text-black" : "text-fg-muted hover:text-fg"
             )}
           >
             {isActive && (
               <motion.span
                 layoutId={`catalog-pill-${pillId}`}
-                className="absolute inset-0 rounded-full bg-neon shadow-glow-sm"
+                className="absolute inset-x-0 inset-y-1.5 rounded-full bg-neon shadow-glow-sm"
                 transition={{ duration: DURATION.base, ease: EASE_OUT }}
               />
             )}

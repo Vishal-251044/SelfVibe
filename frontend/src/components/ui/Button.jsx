@@ -18,9 +18,11 @@ const VARIANTS = {
   ghost: "text-fg-muted hover:text-neon hover:bg-neon-dim",
 };
 
+// Phones keep 44px tap targets; with a mouse (md+) controls can be a little slimmer
 const SIZES = {
-  md: "min-h-11 px-5 text-sm",
-  lg: "min-h-12 px-7 text-base",
+  sm: "min-h-11 px-3.5 text-[13px] md:min-h-9",
+  md: "min-h-11 px-4.5 text-sm md:min-h-10",
+  lg: "min-h-12 px-6 text-[15px] md:min-h-11",
 };
 
 const MotionLink = motion.create(Link);
@@ -28,7 +30,7 @@ const MotionLink = motion.create(Link);
 /**
  * @param {Object} props
  * @param {"primary"|"outline"|"ghost"} [props.variant="primary"]
- * @param {"md"|"lg"} [props.size="md"]
+ * @param {"sm"|"md"|"lg"} [props.size="md"]
  * @param {string} [props.href] - Render as a link to this path
  * @param {boolean} [props.nativeLink=false] - Use a plain <a> (full navigation, no prefetch)
  * @param {boolean} [props.loading=false] - Show a spinner and disable the button
@@ -48,7 +50,7 @@ export default function Button({
   ...rest
 }) {
   const classes = cn(
-    "rounded-control inline-flex items-center justify-center gap-2 font-mono transition-[background-color,border-color,box-shadow,color] duration-200",
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight transition-[background-color,border-color,box-shadow,color,transform] duration-200",
     "disabled:pointer-events-none disabled:opacity-50",
     VARIANTS[variant],
     SIZES[size],

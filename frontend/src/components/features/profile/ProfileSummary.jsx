@@ -57,8 +57,8 @@ export default function ProfileSummary() {
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_1fr]">
-      <section className="flex flex-col items-center rounded-card border border-line-strong bg-surface p-6 text-center shadow-glow-lg sm:p-8">
+    <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,20rem)_1fr]">
+      <section className="flex flex-col items-center rounded-card border border-line-strong bg-surface p-5 text-center shadow-glow-lg sm:p-6 lg:sticky lg:top-[calc(var(--top-nav-height)+1.5rem)]">
         <AnimatePresence mode="wait" initial={false}>
           {isEditing ? (
             <motion.div
@@ -81,14 +81,16 @@ export default function ProfileSummary() {
               className="flex w-full flex-col items-center"
             >
               <Avatar name={user.name} src={user.avatar} size="lg" />
-              <h2 className="mt-5 font-display text-2xl font-bold break-words">{user.name}</h2>
+              <h2 className="mt-4 font-display text-xl font-bold tracking-tight break-words">
+                {user.name}
+              </h2>
               <p className="mt-1 text-sm break-all text-fg-muted">{user.email}</p>
               {user.bio ? (
                 <p className="mt-4 text-sm whitespace-pre-line text-fg-muted">{user.bio}</p>
               ) : (
                 <p className="mt-4 text-sm text-fg-subtle italic">No bio yet.</p>
               )}
-              <div className="mt-8 grid w-full gap-3">
+              <div className="mt-5 grid w-full gap-2.5">
                 <Button onClick={() => setIsEditing(true)} fullWidth>
                   <Pencil size={16} aria-hidden />
                   Edit profile
@@ -103,14 +105,17 @@ export default function ProfileSummary() {
         </AnimatePresence>
       </section>
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-4 sm:space-y-5">
         <TasteSummary />
-        <Stagger className="grid content-start gap-3 sm:grid-cols-2" inView={false}>
+        <Stagger
+          className="grid content-start gap-2.5 sm:grid-cols-2 xl:grid-cols-3"
+          inView={false}
+        >
           {details.map(({ icon: Icon, label, value }) => (
             <StaggerItem key={label}>
-              <div className="flex min-h-20 items-center gap-4 rounded-card border border-line bg-surface px-5">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-neon-dim text-neon">
-                  <Icon size={20} aria-hidden />
+              <div className="flex min-h-16 items-center gap-3 rounded-card border border-line bg-surface px-4">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-neon-dim text-neon">
+                  <Icon size={18} aria-hidden />
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs text-fg-subtle">{label}</p>

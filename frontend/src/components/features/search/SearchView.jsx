@@ -95,8 +95,9 @@ export default function SearchView() {
     <>
       <PageHeader eyebrow="selfvibe search" title="Search" />
 
-      <FadeIn className="sticky top-14 z-30 -mx-4 mb-6 bg-ink/85 px-4 pt-1 pb-3 backdrop-blur-xl md:top-[var(--top-nav-height)] md:mx-0 md:px-0">
+      <FadeIn className="sticky top-14 z-30 -mx-4 mb-5 flex flex-col gap-2.5 bg-ink/85 px-4 pt-1 pb-3 backdrop-blur-xl md:top-[var(--top-nav-height)] md:mx-0 md:mb-6 md:flex-row md:items-center md:gap-3 md:px-0">
         <form
+          className="min-w-0 md:flex-1"
           role="search"
           onSubmit={(event) => {
             event.preventDefault();
@@ -107,11 +108,11 @@ export default function SearchView() {
           <label htmlFor="search-input" className="sr-only">
             Search songs, artists, playlists, genres and vibes
           </label>
-          <div className="flex min-h-14 items-center gap-2 rounded-control border border-line bg-black pr-1.5 pl-4 transition focus-within:border-neon focus-within:shadow-glow-sm">
+          <div className="flex h-12 items-center gap-2 rounded-full border border-white/10 bg-surface-raised pr-0.5 pl-4 transition focus-within:border-neon/70 focus-within:bg-black focus-within:shadow-glow-sm md:h-11 md:pr-0">
             {isTyping ? (
-              <Loader2 size={20} className="shrink-0 animate-spin text-neon" aria-hidden />
+              <Loader2 size={18} className="shrink-0 animate-spin text-neon" aria-hidden />
             ) : (
-              <Search size={20} className="shrink-0 text-neon" aria-hidden />
+              <Search size={18} className="shrink-0 text-fg-muted" aria-hidden />
             )}
             <input
               ref={inputRef}
@@ -120,12 +121,12 @@ export default function SearchView() {
               enterKeyHint="search"
               value={text}
               onChange={(event) => setText(event.target.value)}
-              placeholder="Songs, artists, playlists, vibes"
+              placeholder="What do you want to hear?"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
               maxLength={100}
-              className="w-full min-w-0 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle [&::-webkit-search-cancel-button]:hidden"
+              className="w-full min-w-0 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle md:text-sm [&::-webkit-search-cancel-button]:hidden"
             />
             {hasQuery && (
               <button
@@ -137,10 +138,11 @@ export default function SearchView() {
                 <X size={18} aria-hidden />
               </button>
             )}
-            <MicButton variant="filled" />
+            {/* 44px button; the green circle is painted 36px (bg-clip-content) */}
+            <MicButton variant="filled" size={18} className="bg-clip-content p-1" />
           </div>
         </form>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2 md:shrink-0 md:justify-end md:gap-3">
           <CatalogSwitch />
           <VoiceSettings />
         </div>

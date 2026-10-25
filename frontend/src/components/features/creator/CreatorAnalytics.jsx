@@ -42,8 +42,13 @@ export default function CreatorAnalytics() {
     <section className="mt-10" aria-labelledby="analytics-heading">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-xs text-neon">$ selfvibe studio --analytics</p>
-          <h2 id="analytics-heading" className="font-display text-xl font-bold sm:text-2xl">
+          <p className="font-mono text-[11px] text-neon sm:text-xs">
+            $ selfvibe studio --analytics
+          </p>
+          <h2
+            id="analytics-heading"
+            className="font-display text-lg font-bold tracking-tight sm:text-xl"
+          >
             Your analytics
           </h2>
         </div>
@@ -128,7 +133,9 @@ export default function CreatorAnalytics() {
             <ol className="space-y-1">
               {data.topTracks.map((track, index) => (
                 <li key={track.id} className="flex min-h-14 items-center gap-3 rounded-lg px-2">
-                  <span className="w-5 font-mono text-xs text-neon">{index + 1}</span>
+                  <span className="w-5 font-mono text-[11px] text-neon sm:text-xs">
+                    {index + 1}
+                  </span>
                   <CoverArt
                     src={track.coverUrl}
                     alt=""

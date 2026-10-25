@@ -47,7 +47,7 @@ export default function StaffCredentialsStep({ onSuccess, notice }) {
 
   return (
     <div>
-      <p className="text-sm text-neon">$ selfvibe console --login</p>
+      <p className="font-mono text-sm text-neon">$ selfvibe console --login</p>
       <h1 className="mt-3 font-display text-3xl font-bold">Console sign-in</h1>
       <p className="mt-2 text-sm text-fg-muted">
         Staff only. Two-factor authentication is required.

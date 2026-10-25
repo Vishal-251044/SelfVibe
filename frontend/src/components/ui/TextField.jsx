@@ -34,25 +34,25 @@ export default function TextField({
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="text-sm text-fg-muted">
+      <label htmlFor={id} className="text-[13px] font-medium text-fg-muted">
         {label}
       </label>
       <div
         className={cn(
-          "mt-1.5 flex min-h-12 items-center gap-3 rounded-control border bg-black px-3.5 transition",
+          "mt-1.5 flex min-h-11 items-center gap-2.5 rounded-xl border bg-surface-raised px-3.5 transition focus-within:bg-black md:min-h-10",
           error
             ? "border-danger/70 focus-within:border-danger"
-            : "border-line focus-within:border-neon focus-within:shadow-glow-sm"
+            : "border-white/10 focus-within:border-neon/70 focus-within:shadow-glow-sm"
         )}
       >
-        {Icon && <Icon size={18} className="shrink-0 text-fg-subtle" aria-hidden />}
+        {Icon && <Icon size={17} className="shrink-0 text-fg-subtle" aria-hidden />}
         <input
           id={id}
           type={isPassword && isPasswordVisible ? "text" : type}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           className={cn(
-            "min-h-11 w-full min-w-0 self-stretch bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle sm:text-sm",
+            "min-h-10 w-full min-w-0 self-stretch bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle md:min-h-9 md:text-sm",
             inputClassName
           )}
           {...inputProps}

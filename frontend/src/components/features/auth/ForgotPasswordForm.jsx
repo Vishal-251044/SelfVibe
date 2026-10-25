@@ -47,7 +47,7 @@ export default function ForgotPasswordForm() {
           <div className="mb-6 flex size-14 items-center justify-center rounded-2xl border border-line-strong bg-neon-dim text-neon">
             <MailCheck size={26} aria-hidden />
           </div>
-          <p className="text-sm text-neon">$ selfvibe reset --sent</p>
+          <p className="font-mono text-sm text-neon">$ selfvibe reset --sent</p>
           <h1 className="mt-3 font-display text-3xl font-bold">Check your inbox</h1>
           <p className="mt-3 text-sm leading-relaxed text-fg-muted">
             If an account exists for <span className="break-all text-fg">{sentTo}</span>, we&apos;ve
@@ -71,7 +71,7 @@ export default function ForgotPasswordForm() {
         </motion.div>
       ) : (
         <motion.div key="form" variants={fadeUp} initial="hidden" animate="visible" exit="hidden">
-          <p className="text-sm text-neon">$ selfvibe reset --request</p>
+          <p className="font-mono text-sm text-neon">$ selfvibe reset --request</p>
           <h1 className="mt-3 font-display text-3xl font-bold">Forgot your password?</h1>
           <p className="mt-2 text-sm text-fg-muted">
             Enter your email and we&apos;ll send you a link to choose a new one.

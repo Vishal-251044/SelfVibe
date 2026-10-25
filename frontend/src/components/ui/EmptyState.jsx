@@ -26,7 +26,7 @@ export default function EmptyState({ icon: Icon, command, title, description, ac
           <Icon size={26} aria-hidden />
         </div>
       )}
-      <p className="text-sm text-neon">$ {command}</p>
+      <p className="font-mono text-sm text-neon">$ {command}</p>
       <p className="mt-2 text-base font-semibold text-fg sm:text-lg">
         <span className="text-neon">{">>"}</span> {title}
         <span className="ml-1 animate-blink text-neon">_</span>

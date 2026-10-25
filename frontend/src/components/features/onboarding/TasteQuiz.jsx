@@ -192,7 +192,7 @@ export default function TasteQuiz() {
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: DURATION.base, ease: EASE_OUT }}
           >
-            <p className="text-sm text-neon">
+            <p className="font-mono text-sm text-neon">
               $ {step.command}{" "}
               <span className="text-fg-subtle">
                 · step {stepIndex + 1}/{STEPS.length}

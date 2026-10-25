@@ -45,7 +45,9 @@ export default function TerminalToaster() {
             >
               <div className="flex items-start gap-2 py-2 pr-1 pl-4">
                 <div className="min-w-0 flex-1 space-y-1 py-1">
-                  {toast.command && <p className="truncate text-fg-muted">$ {toast.command}</p>}
+                  {toast.command && (
+                    <p className="truncate font-mono text-fg-muted">$ {toast.command}</p>
+                  )}
                   <p className={cn("flex items-center gap-2", TONE_CLASS[toast.tone])}>
                     <span aria-hidden>{">>"}</span>
                     <span className="min-w-0 flex-1 break-words text-fg">{toast.message}</span>

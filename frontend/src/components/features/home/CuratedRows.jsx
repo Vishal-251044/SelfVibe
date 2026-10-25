@@ -37,10 +37,14 @@ export default function CuratedRows({ sections, query }) {
     }
     if (section.type === "featuredArtists") {
       return (
-        <FadeIn key={section.id} className="mb-10">
+        <FadeIn key={section.id} className="mb-7 sm:mb-10">
           <section aria-label={section.title}>
-            <p className="font-mono text-xs text-neon">$ selfvibe artists --featured</p>
-            <h2 className="font-display text-xl font-bold sm:text-2xl">{section.title}</h2>
+            <p className="font-mono text-[11px] text-neon sm:text-xs">
+              $ selfvibe artists --featured
+            </p>
+            <h2 className="font-display text-lg font-bold tracking-tight sm:text-xl">
+              {section.title}
+            </h2>
             {section.subtitle && (
               <p className="text-xs text-fg-muted sm:text-sm">{section.subtitle}</p>
             )}
@@ -82,10 +86,14 @@ export default function CuratedRows({ sections, query }) {
     }
     // Editorial playlist: one wide card
     return (
-      <FadeIn key={section.id} className="mb-10">
+      <FadeIn key={section.id} className="mb-7 sm:mb-10">
         <section aria-label={section.title}>
-          <p className="font-mono text-xs text-neon">$ selfvibe playlist --editorial</p>
-          <h2 className="mb-4 font-display text-xl font-bold sm:text-2xl">{section.title}</h2>
+          <p className="font-mono text-[11px] text-neon sm:text-xs">
+            $ selfvibe playlist --editorial
+          </p>
+          <h2 className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl">
+            {section.title}
+          </h2>
           <motion.div whileHover={hoverLift}>
             <Link
               href={`/playlist/${section.playlist.id}`}
@@ -100,7 +108,7 @@ export default function CuratedRows({ sections, query }) {
                 <span className="text-xs tracking-widest text-neon uppercase">
                   SelfVibe playlist
                 </span>
-                <span className="block truncate font-display text-lg font-bold sm:text-2xl">
+                <span className="block truncate font-display text-base font-bold tracking-tight sm:text-xl">
                   {section.playlist.name}
                 </span>
                 <span className="line-clamp-2 text-sm text-fg-muted">

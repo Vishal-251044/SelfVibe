@@ -55,10 +55,13 @@ export const slideDown = {
   exit: { opacity: 0, y: -8, transition: { duration: DURATION.fast } },
 };
 
-/** Page entrance used by the app shell on route change. */
+/**
+ * Page entrance used by the app shell on route change. Starts partly visible
+ * and is short, so a new page never looks blank while it settles (Day 10 speed pass).
+ */
 export const pageTransition = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: DURATION.base, ease: EASE_OUT } },
+  hidden: { opacity: 0.4, y: 6 },
+  visible: { opacity: 1, y: 0, transition: { duration: DURATION.fast, ease: EASE_OUT } },
 };
 
 /** Hover / tap feedback for cards and buttons. */

@@ -28,18 +28,26 @@ export default function BottomNav() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex h-full flex-col items-center justify-center gap-1 text-[0.6875rem] transition-colors",
+                  "relative flex h-full flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium transition-colors",
                   isActive ? "text-neon" : "text-fg-subtle active:text-fg"
                 )}
               >
-                {isActive && (
+                <span className="relative flex h-8 w-14 items-center justify-center">
+                  {isActive && (
+                    <motion.span
+                      layoutId="bottom-nav-indicator"
+                      className="absolute inset-0 rounded-full bg-neon-dim"
+                      transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                    />
+                  )}
                   <motion.span
-                    layoutId="bottom-nav-indicator"
-                    className="absolute top-0 h-0.5 w-8 rounded-full bg-neon shadow-glow"
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                  />
-                )}
-                <Icon size={22} strokeWidth={isActive ? 2.4 : 2} aria-hidden />
+                    className="relative"
+                    animate={{ scale: isActive ? 1.08 : 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    <Icon size={21} strokeWidth={isActive ? 2.4 : 1.9} aria-hidden />
+                  </motion.span>
+                </span>
                 {label}
               </Link>
             </li>

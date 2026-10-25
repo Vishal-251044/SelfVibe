@@ -2,7 +2,7 @@
 
 /**
  * Desktop/tablet top navbar for the signed-in app (hidden on phones, where
- * BottomNav takes over). The active link gets an animated neon underline.
+ * BottomNav takes over). The active link sits on a pill that slides between links.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,19 +35,19 @@ export default function AppTopNav() {
                   href={href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm transition-colors",
-                    isActive ? "text-neon" : "text-fg-muted hover:text-fg"
+                    "relative flex min-h-10 items-center gap-2 rounded-full px-3.5 text-[13px] font-medium transition-colors",
+                    isActive ? "text-neon" : "text-fg-muted hover:bg-white/5 hover:text-fg"
                   )}
                 >
-                  <Icon size={18} aria-hidden />
-                  {label}
                   {isActive && (
                     <motion.span
                       layoutId="top-nav-indicator"
-                      className="absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-neon shadow-glow"
+                      className="absolute inset-0 rounded-full border border-neon/30 bg-neon-dim"
                       transition={{ type: "spring", stiffness: 500, damping: 40 }}
                     />
                   )}
+                  <Icon size={17} className="relative" aria-hidden />
+                  <span className="relative">{label}</span>
                 </Link>
               </li>
             );

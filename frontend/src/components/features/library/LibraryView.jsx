@@ -85,7 +85,7 @@ export default function LibraryView() {
       />
 
       {/* Playlists + Liked Songs */}
-      <section aria-labelledby="playlists-heading" className="mb-10">
+      <section aria-labelledby="playlists-heading" className="mb-7 sm:mb-10">
         <SectionHeading
           id="playlists-heading"
           title="Playlists"
@@ -96,7 +96,7 @@ export default function LibraryView() {
           }
         />
         <Stagger
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6"
           inView={false}
           stagger={0.04}
         >
@@ -104,10 +104,10 @@ export default function LibraryView() {
             <motion.div whileHover={hoverLift} whileTap={tapPress} className="h-full">
               <Link
                 href="/library/liked"
-                className="flex h-full min-h-48 flex-col justify-end rounded-card border border-line-strong bg-[radial-gradient(circle_at_30%_20%,rgb(34_197_94/0.45),transparent_60%),linear-gradient(160deg,#0b120d,#000)] p-4 shadow-glow-sm transition hover:shadow-glow"
+                className="flex aspect-square h-full flex-col justify-end rounded-card border border-line-strong bg-[radial-gradient(circle_at_30%_20%,rgb(34_197_94/0.45),transparent_60%),linear-gradient(160deg,#0b120d,#000)] p-4 shadow-glow-sm transition hover:shadow-glow"
               >
-                <Heart size={28} className="mb-auto text-neon" fill="currentColor" aria-hidden />
-                <span className="font-display text-lg font-bold">Liked Songs</span>
+                <Heart size={24} className="mb-auto text-neon" fill="currentColor" aria-hidden />
+                <span className="font-display text-base font-bold tracking-tight">Liked Songs</span>
                 <span className="text-xs text-fg-muted">
                   {likedIds.isPending ? "…" : pluralize(likedCount, "song")}
                 </span>
@@ -146,7 +146,7 @@ export default function LibraryView() {
       </section>
 
       {/* Recently played (LIB-3) */}
-      <section aria-labelledby="recent-heading" className="mb-10">
+      <section aria-labelledby="recent-heading" className="mb-7 sm:mb-10">
         <SectionHeading id="recent-heading" title="Recently played" />
         {history.isPending ? (
           <div className="space-y-2">

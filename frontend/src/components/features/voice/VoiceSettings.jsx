@@ -3,6 +3,8 @@
 /**
  * Voice language (English / Hindi — Hinglish works in both) and the
  * "spoken replies" toggle (PRD VOC-2/5). Hidden where voice isn't supported.
+ * Small phones get one compact button that flips the language, so the
+ * search row fits on a 360px screen.
  */
 import { Volume2, VolumeX } from "lucide-react";
 import { useVoiceStore } from "@/store/voiceStore";
@@ -27,13 +29,23 @@ export default function VoiceSettings({ className }) {
 
   if (!isSupported) return null;
   const SpeakIcon = speakReplies ? Volume2 : VolumeX;
+  const current = VOICE_LANGUAGES.find((option) => option.value === language) ?? VOICE_LANGUAGES[0];
+  const other = VOICE_LANGUAGES.find((option) => option.value !== current.value) ?? current;
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-1.5 sm:gap-2", className)}>
+      <button
+        type="button"
+        onClick={() => setLanguage(other.value)}
+        aria-label={`Voice language: ${current.label}. Switch to ${other.label}`}
+        className="flex size-11 items-center justify-center rounded-full border border-white/10 bg-surface-raised font-mono text-[11px] text-neon transition active:scale-95 sm:hidden"
+      >
+        {current.short}
+      </button>
       <div
         role="radiogroup"
         aria-label="Voice language"
-        className="inline-flex rounded-full border border-line p-0.5"
+        className="hidden rounded-full border border-white/10 bg-surface-raised p-0.5 sm:inline-flex"
       >
         {VOICE_LANGUAGES.map((option) => (
           <button
@@ -44,7 +56,7 @@ export default function VoiceSettings({ className }) {
             aria-label={`Voice: ${option.label}`}
             onClick={() => setLanguage(option.value)}
             className={cn(
-              "min-h-10 min-w-11 rounded-full px-3 font-mono text-xs transition",
+              "min-h-10 min-w-11 rounded-full px-2.5 font-mono text-[11px] transition",
               language === option.value ? "bg-neon-dim text-neon" : "text-fg-subtle hover:text-fg"
             )}
           >
@@ -59,7 +71,7 @@ export default function VoiceSettings({ className }) {
         aria-label={speakReplies ? "Spoken replies on" : "Spoken replies off"}
         title={speakReplies ? "Spoken replies on" : "Spoken replies off"}
         className={cn(
-          "flex size-11 items-center justify-center rounded-full border border-line transition",
+          "flex size-11 items-center justify-center rounded-full border border-white/10 bg-surface-raised transition",
           speakReplies ? "text-neon" : "text-fg-subtle hover:text-fg"
         )}
       >

@@ -27,8 +27,9 @@
   --color-warning: #facc15;
 
   /* ===== Typography ===== */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-display: var(--font-space-grotesk), var(--font-jetbrains-mono), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), system-ui, sans-serif;
 
   /* ===== Shadows (neon glow) ===== */
   --shadow-glow-sm: 0 0 12px rgb(34 197 94 / 0.45);
@@ -64,7 +65,7 @@
 /* App-wide layout sizes used for safe-area aware spacing */
 :root {
   --bottom-nav-height: 4rem;
-  --top-nav-height: 4.5rem;
+  --top-nav-height: 4rem;
   /* Height of the player dock; 0 until a song is loaded (set via html[data-player]) */
   --player-height: 0rem;
   --mini-player-height: 4.25rem;
@@ -88,7 +89,7 @@ html[data-player="on"] {
     text-size-adjust: 100%;
     /* Keep focused / scrolled-to elements clear of the sticky top bar and,
        on phones, the fixed bottom navigation */
-    scroll-padding-top: 4.5rem;
+    scroll-padding-top: 4rem;
     scroll-padding-bottom: calc(
       var(--bottom-nav-height) + var(--player-height) + env(safe-area-inset-bottom) + 1rem
     );
@@ -101,7 +102,8 @@ html[data-player="on"] {
   }
 
   body {
-    @apply bg-ink font-mono text-fg antialiased;
+    @apply bg-ink font-sans text-fg antialiased;
+    font-feature-settings: "cv11", "ss01"; /* Inter: straight-sided 6/9 and open digits */
     min-height: 100dvh;
     overflow-x: hidden;
   }

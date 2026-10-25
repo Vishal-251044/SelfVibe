@@ -85,7 +85,7 @@ export default function ResetPasswordForm() {
 
   return (
     <div>
-      <p className="text-sm text-neon">$ selfvibe reset --apply</p>
+      <p className="font-mono text-sm text-neon">$ selfvibe reset --apply</p>
       <h1 className="mt-3 font-display text-3xl font-bold">Choose a new password</h1>
       <p className="mt-2 text-sm text-fg-muted">
         You&apos;ll be signed out on all devices, then you can log in with the new one.

@@ -43,7 +43,7 @@ export default function TwoFactorSetupStep({ challengeToken, onSuccess, onExpire
 
   return (
     <div>
-      <p className="text-sm text-neon">$ selfvibe console --enrol-2fa</p>
+      <p className="font-mono text-sm text-neon">$ selfvibe console --enrol-2fa</p>
       <h1 className="mt-3 font-display text-2xl font-bold sm:text-3xl">Secure your account</h1>
       <ol className="mt-3 space-y-1 text-sm text-fg-muted">
         <li>1. Open Google Authenticator, Authy or 1Password.</li>

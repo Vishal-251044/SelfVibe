@@ -1,12 +1,19 @@
 /**
  * Root layout: fonts, global styles, SEO / PWA metadata and client providers.
  */
-import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import Providers from "@/lib/Providers";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/utils/constants";
 import "@/styles/globals.css";
 
-// Monospace body font for the terminal feel; geometric display font for headings
+// Inter for body text (compact, easy to read on phones), Space Grotesk for
+// headings, JetBrains Mono only for the terminal-style accents ($ selfvibe …)
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
@@ -56,7 +63,10 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} ${spaceGrotesk.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}
+    >
       <body>
         {/* Keyboard users jump straight past the navigation (Day 10 accessibility pass) */}
         <a

@@ -50,7 +50,7 @@ export default function AppShell({ children }) {
         variants={pageTransition}
         initial="hidden"
         animate="visible"
-        className="px-safe mx-auto w-full max-w-7xl pt-6 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] outline-none md:px-6 md:pt-10 md:pb-[calc(var(--player-height)+4rem)]"
+        className="px-safe mx-auto w-full max-w-7xl pt-4 pb-[calc(var(--bottom-nav-height)+var(--player-height)+env(safe-area-inset-bottom)+2rem)] outline-none md:px-6 md:pt-8 md:pb-[calc(var(--player-height)+4rem)]"
       >
         <MaintenanceGate>
           <AuthGuard optional={isPublicPage}>{children}</AuthGuard>

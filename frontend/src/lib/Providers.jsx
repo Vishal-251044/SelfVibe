@@ -15,6 +15,7 @@ import { makeQueryClient } from "@/lib/queryClient";
 import PlayerEngine from "@/components/features/player/PlayerEngine";
 import ServiceWorkerRegister from "@/components/features/pwa/ServiceWorkerRegister";
 import InstallListener from "@/components/features/pwa/InstallListener";
+import RouteProgress from "@/components/layout/RouteProgress";
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -30,6 +31,7 @@ export default function Providers({ children }) {
         <PlayerEngine />
         <ServiceWorkerRegister />
         <InstallListener />
+        <RouteProgress />
       </MotionConfig>
     </QueryClientProvider>
   );

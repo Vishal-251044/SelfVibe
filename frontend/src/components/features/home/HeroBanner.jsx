@@ -7,6 +7,7 @@
  */
 import Image from "next/image";
 import Link from "next/link";
+import EqualizerBars from "@/components/animations/EqualizerBars";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { DURATION, EASE_OUT } from "@/utils/animations";
@@ -21,10 +22,10 @@ export default function HeroBanner({ banners }) {
   const isSingle = banners.length === 1;
 
   return (
-    <section aria-label="Featured" className="mb-8">
+    <section aria-label="Featured" className="mb-6 sm:mb-8">
       <div
         className={cn(
-          "no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 md:mx-0 md:px-0",
+          "no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 md:mx-0 md:gap-4 md:px-0",
           isSingle && "overflow-hidden"
         )}
       >
@@ -35,7 +36,7 @@ export default function HeroBanner({ banners }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: DURATION.slow, ease: EASE_OUT, delay: index * 0.06 }}
-              className="group relative flex aspect-[16/10] w-full items-end overflow-hidden rounded-card border border-line-strong bg-surface sm:aspect-[21/8]"
+              className="group relative flex h-44 w-full items-end overflow-hidden rounded-card border border-line-strong bg-surface sm:h-52"
             >
               {banner.imageUrl ? (
                 <Image
@@ -57,18 +58,21 @@ export default function HeroBanner({ banners }) {
                 aria-hidden
                 className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"
               />
-              <div className="relative max-w-xl p-5 sm:p-8">
-                <p className="font-mono text-xs text-neon">$ selfvibe featured</p>
-                <h2 className="mt-1 font-display text-[clamp(1.5rem,5vw,3rem)] leading-tight font-bold">
+              {!banner.imageUrl && (
+                <EqualizerBars className="absolute right-5 bottom-5 hidden h-24 w-48 opacity-60 sm:flex lg:right-8 lg:h-32 lg:w-72" />
+              )}
+              <div className="relative max-w-xl p-4 sm:p-6 lg:p-7">
+                <p className="font-mono text-[11px] text-neon sm:text-xs">$ selfvibe featured</p>
+                <h2 className="mt-1 font-display text-[clamp(1.375rem,3.6vw,2.25rem)] leading-tight font-bold tracking-tight">
                   {banner.title}
                 </h2>
                 {banner.subtitle && (
-                  <p className="mt-1 line-clamp-2 text-sm text-fg-muted sm:text-base">
+                  <p className="mt-1 line-clamp-2 text-[13px] text-fg-muted sm:text-sm">
                     {banner.subtitle}
                   </p>
                 )}
                 {banner.link && (
-                  <span className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-neon px-5 text-sm font-semibold text-black transition group-hover:shadow-glow">
+                  <span className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-neon px-4 text-[13px] font-semibold text-black transition group-hover:shadow-glow sm:mt-4">
                     Listen now <ArrowRight size={16} aria-hidden />
                   </span>
                 )}

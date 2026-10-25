@@ -58,12 +58,16 @@ export default function TrackShelf({
   };
 
   return (
-    <FadeIn className="mb-10">
+    <FadeIn className="mb-7 sm:mb-10">
       <section aria-label={title}>
         <div className="mb-4 flex items-end justify-between gap-3">
           <div className="min-w-0">
-            {command && <p className="truncate font-mono text-xs text-neon">$ {command}</p>}
-            <h2 className="truncate font-display text-xl font-bold sm:text-2xl">{title}</h2>
+            {command && (
+              <p className="truncate font-mono text-[11px] text-neon sm:text-xs">$ {command}</p>
+            )}
+            <h2 className="truncate font-display text-lg font-bold tracking-tight sm:text-xl">
+              {title}
+            </h2>
             {subtitle && <p className="truncate text-xs text-fg-muted sm:text-sm">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1">

@@ -16,7 +16,7 @@ import { getCategories } from "@/services/browse.service";
 import { useCatalogFilter } from "@/hooks/useCatalogFilter";
 import { QUERY_KEYS } from "@/utils/constants";
 
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5";
+const GRID = "grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4";
 
 /**
  * @param {Object} props
@@ -34,15 +34,18 @@ export default function CategoryGrid({ kind, title, command }) {
   const items = query.data?.items ?? [];
 
   return (
-    <section aria-labelledby={`browse-${kind}`} className="mb-10">
-      {command && <p className="font-mono text-xs text-neon">$ {command}</p>}
-      <h2 id={`browse-${kind}`} className="mb-4 font-display text-xl font-bold sm:text-2xl">
+    <section aria-labelledby={`browse-${kind}`} className="mb-7 sm:mb-10">
+      {command && <p className="font-mono text-[11px] text-neon sm:text-xs">$ {command}</p>}
+      <h2
+        id={`browse-${kind}`}
+        className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl"
+      >
         {title}
       </h2>
       {query.isPending ? (
         <div className={GRID} aria-busy="true">
           {Array.from({ length: 8 }, (_, index) => (
-            <Skeleton key={index} className="aspect-[4/3] w-full rounded-card" />
+            <Skeleton key={index} className="aspect-[16/10] w-full rounded-card lg:aspect-[2/1]" />
           ))}
         </div>
       ) : query.isError ? (

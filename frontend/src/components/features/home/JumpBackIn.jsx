@@ -25,10 +25,12 @@ export default function JumpBackIn({ section }) {
   const tracks = section.items;
 
   return (
-    <FadeIn className="mb-10">
+    <FadeIn className="mb-7 sm:mb-10">
       <section aria-label={section.title}>
-        <p className="font-mono text-xs text-neon">$ selfvibe history --recent</p>
-        <h2 className="mb-4 font-display text-xl font-bold sm:text-2xl">{section.title}</h2>
+        <p className="font-mono text-[11px] text-neon sm:text-xs">$ selfvibe history --recent</p>
+        <h2 className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl">
+          {section.title}
+        </h2>
         <Stagger
           className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3"
           stagger={0.04}

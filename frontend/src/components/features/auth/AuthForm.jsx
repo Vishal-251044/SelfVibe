@@ -114,7 +114,7 @@ export default function AuthForm({ mode }) {
 
   return (
     <div>
-      <p className="text-sm text-neon">$ {copy.command}</p>
+      <p className="font-mono text-sm text-neon">$ {copy.command}</p>
       <h1 className="mt-3 font-display text-3xl font-bold">{copy.title}</h1>
       <p className="mt-2 text-sm text-fg-muted">{copy.subtitle}</p>
 

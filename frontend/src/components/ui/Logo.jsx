@@ -9,7 +9,7 @@ import { cn } from "@/utils/genericFunctions";
 
 const SIZES = {
   sm: { badge: "size-8 rounded-lg", icon: 16, text: "text-lg" },
-  md: { badge: "size-9 md:size-10 rounded-xl", icon: 20, text: "text-xl md:text-2xl" },
+  md: { badge: "size-9 rounded-xl", icon: 18, text: "text-xl" },
   lg: { badge: "size-14 rounded-2xl", icon: 28, text: "text-3xl" },
 };
 
