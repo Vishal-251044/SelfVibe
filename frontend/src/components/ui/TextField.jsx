@@ -52,7 +52,7 @@ export default function TextField({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           className={cn(
-            "min-h-10 w-full min-w-0 self-stretch bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle md:min-h-9 md:text-sm",
+            "min-h-11 w-full min-w-0 self-stretch bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle md:min-h-9 md:text-sm",
             inputClassName
           )}
           {...inputProps}

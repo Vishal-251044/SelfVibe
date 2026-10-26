@@ -1,7 +1,8 @@
 /**
  * Page title block: terminal-style eyebrow, title, optional subtitle and
  * actions. Title and actions share one row on every screen (Day 10 UI pass:
- * less empty space); the subtitle shows from `sm` up.
+ * less empty space). Subtitles stay on phones (they can carry instructions,
+ * e.g. on the upload page), in a smaller size.
  */
 import FadeIn from "@/components/animations/FadeIn";
 
@@ -23,7 +24,7 @@ export default function PageHeader({ eyebrow, title, subtitle, actions }) {
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1 hidden max-w-2xl text-sm text-fg-muted sm:block">{subtitle}</p>
+          <p className="mt-1 max-w-2xl text-[13px] text-fg-muted sm:text-sm">{subtitle}</p>
         )}
       </div>
       {actions && <div className="shrink-0">{actions}</div>}
