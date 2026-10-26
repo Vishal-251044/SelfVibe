@@ -35,7 +35,8 @@ const SECTIONS = [
   {
     heading: "Plans",
     body: [
-      "Free, Premium and Creator Pro plans have the limits shown on the pricing page. Paid plans, when available, will show their price and renewal terms before you pay.",
+      "Free, Premium and Creator Pro plans have the limits shown on the pricing page. Paid plans are billed monthly or yearly through Razorpay and renew automatically until you cancel; the price is shown before you pay.",
+      "Cancelling, failed payments and refunds are covered by the Refund & Cancellation Policy at /refunds.",
     ],
   },
   {

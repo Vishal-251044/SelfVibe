@@ -15,7 +15,7 @@ import { Comment } from "../../models/comment.model.js";
 import { Report } from "../../models/report.model.js";
 import { revokeAllSessionsForUser } from "../session.service.js";
 import { requestPasswordReset } from "../passwordReset.service.js";
-import { buildPageMeta } from "../../helpers/genericFunctions.js";
+import { buildPageMeta, containsRegex } from "../../helpers/genericFunctions.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ERROR_CODES } from "../../config/constants.js";
 import { logger } from "../../utils/logger.js";
@@ -23,15 +23,6 @@ import { logger } from "../../utils/logger.js";
 const USER_FIELDS =
   "name email avatar roles staffRole status plan emailVerified createdAt lastLoginAt warnings";
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Escape text for a case-insensitive "contains" regex.
- * @param {string} text
- * @returns {RegExp}
- */
-function containsRegex(text) {
-  return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-}
 
 /**
  * Staff view of a user (with their artist profile, if any).

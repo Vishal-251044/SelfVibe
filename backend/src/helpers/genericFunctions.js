@@ -117,3 +117,12 @@ export function toCsv(rows, columns) {
   const lines = rows.map((row) => columns.map((column) => cell(row[column.key])).join(","));
   return [header, ...lines].join("\r\n");
 }
+
+/**
+ * Case-insensitive "contains" regex for a search box, with the text escaped.
+ * @param {string} text - What the person typed
+ * @returns {RegExp}
+ */
+export function containsRegex(text) {
+  return new RegExp(String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+}

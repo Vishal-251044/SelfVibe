@@ -167,6 +167,8 @@ export const ERROR_CODES = Object.freeze({
   IP_NOT_ALLOWED: "IP_NOT_ALLOWED",
   IN_USE: "IN_USE",
   ACCOUNT_LOCKED: "ACCOUNT_LOCKED",
+  ALREADY_SUBSCRIBED: "ALREADY_SUBSCRIBED",
+  PAYMENT_INVALID: "PAYMENT_INVALID",
 });
 
 /* ===== Onboarding & taste profile ===== */
@@ -280,6 +282,7 @@ export const JOBS = Object.freeze({
   trackDailyStats: "track-daily-stats",
   trackSimilarity: "track-similarity",
   moveTrackStorage: "move-track-storage",
+  expireSubscriptions: "expire-subscriptions",
 });
 
 /** Official = added by the Owner / staff; Community = uploaded by users (PRD 10.14, F51). */
@@ -499,7 +502,49 @@ export const SETTINGS_DEFAULTS = Object.freeze({
     enabled: false,
     message: "SelfVibe is getting an upgrade. We'll be back shortly.",
   },
-  features: { comments: true, uploads: true, voice: true },
+  features: { comments: true, uploads: true, voice: true, payments: true },
   uploadLimits: { free: 20, premium: 20, creatorPro: null },
+  // Plan prices in whole rupees (PRD §5); Razorpay plans are created from these
+  planPrices: {
+    premium: { monthly: 99, yearly: 990 },
+    creatorPro: { monthly: 149, yearly: 1490 },
+  },
   adminIpAllowlist: [],
 });
+
+/* ===== Plans & payments (PRD §10.10, F33) ===== */
+
+/** Plans people pay for (Free needs no subscription). */
+export const PAID_PLAN_KEYS = Object.freeze(["premium", "creatorPro"]);
+export const BILLING_PERIODS = Object.freeze(["monthly", "yearly"]);
+export const PLAN_LABELS = Object.freeze({
+  free: "Free",
+  premium: "Premium",
+  creatorPro: "Creator Pro",
+});
+export const BILLING_PROVIDERS = Object.freeze(["razorpay", "manual"]);
+
+/**
+ * Razorpay subscription states (plus "expired" for manual grants).
+ * created → authenticated (mandate set up) → active (charged) → pending (a renewal
+ * failed, Razorpay retries) → halted (retries used up) / cancelled / completed.
+ */
+export const SUBSCRIPTION_STATUS = Object.freeze([
+  "created",
+  "authenticated",
+  "active",
+  "pending",
+  "halted",
+  "cancelled",
+  "completed",
+  "expired",
+]);
+
+/** States in which the person keeps the paid plan ("pending" = grace while Razorpay retries). */
+export const SUBSCRIPTION_ACCESS_STATUS = Object.freeze(["authenticated", "active", "pending"]);
+
+/** How many billing cycles a Razorpay subscription runs before it must be renewed. */
+export const SUBSCRIPTION_TOTAL_COUNT = Object.freeze({ monthly: 120, yearly: 10 });
+
+/** Hourly check that ends paid access after a cancelled plan's last paid day. */
+export const SUBSCRIPTION_EXPIRY_EVERY_MS = 60 * 60 * 1000;

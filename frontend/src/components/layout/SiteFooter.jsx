@@ -13,6 +13,7 @@ const PRODUCT_LINKS = [
   { label: "Get Started", href: "/signup" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
+  { label: "Refunds", href: "/refunds" },
 ];
 
 // TODO: add the real social profile URLs; links without one are hidden (no dead links)

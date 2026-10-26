@@ -3,12 +3,12 @@
 /**
  * Console → Settings (Owner only, roadmap Day 9): maintenance mode with its
  * message, feature flags (comments, uploads, voice), upload limits per plan,
- * and the admin IP allowlist (PRD ADL-6). Each card saves on its own and
- * every change is audit-logged.
+ * the admin IP allowlist (PRD ADL-6), and plan prices (PRD §10.10). Each card
+ * saves on its own and every change is audit-logged.
  */
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Construction, Globe2, Settings, ToggleRight, Upload } from "lucide-react";
+import { Construction, Globe2, IndianRupee, Settings, ToggleRight, Upload } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import CheckboxField from "@/components/ui/CheckboxField";
@@ -34,6 +34,15 @@ const FEATURES = [
     description: "Anyone can upload songs. Staff uploads always work.",
   },
   { key: "voice", label: "Voice control", description: "Mic buttons in the player and search." },
+  {
+    key: "payments",
+    label: "Subscriptions checkout",
+    description: "People can buy Premium and Creator Pro. Existing plans keep renewing when off.",
+  },
+];
+const PAID_PLANS = [
+  { key: "premium", label: "Premium" },
+  { key: "creatorPro", label: "Creator Pro" },
 ];
 const PLANS = [
   { key: "free", label: "Free" },
@@ -92,6 +101,17 @@ function SettingsForms({ settings, yourIp }) {
     )
   );
   const [allowlist, setAllowlist] = useState(settings.adminIpAllowlist.join("\n"));
+  const [prices, setPrices] = useState(() =>
+    Object.fromEntries(
+      PAID_PLANS.map(({ key }) => [
+        key,
+        {
+          monthly: String(settings.planPrices[key].monthly),
+          yearly: String(settings.planPrices[key].yearly),
+        },
+      ])
+    )
+  );
 
   const save = useMutation({
     mutationFn: ({ changes }) => saveSettings(changes),
@@ -195,6 +215,48 @@ function SettingsForms({ settings, yourIp }) {
               />
             ))}
           </div>
+        </Card>
+
+        <Card
+          icon={IndianRupee}
+          title="Plans & prices"
+          description="In rupees, taxes included. New prices apply to new subscribers; current ones keep their price."
+          onSave={() =>
+            save.mutate({
+              label: "Prices",
+              changes: {
+                planPrices: Object.fromEntries(
+                  PAID_PLANS.map(({ key }) => [
+                    key,
+                    { monthly: Number(prices[key].monthly), yearly: Number(prices[key].yearly) },
+                  ])
+                ),
+              },
+            })
+          }
+          saving={save.isPending && save.variables?.label === "Prices"}
+          error={errorFor("Prices")}
+        >
+          {PAID_PLANS.map((plan) => (
+            <div key={plan.key} className="grid grid-cols-2 gap-3">
+              {["monthly", "yearly"].map((period) => (
+                <TextField
+                  key={period}
+                  label={`${plan.label}, ${period === "monthly" ? "per month" : "per year"} (₹)`}
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={prices[plan.key][period]}
+                  onChange={(event) =>
+                    setPrices({
+                      ...prices,
+                      [plan.key]: { ...prices[plan.key], [period]: event.target.value },
+                    })
+                  }
+                />
+              ))}
+            </div>
+          ))}
         </Card>
 
         <Card

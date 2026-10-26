@@ -26,6 +26,8 @@ import feedRoutes from "./feed.routes.js";
 import publicRoutes from "./public.routes.js";
 import adminPlatformRoutes from "./adminPlatform.routes.js";
 import shareRoutes from "./share.routes.js";
+import billingRoutes, { billingWebhookRouter } from "./billing.routes.js";
+import adminBillingRoutes from "./adminBilling.routes.js";
 import { adminIpAllowlist, maintenanceGate } from "../middlewares/platform.middleware.js";
 import { requireDatabase } from "../middlewares/database.middleware.js";
 
@@ -40,6 +42,8 @@ router.use(requireDatabase);
 
 // Public settings, Home curation and staff invite links (Day 9)
 router.use(publicRoutes);
+// Razorpay webhooks must keep working during maintenance (renewals, cancellations)
+router.use(billingWebhookRouter);
 // Maintenance mode answers 503 for the listener app (console keeps working)
 router.use(maintenanceGate);
 // Optional admin IP allowlist (PRD ADL-6) for every console route
@@ -62,8 +66,10 @@ router.use(browseRoutes); // /browse/*, /trending, /new-releases
 router.use("/voice", voiceRoutes);
 router.use("/feed", feedRoutes);
 router.use("/shares", shareRoutes);
+router.use("/billing", billingRoutes);
 router.use("/admin/auth", adminAuthRoutes);
 // Before the music routes: /admin/tracks/performance must not be read as /admin/tracks/:id
+router.use("/admin", adminBillingRoutes); // /admin/billing/*
 router.use("/admin", adminPlatformRoutes); // stats, users, reports, comments, performance, storage, curation, settings, team, audit
 router.use("/admin", adminMusicRoutes);
 router.use("/admin", adminTaxonomyRoutes); // /admin/genres, /admin/vibes

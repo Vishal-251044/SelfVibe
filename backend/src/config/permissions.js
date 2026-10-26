@@ -23,6 +23,8 @@ export const STAFF_PERMISSIONS = Object.freeze({
   "ai.manage": ADMINS, // AI provider, quotas, review AI tracks
   "audit.view": ADMINS, // full audit log
   "storage.manage": ADMINS, // pause / resume accounts, move songs, sync usage
+  "billing.view": ADMINS, // subscriptions and revenue
+  "billing.manage": OWNER_ONLY, // grant / end free plans
   "settings.manage": OWNER_ONLY, // platform settings, plans, feature flags
   "team.manage": OWNER_ONLY, // invite / remove staff, assign roles
 });

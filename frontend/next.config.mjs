@@ -27,7 +27,8 @@ const SECURITY_HEADERS = [
     key: "Content-Security-Policy",
     value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
   },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // allow-popups: Razorpay Checkout opens bank / 3-D Secure windows that report back
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   {
     key: "Permissions-Policy",
     value: "microphone=(self), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()",

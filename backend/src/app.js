@@ -35,6 +35,8 @@ app.use(
   })
 );
 
+// Razorpay signs the exact bytes it sends, so its webhook gets the raw body (express.json then skips it)
+app.use("/api/billing/webhook", express.raw({ type: "*/*", limit: "1mb" }));
 app.use(express.json({ limit: env.jsonBodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: env.jsonBodyLimit }));
 app.use(cookieParser());

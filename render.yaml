@@ -78,3 +78,10 @@ envVarGroups:
         sync: false # https://your-vercel-domain/api/auth/google/callback
       - key: SENTRY_DSN
         sync: false
+      # Payments (Razorpay subscriptions): test keys first, live keys after KYC
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false

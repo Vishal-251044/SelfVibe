@@ -11,12 +11,14 @@ import { usesStoragePool } from "../services/storage/index.js";
 import { computeDailyStats } from "../services/stats/trackStats.service.js";
 import { computeSimilarities } from "../services/recommendation/similarity.service.js";
 import { moveTrackStorageJob } from "../services/admin/adminStorage.service.js";
+import { expireSubscriptionsJob } from "../services/billing/billing.service.js";
 import {
   JOBS,
   SIMILARITY_JOB_CRON,
   STATS_JOB_EVERY_MS,
   STATS_TIMEZONE,
   STORAGE_SYNC_EVERY_MS,
+  SUBSCRIPTION_EXPIRY_EVERY_MS,
 } from "../config/constants.js";
 import { logger } from "../utils/logger.js";
 
@@ -33,6 +35,7 @@ export async function startJobs() {
     [JOBS.trackDailyStats]: () => computeDailyStats(),
     [JOBS.trackSimilarity]: () => computeSimilarities(),
     [JOBS.moveTrackStorage]: moveTrackStorageJob,
+    [JOBS.expireSubscriptions]: () => expireSubscriptionsJob(),
   });
   // Song performance numbers every hour (PRD PRF-1), and once now
   await queue.scheduleRepeating(JOBS.trackDailyStats, STATS_JOB_EVERY_MS);
@@ -44,6 +47,8 @@ export async function startJobs() {
   // "Listeners who liked X also liked Y" every night (PRD 10.4.2 v2)
   await queue.scheduleDaily(JOBS.trackSimilarity, SIMILARITY_JOB_CRON, STATS_TIMEZONE);
   await queue.scheduleRepeating(JOBS.publishScheduled, PUBLISH_SCHEDULED_EVERY_MS);
+  // Paid plans end on their last paid day; Owner-granted plans on their end date
+  await queue.scheduleRepeating(JOBS.expireSubscriptions, SUBSCRIPTION_EXPIRY_EVERY_MS);
   // Cloudinary storage pool: real usage every 6 h, and once now (PRD 10.13 step 6)
   if (usesStoragePool) {
     await queue.scheduleRepeating(JOBS.syncStorageUsage, STORAGE_SYNC_EVERY_MS);

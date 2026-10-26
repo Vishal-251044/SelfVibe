@@ -74,6 +74,23 @@ Without email in production:
 - Staff invites show a link for you to share by hand.
 - Lockout and new-device alerts aren't sent.
 
+## 4b. Razorpay (subscriptions)
+
+1. Sign up at razorpay.com and start in **Test mode**. Settings → API Keys → generate a key. Put the key id and secret in `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` (Render group `selfvibe-shared`).
+2. Settings → **Webhooks** → Add New Webhook:
+   - URL: `https://<your-domain>/api/billing/webhook`
+   - Secret: a long random string; put the same value in `RAZORPAY_WEBHOOK_SECRET`
+   - Active events: every `subscription.*` event (authenticated, activated, charged, pending, halted, cancelled, completed, paused, resumed, updated)
+3. Make sure **Subscriptions** is enabled on your Razorpay account.
+4. Test end to end with Razorpay's test UPI ID and test cards: upgrade, check Profile → Plan & billing, then cancel.
+5. Going live:
+   1. Finish Razorpay **KYC**: PAN and bank account, plus GST if you're registered.
+   2. Make sure `/refunds`, `/terms` and `/privacy` open. Razorpay checks them.
+   3. Switch to the **live** keys and add the webhook again in Live mode.
+
+   Razorpay plans are created automatically the first time each price is sold.
+6. Prices are set in Console → Settings → Plans & prices. The "Subscriptions checkout" switch under Settings → Features pauses new sales; existing subscribers keep renewing.
+
 ## 5. Render (API + worker)
 
 1. Render → **New → Blueprint** → choose the GitHub repo. Render reads [`render.yaml`](../render.yaml) and creates:
@@ -94,6 +111,7 @@ Without email in production:
    | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | optional (step 7) |
    | `GOOGLE_CALLBACK_URL` | `https://<your-vercel-domain>/api/auth/google/callback` |
    | `SENTRY_DSN` | optional (step 9) |
+   | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | step 4b |
 
    Already set by the blueprint: `NODE_ENV=production`, `COOKIE_SECURE=true`, `TRUST_PROXY=2`, `NODE_VERSION=22`.
 3. **Plans:** Starter for both services.

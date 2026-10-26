@@ -12,7 +12,7 @@ import { Vibe } from "../models/vibe.model.js";
 import { storage } from "./storage/index.js";
 import { queue } from "./queue/index.js";
 import { env } from "../config/env.js";
-import { ERROR_CODES, JOBS, UPLOAD_LIMITS } from "../config/constants.js";
+import { ERROR_CODES, JOBS, PAID_PLAN_KEYS, UPLOAD_LIMITS } from "../config/constants.js";
 import { recordStorageUsage } from "./storagePool.service.js";
 import { PROCESS_TRACK_MAX_ATTEMPTS } from "./trackProcessing.service.js";
 import { getPagination, buildPageMeta } from "../helpers/genericFunctions.js";
@@ -21,7 +21,7 @@ import { logger } from "../utils/logger.js";
 import { getSettings } from "./settings.service.js";
 
 const ARTIST_REF_FIELDS = "stageName slug avatar verified";
-const PAID_PLANS = ["premium", "creatorPro"];
+const PAID_PLANS = PAID_PLAN_KEYS;
 
 /** @returns {ApiError} 404 for a missing track */
 const trackNotFound = (id) =>

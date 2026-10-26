@@ -4,6 +4,7 @@
  * plus creator analytics, similar tracks and Daily Mix.
  */
 import { z } from "zod";
+import { planPricesSchema } from "./billing.validator.js";
 import {
   ADMIN_COMMENT_ACTIONS,
   CATALOG_FILTERS,
@@ -199,7 +200,12 @@ export const settingsSchema = z
       .partial()
       .optional(),
     features: z
-      .object({ comments: z.boolean(), uploads: z.boolean(), voice: z.boolean() })
+      .object({
+        comments: z.boolean(),
+        uploads: z.boolean(),
+        voice: z.boolean(),
+        payments: z.boolean(),
+      })
       .partial()
       .optional(),
     uploadLimits: z
@@ -211,6 +217,7 @@ export const settingsSchema = z
       .partial()
       .optional(),
     adminIpAllowlist: z.array(ipAddress).max(50).optional(),
+    planPrices: planPricesSchema.optional(),
   })
   .strict()
   .refine((value) => Object.keys(value).length > 0, { error: "Nothing to update" });

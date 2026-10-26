@@ -5,6 +5,7 @@
  */
 import {
   Bot,
+  CreditCard,
   Disc3,
   FileClock,
   Flag,
@@ -127,6 +128,13 @@ export const ADMIN_NAV_SECTIONS = [
     title: "Platform",
     items: [
       {
+        label: "Subscriptions",
+        href: "/admin/subscriptions",
+        icon: CreditCard,
+        permission: "billing.view",
+        ready: true,
+      },
+      {
         label: "Storage",
         href: "/admin/storage",
         icon: HardDrive,
@@ -171,6 +179,8 @@ export const PERMISSION_LABELS = {
   "ai.manage": "AI controls",
   "audit.view": "View the audit log",
   "storage.manage": "Manage storage accounts",
+  "billing.view": "See subscriptions and revenue",
+  "billing.manage": "Give and end free plans",
   "settings.manage": "Platform settings",
   "team.manage": "Invite and manage staff",
 };

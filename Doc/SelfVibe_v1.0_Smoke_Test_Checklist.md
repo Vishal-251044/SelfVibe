@@ -43,7 +43,10 @@ Tester: ____________  Date: ____________  Build / commit: ____________
 | B8 | Profile → Download my data gives a JSON file with your likes, playlists and history | ☐ |
 | B9 | Profile → Delete my account (test account only): the wrong password is refused; the right one deletes the account and returns you to the home page; you can't log in again | ☐ |
 | B10 | Forgot password: the email arrives and the reset link works once | ☐ |
-| B11 | /privacy and /terms open from the footer and from the sign-up form | ☐ |
+| B11 | /privacy, /terms and /refunds open from the footer; /privacy and /terms also from the sign-up form | ☐ |
+| B12 **P0** | **Payments (test mode first):** Upgrade → Premium monthly → pay with a Razorpay test UPI ID → "Welcome to Premium". Profile shows Premium, the renewal date and the payment | ☐ |
+| B13 | Cancel plan → still Premium until the end date; the Razorpay dashboard shows the subscription cancelling at the end of the cycle | ☐ |
+| B14 | Razorpay → Webhooks shows deliveries answered with 200; Console → Subscriptions shows the subscriber and revenue | ☐ |
 
 ## C. Owner Console (live and secured)
 

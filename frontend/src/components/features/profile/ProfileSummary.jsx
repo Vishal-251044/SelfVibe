@@ -14,6 +14,7 @@ import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import ProfileEditForm from "@/components/features/profile/ProfileEditForm";
 import TasteSummary from "@/components/features/profile/TasteSummary";
 import AccountPrivacy from "@/components/features/profile/AccountPrivacy";
+import PlanBilling from "@/components/features/billing/PlanBilling";
 import { useAuthStore } from "@/store/authStore";
 import { fadeUp } from "@/utils/animations";
 
@@ -125,6 +126,7 @@ export default function ProfileSummary() {
             </StaggerItem>
           ))}
         </Stagger>
+        <PlanBilling />
         <AccountPrivacy />
       </div>
     </div>

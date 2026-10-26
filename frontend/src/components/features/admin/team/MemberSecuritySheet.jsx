@@ -42,7 +42,7 @@ export default function MemberSecuritySheet({ member, onClose }) {
   const queryClient = useQueryClient();
   const [isConfirmingReset, setIsConfirmingReset] = useState(false);
   const action = useMutation({
-    mutationFn: (kind) => ACTIONS[kind].run(member.id),
+    mutationFn: (kind) => ACTIONS[kind].run(member?.id),
     onSuccess: (result, kind) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminTeam });
       showToast({ command: ACTIONS[kind].command, message: ACTIONS[kind].done, tone: "success" });

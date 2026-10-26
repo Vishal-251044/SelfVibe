@@ -75,6 +75,7 @@ export const config = {
     "/search/:path*",
     "/browse/:path*",
     "/mix/:path*",
+    "/upgrade/:path*",
     "/library/:path*",
     "/playlist/:path*",
     "/artist/:path*",

@@ -13,8 +13,10 @@ import {
   BadgeCheck,
   Check,
   Clock3,
+  Crown,
   Flag,
   HardDrive,
+  IndianRupee,
   KeyRound,
   Music4,
   PlayCircle,
@@ -30,20 +32,27 @@ import { Stagger, StaggerItem } from "@/components/animations/Stagger";
 import StatCard from "@/components/features/admin/insights/StatCard";
 import TrendChart from "@/components/features/admin/insights/TrendChart";
 import { useHasPermission } from "@/components/features/admin/RequirePermission";
-import { getDashboardStats } from "@/services/adminConsole.service";
+import { getBillingStats, getDashboardStats } from "@/services/adminConsole.service";
 import { useStaffAuthStore } from "@/store/staffAuthStore";
 import { PERMISSION_LABELS, STAFF_ROLE_LABELS } from "@/utils/adminConstants";
 import { QUERY_KEYS } from "@/utils/constants";
-import { formatCount, formatFileSize } from "@/utils/genericFunctions";
+import { formatCount, formatFileSize, formatPrice } from "@/utils/genericFunctions";
 
 export default function AdminDashboard() {
   const staff = useStaffAuthStore((state) => state.staff);
   const canModerate = useHasPermission("reports.manage");
   const canManageUsers = useHasPermission("users.manage");
+  // Revenue is only for staff who may see billing (Admin, Owner)
+  const canSeeBilling = useHasPermission("billing.view");
   const query = useQuery({
     queryKey: QUERY_KEYS.adminStats,
     queryFn: ({ signal }) => getDashboardStats({ signal }),
     refetchInterval: 60 * 1000,
+  });
+  const billing = useQuery({
+    queryKey: QUERY_KEYS.adminBillingStats,
+    queryFn: ({ signal }) => getBillingStats({ signal }),
+    enabled: canSeeBilling,
   });
   if (!staff) return null;
 
@@ -158,6 +167,33 @@ export default function AdminDashboard() {
                 hint={storageHint}
               />
             </StaggerItem>
+            {canSeeBilling && (
+              <>
+                <StaggerItem>
+                  <StatCard
+                    label="Subscribers"
+                    icon={Crown}
+                    loading={billing.isPending}
+                    value={billing.data?.subscribers.total ?? 0}
+                    hint="Premium + Creator Pro"
+                  />
+                </StaggerItem>
+                <StaggerItem>
+                  <StatCard
+                    label="Monthly recurring"
+                    icon={IndianRupee}
+                    loading={billing.isPending}
+                    value={formatPrice((billing.data?.mrrPaise ?? 0) / 100)}
+                    hint={
+                      billing.data?.failedRenewals
+                        ? `${billing.data.failedRenewals} failed renewals`
+                        : "Subscriptions"
+                    }
+                    tone={billing.data?.failedRenewals ? "warning" : "default"}
+                  />
+                </StaggerItem>
+              </>
+            )}
           </Stagger>
 
           <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

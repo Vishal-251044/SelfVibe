@@ -205,3 +205,43 @@ export function staffLockedEmail({ staffName, staffEmail, minutes, ip, consoleUr
     text: `${line}\n\n${consoleUrl}`,
   };
 }
+
+/**
+ * "Welcome to Premium / Creator Pro" (PRD §10.10). Razorpay sends the payment receipt itself.
+ * @param {{ name: string, planLabel: string, renewsOn: string|null, manageUrl: string }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function subscriptionStartedEmail({ name, planLabel, renewsOn, manageUrl }) {
+  const line = `Your SelfVibe ${planLabel} plan is active. Thanks for supporting SelfVibe and the artists on it.${renewsOn ? ` It renews on ${renewsOn}; you can cancel any time from your profile.` : ""}`;
+  return {
+    subject: `Welcome to SelfVibe ${planLabel}`,
+    html: layout({
+      title: `${planLabel} is on`,
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">Hi ${escapeHtml(name)},</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: "Manage your plan", url: manageUrl },
+    }),
+    text: `Hi ${name},\n\n${line}\n\n${manageUrl}`,
+  };
+}
+
+/**
+ * "We couldn't renew your plan" (Razorpay retries for a few days, then stops).
+ * @param {{ name: string, planLabel: string, manageUrl: string, isFinal: boolean }} data
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function paymentFailedEmail({ name, planLabel, manageUrl, isFinal }) {
+  const line = isFinal
+    ? `We couldn't renew your SelfVibe ${planLabel} plan after several tries, so your account is back on the Free plan. You can subscribe again any time.`
+    : `We couldn't renew your SelfVibe ${planLabel} plan. We'll try again over the next few days. Please check your UPI app or card so your plan keeps going.`;
+  return {
+    subject: isFinal
+      ? `Your SelfVibe ${planLabel} plan has ended`
+      : "Your SelfVibe payment didn't go through",
+    html: layout({
+      title: isFinal ? "Plan ended" : "Payment didn't go through",
+      bodyHtml: `<p style="margin:0 0 12px;line-height:1.6">Hi ${escapeHtml(name)},</p><p style="margin:0;line-height:1.6;color:#9ca3af">${escapeHtml(line)}</p>`,
+      button: { label: isFinal ? "See plans" : "Check your plan", url: manageUrl },
+    }),
+    text: `Hi ${name},\n\n${line}\n\n${manageUrl}`,
+  };
+}

@@ -211,3 +211,12 @@ export const accountDeleteLimiter = createLimiter({
   message: "Too many attempts. Please wait 15 minutes and try again.",
   keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
 });
+
+/** Checkout, confirm and cancel: 20 per 10 minutes per user (stops runaway retries). */
+export const checkoutLimiter = createLimiter({
+  name: "checkout",
+  windowMs: 10 * 60 * 1000,
+  limit: 20,
+  message: "Too many payment attempts. Please wait a few minutes.",
+  keyGenerator: (req) => `user:${req.auth?.userId ?? ipKeyGenerator(req.ip)}`,
+});

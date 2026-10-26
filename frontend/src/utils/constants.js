@@ -45,6 +45,7 @@ export const PROTECTED_APP_PATHS = [
   "/creator",
   "/browse",
   "/mix",
+  "/upgrade",
 ];
 
 /** App pages anyone can open (shared links); a session is used when there is one. */
@@ -82,50 +83,60 @@ export const VIBES = [
   { name: "Party", slug: "party", icon: PartyPopper, blurb: "Turn the volume up" },
 ];
 
-/** Plans from PRD §5 (proposal — final pricing is decided before payments ship). */
+/**
+ * Plans from PRD §5. `key` matches the API (/billing/plans); prices here are
+ * fallbacks, the live prices come from the API (Owner sets them in Settings).
+ * `soon` marks perks that arrive with later releases (AI Studio, downloads),
+ * so the pricing page never sells something that doesn't exist yet.
+ */
 export const PLANS = [
   {
     id: "free",
+    key: "free",
     name: "Free",
     price: 0,
+    yearlyPrice: 0,
     tagline: "For everyday listening",
     highlighted: false,
     features: [
       { label: "Stream the full catalog", included: true },
-      { label: "Personal For You feed", included: true },
+      { label: "Personal For You feed and Daily Mixes", included: true },
       { label: "Playlists, likes and follows", included: true },
       { label: "Voice control (English + Hindi)", included: true },
-      { label: "3 AI generations per day", included: true },
-      { label: "Ad-free, unlimited skips", included: false },
-      { label: "Offline downloads", included: false },
+      { label: "Upload up to 20 of your songs", included: true },
+      { label: "High-quality audio", included: false },
     ],
   },
   {
     id: "premium",
+    key: "premium",
     name: "Premium",
     price: 99,
+    yearlyPrice: 990,
     tagline: "For power listeners",
     highlighted: true,
     features: [
       { label: "Everything in Free", included: true },
-      { label: "Ad-free, unlimited skips", included: true },
-      { label: "High-quality audio", included: true },
-      { label: "Offline downloads", included: true },
-      { label: "20 AI generations per day", included: true },
+      { label: "High-quality audio when available", included: true },
+      { label: "Supports independent artists", included: true },
+      { label: "More AI generations per day", included: true, soon: true },
+      { label: "Offline downloads", included: true, soon: true },
     ],
   },
   {
     id: "creator-pro",
+    key: "creatorPro",
     name: "Creator Pro",
     price: 149,
+    yearlyPrice: 1490,
     tagline: "For artists and producers",
     highlighted: false,
     features: [
       { label: "Everything in Premium", included: true },
-      { label: "Unlimited uploads", included: true },
-      { label: "Detailed creator analytics", included: true },
-      { label: "100 AI generations per day", included: true },
-      { label: "Promotion slots in discovery", included: true },
+      { label: "Unlimited song uploads", included: true },
+      { label: "Creator analytics for every song", included: true },
+      { label: "Most AI generations per day", included: true, soon: true },
+      { label: "Promotion slots in discovery", included: true, soon: true },
     ],
   },
 ];
@@ -181,6 +192,12 @@ export const QUERY_KEYS = {
   dailyMixes: (catalog) => ["feed", "daily-mix", catalog],
   /** @param {string} trackId */
   similar: (trackId) => ["tracks", trackId, "similar"],
+  // Plans & payments
+  billingPlans: ["billing", "plans"],
+  myBilling: ["billing", "me"],
+  adminBillingStats: ["admin", "billing", "stats"],
+  /** @param {Object} query */
+  adminSubscriptions: (query) => ["admin", "billing", "subscriptions", query],
   /** @param {string} trackId - Song page (Day 10) */
   track: (trackId) => ["tracks", trackId, "page"],
   creatorAnalytics: (range) => ["creator", "analytics", range],

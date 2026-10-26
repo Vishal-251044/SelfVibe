@@ -172,3 +172,17 @@ export const getSettings = (options) => api.get("/admin/settings", options);
 export const saveSettings = (changes) => api.patch("/admin/settings", changes);
 /** @param {Object} query @param {Object} [options] */
 export const getAuditLogs = (query, options) => api.get("/admin/audit-logs", { ...options, query });
+
+/* ===== Subscriptions (plans & payments) ===== */
+
+/** @param {{ q?: string, status?: string, plan?: string, page?: number }} query */
+export const getSubscriptions = (query, options) =>
+  api.get("/admin/billing/subscriptions", { ...options, query });
+
+export const getBillingStats = (options) => api.get("/admin/billing/stats", options);
+
+/** @param {{ userId: string, plan: string, days: number|null, note: string }} input - Owner */
+export const grantPlan = (input) => api.post("/admin/billing/grant", input);
+
+/** @param {string} id - A plan the Owner granted */
+export const revokeGrantedPlan = (id) => api.post(`/admin/billing/subscriptions/${id}/revoke`);

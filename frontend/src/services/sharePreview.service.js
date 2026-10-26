@@ -6,29 +6,9 @@
  * five minutes. Anything missing or private returns null, so the page falls
  * back to the generic SelfVibe preview.
  */
-const API_TARGET = (process.env.API_PROXY_TARGET ?? "").replace(/\/$/, "");
-const REVALIDATE_SECONDS = 300;
-const TIMEOUT_MS = 4000;
+import { apiTarget, fetchPublic } from "@/services/serverApi";
 
-/**
- * GET one public API resource.
- * @param {string} path - e.g. "/tracks/123"
- * @returns {Promise<Object|null>} The response `data`, or null on any failure
- */
-async function fetchPublic(path) {
-  if (!API_TARGET) return null;
-  try {
-    const response = await fetch(`${API_TARGET}/api${path}`, {
-      next: { revalidate: REVALIDATE_SECONDS },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    if (!response.ok) return null;
-    const body = await response.json();
-    return body?.data ?? null;
-  } catch {
-    return null;
-  }
-}
+const API_TARGET = apiTarget();
 
 /**
  * An image URL the OG renderer can draw: absolute, and JPEG for Cloudinary

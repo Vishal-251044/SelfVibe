@@ -28,3 +28,6 @@ export { HomeSection } from "./homeSection.model.js";
 export { Setting } from "./setting.model.js";
 export { StaffInvite } from "./staffInvite.model.js";
 export { ShareEvent } from "./shareEvent.model.js";
+export { Subscription } from "./subscription.model.js";
+export { Payment } from "./payment.model.js";
+export { BillingEvent } from "./billingEvent.model.js";

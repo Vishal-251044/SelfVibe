@@ -155,6 +155,11 @@ const s3IsConfigured = ["bucket", "accessKeyId", "secretAccessKey"].every(
 );
 const redisUrl = read("REDIS_URL");
 const sentryDsn = read("SENTRY_DSN");
+const razorpay = {
+  keyId: read("RAZORPAY_KEY_ID"),
+  keySecret: read("RAZORPAY_KEY_SECRET"),
+  webhookSecret: read("RAZORPAY_WEBHOOK_SECRET"),
+};
 const tracesSampleRate = Number(read("SENTRY_TRACES_SAMPLE_RATE", "0"));
 
 export const env = Object.freeze({
@@ -240,6 +245,15 @@ export const env = Object.freeze({
     jamendoClientId: isUnset(read("JAMENDO_CLIENT_ID")) ? null : read("JAMENDO_CLIENT_ID"),
   }),
 
+  // Subscriptions (PRD §10.10). Optional: "Upgrade" says payments aren't available until set.
+  // Test keys start with rzp_test_, live keys with rzp_live_.
+  razorpay: Object.freeze({
+    ...razorpay,
+    apiBase: read("RAZORPAY_API_BASE", "https://api.razorpay.com/v1").replace(/\/$/, ""),
+    isConfigured: !isUnset(razorpay.keyId) && !isUnset(razorpay.keySecret),
+    isLiveMode: Boolean(razorpay.keyId?.startsWith("rzp_live_")),
+  }),
+
   // Error tracking (roadmap Day 10). Optional: errors are only logged until SENTRY_DSN is set.
   sentry: Object.freeze({
     dsn: isUnset(sentryDsn) ? null : sentryDsn,
@@ -281,6 +295,11 @@ export function productionProblems() {
   }
   if (!env.auth.cookieSecure)
     problems.push("COOKIE_SECURE must be true in production (HTTPS only)");
+  if (env.razorpay.isConfigured && isUnset(env.razorpay.webhookSecret)) {
+    problems.push(
+      "RAZORPAY_WEBHOOK_SECRET must be set when Razorpay keys are set (renewals and cancellations arrive by webhook)"
+    );
+  }
   if (isUnset(env.google.callbackUrl) || !env.google.callbackUrl.startsWith("https://")) {
     if (env.google.isConfigured) {
       problems.push(
