@@ -52,10 +52,10 @@ Tester: ____________  Date: ____________  Build / commit: ____________
 
 | # | Step | ✓ |
 |---|---|---|
-| C1 **P0** | `/admin/login` → password → 2FA code → the dashboard loads with real numbers | ☐ |
+| C1 **P0** | Log in at `/login` as the Owner (email or Google) → account menu → **Admin panel** → the dashboard loads with real numbers. A listener account has no Admin panel link, and typing /admin sends it back to the app | ☐ |
 | C2 **P0** | 10 wrong passwords (use a test staff account) lock the account. The Owner and the person get the "account locked" email; Team shows "Locked"; Security → Unlock now works | ☐ |
 | C3 **P0** | Sign in from a new browser or phone: the Owner gets the "New console sign-in" email | ☐ |
-| C4 | Team → Security → Reset 2FA: that person must scan a new QR code at their next sign-in | ☐ |
+| C4 | Log out of the app → /admin asks you to log in again (the console closes too) | ☐ |
 | C5 | Idle for 30 min in the console: you're signed out | ☐ |
 | C6 | A Moderator gets "not allowed" on Music, Settings and Team | ☐ |
 | C7 | Song performance → open a song: charts, sources and devices show (including "Shared links" after B4); CSV export downloads | ☐ |

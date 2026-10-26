@@ -45,14 +45,21 @@ export function proxy(request) {
   const hasUserSession = request.cookies.has(SESSION_HINT_COOKIES.user);
   const hasStaffSession = request.cookies.has(SESSION_HINT_COOKIES.staff);
 
-  // Owner / Admin Console
+  // Owner / Admin Console: one login for staff (Owner decision). The old
+  // console sign-in page forwards to the normal login, which comes back here.
   if (pathname === ADMIN_LOGIN) {
-    return hasStaffSession ? redirectTo(request, "/admin") : NextResponse.next();
+    if (hasStaffSession || hasUserSession) return redirectTo(request, "/admin");
+    const url = new URL("/login", request.url);
+    url.searchParams.set("next", "/admin");
+    return NextResponse.redirect(url);
   }
   // Staff invite links (Day 9): the invitee isn't staff yet
   if (pathname.startsWith("/admin/invite/")) return NextResponse.next();
   if (matchesAny(pathname, ["/admin"])) {
-    return hasStaffSession ? NextResponse.next() : redirectTo(request, ADMIN_LOGIN);
+    // Signed in to the app: the console opens with that login (the API checks the role)
+    return hasStaffSession || hasUserSession
+      ? NextResponse.next()
+      : redirectTo(request, "/login", true);
   }
 
   // Listener app

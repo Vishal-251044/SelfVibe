@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * Avatar button with a dropdown: who is signed in, Profile, Creator studio,
- * Log out. Guests on public pages (e.g. an artist page) see "Log in" instead.
+ * Avatar button with a dropdown: who is signed in, Admin panel (staff only),
+ * Profile, Creator studio, Log out. Guests on public pages (e.g. an artist page) see "Log in" instead.
  * Closes on outside click, Escape and navigation.
  */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogIn, LogOut, Mic2, UserRound } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, Mic2, UserRound } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 import { useAuthStore } from "@/store/authStore";
@@ -86,6 +86,17 @@ export default function UserMenu() {
               <p className="truncate text-sm font-semibold text-fg">{user.name}</p>
               <p className="truncate text-xs text-fg-muted">{user.email}</p>
             </div>
+            {user.staffRole && (
+              <Link
+                href="/admin"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+                className="flex min-h-11 items-center gap-3 px-4 text-sm font-medium text-neon transition hover:bg-neon-dim"
+              >
+                <LayoutDashboard size={18} aria-hidden />
+                Admin panel
+              </Link>
+            )}
             <Link
               href="/profile"
               role="menuitem"

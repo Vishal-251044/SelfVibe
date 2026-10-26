@@ -12,6 +12,11 @@ import {
   rotateSession,
 } from "./session.service.js";
 import { toPublicUser } from "./user.service.js";
+import {
+  assertNotLocked,
+  clearFailedAttempts,
+  registerFailedAttempt,
+} from "./staffSecurity.service.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { ApiError } from "../utils/ApiError.js";
 import { logger } from "../utils/logger.js";
@@ -79,10 +84,15 @@ export async function register({ name, email, password }, meta) {
  */
 export async function login({ email, password }, meta) {
   const user = await User.findOne({ email }).select("+passwordHash");
+  // Staff accounts reach the console through this login, so they get the lockout too (ADL-5)
+  if (user?.staffRole) assertNotLocked(user);
 
   // Same message for unknown email and wrong password (no account enumeration)
   const isPasswordValid = await verifyPassword(password, user?.passwordHash);
   if (!user || !isPasswordValid) {
+    if (user?.staffRole && (await registerFailedAttempt(user, "password", meta))) {
+      assertNotLocked(await User.findById(user._id).select("lockedUntil").lean());
+    }
     logger.debug(`[AuthService] login failed (invalid credentials) ip=${meta.ip}`);
     throw ApiError.unauthorized("Incorrect email or password", {
       code: ERROR_CODES.INVALID_CREDENTIALS,
@@ -97,6 +107,7 @@ export async function login({ email, password }, meta) {
 
   user.lastLoginAt = new Date();
   await user.save();
+  if (user.staffRole) await clearFailedAttempts(user._id);
 
   logger.debug(`[AuthService] login ok userId=${user._id}`);
   return startSession(user, meta);

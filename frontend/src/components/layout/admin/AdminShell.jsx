@@ -5,7 +5,7 @@
  * sidebar (desktop) or slide-in drawer (phones / tablets), the top bar and
  * the page. Signs the staff member out after 30 minutes of inactivity.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -13,6 +13,7 @@ import AdminSidebar from "@/components/layout/admin/AdminSidebar";
 import AdminTopbar from "@/components/layout/admin/AdminTopbar";
 import ScreenLoader from "@/components/ui/ScreenLoader";
 import SessionErrorState from "@/components/features/auth/SessionErrorState";
+import { useAuthStore } from "@/store/authStore";
 import { useStaffAuthStore } from "@/store/staffAuthStore";
 import { useIdleTimeout } from "@/hooks/useIdleTimeout";
 import { STAFF_HEARTBEAT_INTERVAL_MS, STAFF_IDLE_TIMEOUT_MS } from "@/utils/adminConstants";
@@ -40,17 +41,29 @@ export default function AdminShell({ children }) {
     bootstrap();
   }, [bootstrap]);
 
-  // Session ended (expired, idle on the server, revoked): back to sign-in
+  // No console session (first visit, expired, idle): open it with the app login.
+  // Not signed in to the app, or not staff → the normal login, then back here.
+  const enterWithAppLogin = useStaffAuthStore((state) => state.enterWithAppLogin);
+  const triedEntryRef = useRef(false);
   useEffect(() => {
-    if (status === "unauthenticated" && !isSigningOut)
-      router.replace("/admin/login?reason=expired");
-  }, [status, isSigningOut, router]);
+    if (status !== "unauthenticated" || isSigningOut || triedEntryRef.current) return;
+    triedEntryRef.current = true;
+    enterWithAppLogin().then((isInside) => {
+      if (!isInside) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    });
+  }, [status, isSigningOut, enterWithAppLogin, router, pathname]);
 
   const signOut = useCallback(
     async (reason) => {
       setIsSigningOut(true);
       await logout();
-      router.replace(`/admin/login?reason=${reason}`);
+      // Idle: only the console closes (back to the app). Signing out: both.
+      if (reason === "idle") {
+        router.replace("/home");
+        return;
+      }
+      await useAuthStore.getState().logout();
+      router.replace("/login");
     },
     [logout, router]
   );

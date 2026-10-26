@@ -31,7 +31,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"  
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"         # TOTP_ENCRYPTION_KEY
 ```
 
-> **Keep `TOTP_ENCRYPTION_KEY` forever.** If it changes, every staff member's authenticator stops working and has to be reset.
+> `TOTP_ENCRYPTION_KEY` is still required by the API. Staff now use one login with no authenticator, but keep this value stable in case 2FA is switched back on.
 
 The code must be on GitHub, which means the local commits need pushing first.
 
@@ -148,7 +148,7 @@ npm run search:setup        # Atlas Search indexes (needs an M10 / Flex cluster 
 npm run import:catalog      # optional: royalty-free starter catalog
 ```
 
-Then sign in at `https://<domain>/admin/login`. Scan the QR code with Google Authenticator and **save the backup codes**.
+Then log in at `https://<domain>/login` with `OWNER_EMAIL` / `OWNER_PASSWORD` (or "Continue with Google" with the same email). Open **Admin panel** from the account menu. Staff use one login, with no separate console password and no authenticator code.
 
 - **Google sign-in (optional):** in Google Cloud → Credentials → your OAuth client, add `https://<domain>/api/auth/google/callback` under "Authorized redirect URIs".
 - **Check the client IP:** Console → Settings → "Console IP allowlist" shows "Your IP". It should be your real public IP. If it shows a Vercel or Render address, change `TRUST_PROXY` (2 is right for Vercel → Render). Only then use the allowlist.

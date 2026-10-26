@@ -285,3 +285,42 @@ export async function refreshStaffSession(refreshToken) {
 export async function logoutStaff(refreshToken) {
   await revokeSessionByToken(refreshToken, SESSION_KINDS.STAFF);
 }
+
+/**
+ * One login for staff (Owner decision, replaces PRD ADL-1 / ADL-2): a staff
+ * member who is signed in to the app opens the console with that same login,
+ * with no separate password or authenticator code. The console session is
+ * still separate (short, idle-timeout, audit-logged), lockouts and the IP
+ * allowlist still apply, and new devices still alert the Owner.
+ * @param {string} userId - From the app session (requireAuth)
+ * @param {{ userAgent?: string, ip?: string, deviceId?: string }} meta
+ * @returns {Promise<{ staff: Object, accessToken: string, refreshToken: string, expiresAt: Date, deviceId: string }>}
+ * @throws {ApiError} 403 NOT_STAFF for listeners, 423 while locked
+ */
+export async function openStaffSessionFromApp(userId, meta) {
+  const user = await User.findById(userId);
+  if (!user || !user.staffRole) {
+    throw ApiError.forbidden("This account does not have access to the console", {
+      code: ERROR_CODES.NOT_STAFF,
+    });
+  }
+  if (user.status !== "active") {
+    throw ApiError.forbidden("This account has been suspended", {
+      code: ERROR_CODES.ACCOUNT_SUSPENDED,
+    });
+  }
+  assertNotLocked(user);
+
+  const { deviceId } = await recordStaffDevice(user, meta.deviceId, meta, {
+    isFirstLogin: !user.lastLoginAt,
+  });
+  const { session, refreshToken } = await createSession(user._id, SESSION_KINDS.STAFF, meta);
+  logger.debug(`[StaffAuthService] console opened from app login userId=${user._id}`);
+  return {
+    staff: toStaffUser(user),
+    accessToken: signStaffAccessToken(user, session._id),
+    refreshToken,
+    expiresAt: session.expiresAt,
+    deviceId,
+  };
+}

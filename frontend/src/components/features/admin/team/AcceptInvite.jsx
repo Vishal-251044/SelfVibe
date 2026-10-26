@@ -55,10 +55,9 @@ export default function AcceptInvite({ token }) {
         <p className="font-mono text-sm text-neon">$ selfvibe team --join</p>
         <h1 className="mt-2 font-display text-2xl font-bold">You&apos;re on the team</h1>
         <p className="mt-2 text-sm text-fg-muted">
-          Sign in to the console. You&apos;ll set up two-factor authentication on your first
-          sign-in.
+          Log in to SelfVibe with this email. The Admin panel is in your account menu.
         </p>
-        <Button href="/admin/login" fullWidth className="mt-6">
+        <Button href="/login?next=%2Fadmin" fullWidth className="mt-6">
           Sign in to the console
         </Button>
       </div>

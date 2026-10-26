@@ -80,7 +80,7 @@ function InviteSheet({ open, onClose }) {
       open={open}
       onClose={onClose}
       title="Invite to the team"
-      description="They get an email link. On first sign-in they set up two-factor authentication."
+      description="They get an email link, then use their normal SelfVibe login to open the console."
       footer={
         link ? (
           <Button fullWidth onClick={onClose}>

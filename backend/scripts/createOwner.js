@@ -7,7 +7,8 @@
  * - Refuses to run if an Owner already exists (there is exactly one Owner).
  * - Refuses to promote an existing public account with the same email, so
  *   nobody can pre-register the Owner's email and inherit console access.
- * - 2FA is set up on the Owner's first login at /admin/login.
+ * - The Owner signs in with the normal login (email or Google); the console
+ *   opens from the account menu (one login for staff).
  */
 import mongoose from "mongoose";
 import { z } from "zod";
@@ -73,12 +74,15 @@ async function createOwner() {
     passwordHash: await hashPassword(input.password),
     roles: ["listener"],
     staffRole: "owner",
-    twoFactorEnabled: false, // enrolled on first console login
+    twoFactorEnabled: false, // staff use one login (no authenticator), see staffAuth.service
+    // Set by the server operator from backend/.env, so the address counts as verified
+    // (otherwise "Continue with Google" would treat it as unproven and drop the password)
+    emailVerified: true,
     onboardingDone: true,
   });
 
   logger.info(
-    `[CreateOwner] Owner created email=${owner.email} id=${owner._id}. Log in at /admin/login to set up two-factor authentication.`
+    `[CreateOwner] Owner created email=${owner.email} id=${owner._id}. Log in at /login; the Admin panel is in the account menu.`
   );
 }
 

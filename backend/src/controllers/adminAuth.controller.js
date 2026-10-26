@@ -78,3 +78,20 @@ export const getMe = asyncHandler(async (req, res) => {
   const user = await getUserById(req.staff.userId);
   return sendSuccess(res, { message: "Staff member fetched", data: { staff: toStaffUser(user) } });
 });
+
+/**
+ * POST /api/admin/auth/session — open the console with the app login (staff only).
+ * Uses the listener access token (requireAuth); sets the console session cookies.
+ */
+export const openFromApp = asyncHandler(async (req, res) => {
+  const result = await staffAuthService.openStaffSessionFromApp(req.auth.userId, {
+    ...requestMeta(req),
+    deviceId: readStaffDeviceCookie(req),
+  });
+  setSessionCookies(res, SESSION_KINDS.STAFF, result.refreshToken, result.expiresAt);
+  setStaffDeviceCookie(res, result.deviceId);
+  return sendSuccess(res, {
+    message: "Console opened",
+    data: { staff: result.staff, accessToken: result.accessToken },
+  });
+});

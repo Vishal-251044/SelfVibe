@@ -55,3 +55,12 @@ export function logoutStaff() {
 export function getStaffMe() {
   return api.get("/admin/auth/me");
 }
+
+/**
+ * Open the console with the app login (one login for staff, Owner decision).
+ * Sends the listener session; the API answers with a console session.
+ * @returns {Promise<{ staff: Object, accessToken: string }>}
+ */
+export function openConsoleFromApp() {
+  return api.post("/admin/auth/session", undefined, { auth: "user" });
+}

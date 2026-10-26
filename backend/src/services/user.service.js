@@ -26,6 +26,8 @@ export function toPublicUser(user) {
     plan: user.plan,
     onboardingDone: user.onboardingDone,
     catalogFilter: user.catalogFilter ?? "all",
+    // Staff see an "Admin panel" link (one login for app and console)
+    staffRole: user.staffRole ?? null,
     createdAt: user.createdAt,
   };
 }

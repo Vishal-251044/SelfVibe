@@ -5,7 +5,9 @@
  */
 import { createSessionStore } from "@/store/createSessionStore";
 import * as authService from "@/services/auth.service";
+import { logoutStaff } from "@/services/adminAuth.service";
 import { SESSION_HINT_COOKIES } from "@/utils/constants";
+import { deleteCookie, hasCookie } from "@/utils/genericFunctions";
 
 export const useAuthStore = createSessionStore({
   scope: "user",
@@ -14,6 +16,19 @@ export const useAuthStore = createSessionStore({
   refreshRequest: authService.refreshSession,
   logoutRequest: authService.logout,
   extend: (set, get) => ({
+    /**
+     * Log out of the app, and out of the console too (staff use one login). Never throws.
+     * @returns {Promise<void>}
+     */
+    async logout() {
+      await Promise.allSettled([
+        authService.logout(),
+        hasCookie(SESSION_HINT_COOKIES.staff) ? logoutStaff() : Promise.resolve(),
+      ]);
+      deleteCookie(SESSION_HINT_COOKIES.staff);
+      get().clearSession();
+    },
+
     /**
      * Replace the signed-in user after a profile change or onboarding.
      * @param {Object} user - Public user from the API

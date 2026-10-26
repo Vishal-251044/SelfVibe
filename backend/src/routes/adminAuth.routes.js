@@ -5,6 +5,7 @@ import { Router } from "express";
 import * as adminAuthController from "../controllers/adminAuth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { requireStaff } from "../middlewares/staff.middleware.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
   refreshLimiter,
   staffLoginLimiter,
@@ -37,6 +38,8 @@ router.post(
   adminAuthController.verifyTwoFactor
 );
 router.post("/refresh", refreshLimiter, adminAuthController.refresh);
+// One login (Owner decision): staff open the console with their app session, no second sign-in
+router.post("/session", refreshLimiter, requireAuth, adminAuthController.openFromApp);
 router.post("/logout", adminAuthController.logout);
 router.get("/me", requireStaff(), adminAuthController.getMe);
 
