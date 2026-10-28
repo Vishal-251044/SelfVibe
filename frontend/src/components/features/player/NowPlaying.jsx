@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * Full-screen Now Playing (PRD PLY-8, MOB-3/4): the terminal-style
- * "$ selfvibe play" view with large artwork, the visualiser, seek bar and
- * controls. Swipe down (or the close button / Escape) minimises it.
+ * Full-screen Now Playing (PRD PLY-8, MOB-3/4): large artwork, a live
+ * Playing / Paused status, the visualiser, seek bar and controls. Swipe down (or the close button / Escape) minimises it.
  */
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -15,41 +14,40 @@ import ShareButton from "@/components/features/share/ShareButton";
 import MicButton from "@/components/features/voice/MicButton";
 import { useLibrarySheetsStore } from "@/store/librarySheetsStore";
 import CoverArt from "@/components/features/music/CoverArt";
-import TerminalWindow from "@/components/ui/TerminalWindow";
 import PlayerControls from "@/components/features/player/PlayerControls";
 import SeekBar from "@/components/features/player/SeekBar";
 import VolumeControl from "@/components/features/player/VolumeControl";
 import Visualizer from "@/components/features/player/Visualizer";
 import SimilarTracks from "@/components/features/player/SimilarTracks";
 import { usePlayerStore } from "@/store/playerStore";
-import { formatDuration, slugify } from "@/utils/genericFunctions";
+import { formatDuration } from "@/utils/genericFunctions";
 import { DURATION, EASE_OUT } from "@/utils/animations";
 
 const CLOSE_DRAG_DISTANCE = 120; // px
 const CLOSE_DRAG_VELOCITY = 600; // px/s
 
-/** Terminal lines with the song and live progress. */
-function TerminalReadout({ track }) {
+/** Live status of the song: Playing / Paused / Loading, and time played. */
+function PlaybackStatus() {
   const currentTime = usePlayerStore((state) => state.currentTime);
   const duration = usePlayerStore((state) => state.duration);
   const status = usePlayerStore((state) => state.status);
-  const percent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
-  const filled = Math.round(percent / 5);
+  const label = status === "loading" ? "Loading" : status === "playing" ? "Playing" : "Paused";
 
   return (
-    <div className="space-y-1 font-mono text-xs sm:text-sm">
-      <p className="truncate text-neon">
-        $ selfvibe play &quot;{slugify(track.title) || track.id}&quot;
-      </p>
-      <p className="text-fg-muted">
-        {">>"} {status === "loading" ? "buffering" : status === "playing" ? "streaming" : "paused"}{" "}
-        <span className="text-neon">
-          [{"#".repeat(filled)}
-          {".".repeat(20 - filled)}]
-        </span>{" "}
-        {Math.round(percent)}% · {formatDuration(currentTime)}
-        <span className="ml-1 animate-blink text-neon">_</span>
-      </p>
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span className="inline-flex items-center gap-2 rounded-full bg-neon-dim px-3 py-1 font-medium text-neon">
+        <span className="relative flex size-2">
+          {status === "playing" && (
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-neon opacity-60" />
+          )}
+          <span className="relative inline-flex size-2 rounded-full bg-neon" />
+        </span>
+        {label}
+      </span>
+      <span className="text-fg-muted tabular-nums">
+        {formatDuration(currentTime)}
+        {duration > 0 && ` / ${formatDuration(duration)}`}
+      </span>
     </div>
   );
 }
@@ -162,7 +160,7 @@ export default function NowPlaying() {
               />
             </motion.div>
 
-            {/* Terminal + controls */}
+            {/* Status, visualiser + controls */}
             <div className="flex min-w-0 flex-1 flex-col gap-5">
               <div className="min-w-0 text-center lg:text-left">
                 <h2 className="truncate font-display text-[clamp(1.5rem,5vw,2.5rem)] leading-tight font-bold">
@@ -187,10 +185,10 @@ export default function NowPlaying() {
                 )}
               </div>
 
-              <TerminalWindow title="selfvibe@player:~" className="hidden sm:block">
-                <TerminalReadout track={track} />
+              <div className="hidden rounded-card border border-white/10 bg-surface/80 p-4 backdrop-blur sm:block">
+                <PlaybackStatus />
                 <Visualizer isActive={isOpen} className="mt-4 h-20" />
-              </TerminalWindow>
+              </div>
               <Visualizer isActive={isOpen} className="h-16 sm:hidden" />
 
               {isListener && (

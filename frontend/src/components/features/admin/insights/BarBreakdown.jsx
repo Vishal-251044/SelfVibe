@@ -40,16 +40,14 @@ export default function BarBreakdown({ title, data, emptyText = "No data yet" })
     <section className="rounded-card border border-line bg-surface p-4 sm:p-5">
       <h3 className="mb-4 text-sm font-semibold text-neon-soft">{title}</h3>
       {total === 0 ? (
-        <p className="font-mono text-xs text-fg-subtle">
-          {">>"} {emptyText}
-        </p>
+        <p className="text-sm text-fg-subtle">{emptyText}</p>
       ) : (
         <ul className="space-y-3">
           {entries.map(([key, count]) => (
             <li key={key}>
               <div className="mb-1 flex justify-between gap-2 text-xs">
                 <span className="truncate text-fg-muted">{LABELS[key] ?? key}</span>
-                <span className="shrink-0 font-mono text-fg">
+                <span className="shrink-0 font-semibold text-fg tabular-nums">
                   {count.toLocaleString("en-IN")}{" "}
                   <span className="text-fg-subtle">· {Math.round((count / total) * 100)}%</span>
                 </span>

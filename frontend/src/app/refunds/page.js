@@ -47,11 +47,6 @@ const SECTIONS = [
 
 export default function RefundsPage() {
   return (
-    <LegalPage
-      command="selfvibe billing --policy"
-      title="Refund & Cancellation Policy"
-      updated="1 November 2026"
-      sections={SECTIONS}
-    />
+    <LegalPage title="Refund & Cancellation Policy" updated="1 November 2026" sections={SECTIONS} />
   );
 }

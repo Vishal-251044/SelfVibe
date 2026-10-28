@@ -79,7 +79,6 @@ export default function LikedSongsView() {
       ) : query.isError ? (
         <EmptyState
           icon={Heart}
-          command="selfvibe likes --list"
           title="couldn't load your liked songs"
           description={query.error?.message}
           action={<Button onClick={() => query.refetch()}>Try again</Button>}
@@ -87,7 +86,6 @@ export default function LikedSongsView() {
       ) : tracks.length === 0 ? (
         <EmptyState
           icon={Heart}
-          command="selfvibe likes --list"
           title="no liked songs yet"
           description="Tap the heart on any song to save it here."
           action={<Button href="/search">Find music</Button>}

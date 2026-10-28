@@ -101,7 +101,9 @@ function UpgradeSuccess({ planLabel }) {
       >
         <Crown size={30} aria-hidden />
       </motion.span>
-      <p className="mt-4 font-mono text-xs text-neon">$ selfvibe plan --upgrade</p>
+      <p className="mt-4 text-[11px] font-semibold tracking-[0.18em] text-neon uppercase">
+        Payment confirmed
+      </p>
       <h2 className="mt-1 font-display text-2xl font-bold tracking-tight">
         Welcome to {planLabel}
       </h2>
@@ -154,7 +156,7 @@ export default function UpgradeView() {
 
   const header = (
     <PageHeader
-      eyebrow="selfvibe plan --upgrade"
+      eyebrow="Plans"
       title="Upgrade SelfVibe"
       subtitle="Pay with UPI, card or netbanking. Cancel any time."
     />
@@ -185,7 +187,6 @@ export default function UpgradeView() {
         {header}
         <EmptyState
           icon={CreditCard}
-          command="selfvibe plan --list"
           title="couldn't load plans"
           description={(plans.error ?? billing.error)?.message}
           action={

@@ -125,7 +125,9 @@ export default function ItemPicker({ kind, value, onChange, max = 30 }) {
                 key={item.id}
                 className="flex items-center gap-2 rounded-lg border border-line bg-surface-raised pl-2"
               >
-                <span className="w-5 font-mono text-xs text-neon">{index + 1}</span>
+                <span className="w-5 text-xs font-semibold text-neon tabular-nums">
+                  {index + 1}
+                </span>
                 <span className="min-w-0 flex-1 truncate text-sm">{item.label}</span>
                 <button
                   type="button"

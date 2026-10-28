@@ -44,7 +44,6 @@ export default function AdminCommentRow({ comment, showTrack = true }) {
     onSuccess: (_, action) => {
       setIsConfirmingDelete(false);
       showToast({
-        command: `selfvibe comments --${action}`,
         message: ACTION_DONE[action],
         tone: "success",
       });
@@ -52,7 +51,6 @@ export default function AdminCommentRow({ comment, showTrack = true }) {
     },
     onError: (error) =>
       showToast({
-        command: "selfvibe comments",
         message: error?.message ?? "couldn't update",
         tone: "error",
       }),
@@ -63,7 +61,6 @@ export default function AdminCommentRow({ comment, showTrack = true }) {
       setReply("");
       setIsReplying(false);
       showToast({
-        command: "selfvibe comments --reply",
         message: "replied as SelfVibe",
         tone: "success",
       });

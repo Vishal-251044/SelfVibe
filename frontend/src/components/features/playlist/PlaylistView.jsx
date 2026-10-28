@@ -72,7 +72,6 @@ export default function PlaylistView({ playlistId }) {
     return (
       <EmptyState
         icon={ListMusic}
-        command={`selfvibe playlist --open ${playlistId}`}
         title={isMissing ? "playlist not found" : "couldn't load this playlist"}
         description={
           isMissing
@@ -194,7 +193,6 @@ export default function PlaylistView({ playlistId }) {
       {playlist.tracks.length === 0 ? (
         <EmptyState
           icon={ListMusic}
-          command="selfvibe playlist --add"
           title="no songs yet"
           description={
             playlist.isOwner

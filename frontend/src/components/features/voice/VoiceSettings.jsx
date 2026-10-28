@@ -38,7 +38,7 @@ export default function VoiceSettings({ className }) {
         type="button"
         onClick={() => setLanguage(other.value)}
         aria-label={`Voice language: ${current.label}. Switch to ${other.label}`}
-        className="flex size-11 items-center justify-center rounded-full border border-white/10 bg-surface-raised font-mono text-[11px] text-neon transition active:scale-95 sm:hidden"
+        className="flex size-11 items-center justify-center rounded-full border border-white/10 bg-surface-raised text-[11px] font-semibold text-neon tabular-nums transition active:scale-95 sm:hidden"
       >
         {current.short}
       </button>
@@ -56,7 +56,7 @@ export default function VoiceSettings({ className }) {
             aria-label={`Voice: ${option.label}`}
             onClick={() => setLanguage(option.value)}
             className={cn(
-              "min-h-10 min-w-11 rounded-full px-2.5 font-mono text-[11px] transition",
+              "min-h-10 min-w-11 rounded-full px-2.5 text-[11px] font-semibold tabular-nums transition",
               language === option.value ? "bg-neon-dim text-neon" : "text-fg-subtle hover:text-fg"
             )}
           >

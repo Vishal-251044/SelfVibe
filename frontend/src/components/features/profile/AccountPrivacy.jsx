@@ -96,13 +96,11 @@ export default function AccountPrivacy() {
     try {
       await downloadMyData();
       showToast({
-        command: "selfvibe export",
         message: "your data is downloading",
         tone: "success",
       });
     } catch (error) {
       showToast({
-        command: "selfvibe export",
         message: error?.message ?? "couldn't prepare your data, try again",
         tone: "error",
       });

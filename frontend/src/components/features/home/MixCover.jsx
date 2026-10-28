@@ -30,7 +30,7 @@ export default function MixCover({ mix, className }) {
         aria-hidden
         className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"
       />
-      <span className="absolute bottom-2 left-2 rounded-md bg-neon px-2 py-0.5 font-mono text-xs font-bold text-black">
+      <span className="absolute bottom-2 left-2 rounded-md bg-neon px-2 py-0.5 text-xs font-bold font-semibold text-black tabular-nums">
         MIX {mix.index}
       </span>
       <span className="absolute right-2 bottom-2 max-w-[60%] truncate rounded-md bg-black/70 px-2 py-0.5 text-xs text-fg backdrop-blur">

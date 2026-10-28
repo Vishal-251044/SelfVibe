@@ -53,7 +53,7 @@ export default function TrackCard({
           sizes="(min-width: 1280px) 12rem, (min-width: 768px) 10rem, 40vw"
         />
         {rank && (
-          <span className="absolute top-2 left-2 rounded-md bg-black/75 px-2 py-0.5 font-mono text-xs font-bold text-neon backdrop-blur">
+          <span className="absolute top-2 left-2 rounded-md bg-black/75 px-2 py-0.5 text-xs font-bold font-semibold text-neon tabular-nums backdrop-blur">
             #{rank}
           </span>
         )}

@@ -33,7 +33,6 @@ export default function DailyMixRow() {
   return (
     <FadeIn className="mb-7 sm:mb-10">
       <section aria-label="Daily Mixes">
-        <p className="font-mono text-[11px] text-neon sm:text-xs">$ selfvibe mix --daily</p>
         <h2 className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl">
           Your Daily Mixes
         </h2>

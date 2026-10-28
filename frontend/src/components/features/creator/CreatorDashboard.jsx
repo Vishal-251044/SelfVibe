@@ -71,7 +71,7 @@ export default function CreatorDashboard({ artist }) {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe studio --creator"
+        eyebrow="For artists"
         title="Creator studio"
         subtitle="Upload tracks, follow their processing and manage what's live."
         actions={
@@ -131,7 +131,6 @@ export default function CreatorDashboard({ artist }) {
         ) : isError ? (
           <EmptyState
             icon={Headphones}
-            command="selfvibe tracks --mine"
             title="couldn't load your tracks"
             description={error?.message}
             action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -139,7 +138,6 @@ export default function CreatorDashboard({ artist }) {
         ) : tracks.length === 0 ? (
           <EmptyState
             icon={Upload}
-            command="selfvibe upload"
             title="no tracks yet"
             description="Upload your first track — we'll create the streaming versions and publish it when it's ready."
             action={<Button href="/creator/upload">Upload a song</Button>}

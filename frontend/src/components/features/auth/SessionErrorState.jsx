@@ -26,7 +26,6 @@ export default function SessionErrorState({ onRetry, className }) {
   return (
     <EmptyState
       icon={WifiOff}
-      command="selfvibe connect"
       title="can't reach SelfVibe"
       description="Check your internet connection. You are still signed in — try again in a moment."
       action={

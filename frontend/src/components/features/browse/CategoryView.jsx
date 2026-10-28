@@ -68,7 +68,6 @@ export default function CategoryView({ kind, slug }) {
     return (
       <EmptyState
         icon={Compass}
-        command={`selfvibe browse --${kind} ${slug}`}
         title={isMissing ? `no ${kind} called "${slug}"` : `couldn't load this ${kind}`}
         description={isMissing ? "It may have been renamed or hidden." : query.error?.message}
         action={
@@ -108,7 +107,10 @@ export default function CategoryView({ kind, slug }) {
             )}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-xs tracking-widest uppercase" style={{ color: colour }}>
+            <p
+              className="text-xs font-semibold tracking-widest uppercase tabular-nums"
+              style={{ color: colour }}
+            >
               {kind}
             </p>
             {category ? (
@@ -168,7 +170,6 @@ export default function CategoryView({ kind, slug }) {
       ) : tracks.length === 0 ? (
         <EmptyState
           icon={Compass}
-          command={`selfvibe browse --${kind} ${slug} --catalog ${catalog}`}
           title={`no ${catalog === "all" ? "" : `${catalog} `}songs here yet`}
           description={catalog === "all" ? "Check back soon." : "Try switching to All."}
         />

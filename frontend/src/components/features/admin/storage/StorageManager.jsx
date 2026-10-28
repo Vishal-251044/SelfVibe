@@ -52,7 +52,6 @@ function MoveSheet({ open, onClose, accounts, fromKey }) {
       moveStorage({ fromKey, toKey: toKey || targets[0]?.key, limit: Number(limit) || 20 }),
     onSuccess: (result) => {
       showToast({
-        command: "selfvibe storage --move",
         message: `${result.queued} song(s) moving in the background`,
         tone: "success",
       });
@@ -129,14 +128,12 @@ export default function StorageManager() {
     onSuccess: (result) => {
       refresh(result);
       showToast({
-        command: "selfvibe storage --sync",
         message: "usage synced from Cloudinary",
         tone: "success",
       });
     },
     onError: (syncError) =>
       showToast({
-        command: "selfvibe storage --sync",
         message: syncError?.message ?? "sync failed",
         tone: "error",
       }),
@@ -146,7 +143,6 @@ export default function StorageManager() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminStorage }),
     onError: (toggleError) =>
       showToast({
-        command: "selfvibe storage",
         message: toggleError?.message ?? "couldn't update",
         tone: "error",
       }),
@@ -156,7 +152,7 @@ export default function StorageManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --storage"
+        eyebrow="Admin panel"
         title="Storage"
         subtitle="Cloudinary accounts in the Official and Community pools"
         actions={
@@ -177,7 +173,6 @@ export default function StorageManager() {
       ) : isError ? (
         <EmptyState
           icon={HardDrive}
-          command="selfvibe storage --list"
           title="couldn't load storage"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -185,7 +180,6 @@ export default function StorageManager() {
       ) : !data.usesPool ? (
         <EmptyState
           icon={HardDrive}
-          command="selfvibe storage --list"
           title={`storage driver: ${data.driver}`}
           description="The Cloudinary storage pool isn't in use. Add accounts to CLOUDINARY_ACCOUNTS in backend/.env to manage them here."
         />
@@ -214,7 +208,10 @@ export default function StorageManager() {
                         {formatFileSize(account.bytesUsed)} of {formatFileSize(account.quotaBytes)}
                       </span>
                       <span
-                        className={cn("font-mono", account.nearlyFull ? "text-warning" : "text-fg")}
+                        className={cn(
+                          "tabular-nums",
+                          account.nearlyFull ? "text-warning" : "text-fg"
+                        )}
                       >
                         {account.usedPercent}%
                       </span>
@@ -243,11 +240,11 @@ export default function StorageManager() {
                   <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
                     <div>
                       <dt className="text-fg-subtle">Songs</dt>
-                      <dd className="font-mono text-sm">{account.songCount}</dd>
+                      <dd className="text-sm tabular-nums">{account.songCount}</dd>
                     </div>
                     <div>
                       <dt className="text-fg-subtle">Bandwidth</dt>
-                      <dd className="font-mono text-sm">
+                      <dd className="text-sm tabular-nums">
                         {formatFileSize(account.bandwidthBytes)}
                       </dd>
                     </div>

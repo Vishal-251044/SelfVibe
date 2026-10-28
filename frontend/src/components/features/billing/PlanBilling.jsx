@@ -65,7 +65,6 @@ export default function PlanBilling() {
         .then(({ user }) => setUser(user))
         .catch(() => {});
       showToast({
-        command: "selfvibe plan --cancel",
         message: `cancelled, ${result.planLabel} stays on until ${longDate(result.subscription?.currentPeriodEnd)}`,
         tone: "success",
         durationMs: 6000,

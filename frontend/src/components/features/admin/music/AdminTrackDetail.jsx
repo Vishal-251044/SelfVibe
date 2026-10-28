@@ -53,7 +53,6 @@ export default function AdminTrackDetail({ trackId }) {
     return (
       <EmptyState
         icon={Music4}
-        command={`selfvibe tracks --open ${trackId}`}
         title={error?.status === 404 ? "track not found" : "couldn't load this track"}
         description={error?.message}
         action={

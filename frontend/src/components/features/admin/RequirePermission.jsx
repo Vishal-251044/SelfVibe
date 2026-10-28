@@ -29,7 +29,6 @@ export default function RequirePermission({ permission, children }) {
   return (
     <EmptyState
       icon={Lock}
-      command={`selfvibe console --require ${permission}`}
       title="you don't have access to this"
       description="Ask the Owner to change your role if you need it."
       action={<Button href="/admin">Back to dashboard</Button>}

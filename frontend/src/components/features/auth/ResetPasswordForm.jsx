@@ -68,13 +68,12 @@ export default function ResetPasswordForm() {
   };
 
   if (linkStatus === "checking")
-    return <ScreenLoader label="checking your link" className="min-h-80" />;
+    return <ScreenLoader label="Checking your link" className="min-h-80" />;
 
   if (linkStatus === "invalid") {
     return (
       <EmptyState
         icon={Link2Off}
-        command="selfvibe reset --verify"
         title="link expired"
         description="This reset link is invalid, already used, or older than 30 minutes. Request a new one."
         action={<Button href="/forgot-password">Send a new link</Button>}
@@ -85,7 +84,6 @@ export default function ResetPasswordForm() {
 
   return (
     <div>
-      <p className="font-mono text-sm text-neon">$ selfvibe reset --apply</p>
       <h1 className="mt-3 font-display text-3xl font-bold">Choose a new password</h1>
       <p className="mt-2 text-sm text-fg-muted">
         You&apos;ll be signed out on all devices, then you can log in with the new one.

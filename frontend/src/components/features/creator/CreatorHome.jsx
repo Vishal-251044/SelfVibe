@@ -47,7 +47,6 @@ export default function CreatorHome() {
     return (
       <EmptyState
         icon={Mic2}
-        command="selfvibe creator --status"
         title="couldn't load your studio"
         description={error?.message}
         action={<Button onClick={() => refetch()}>Try again</Button>}

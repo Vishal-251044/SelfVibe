@@ -55,7 +55,7 @@ export default function AuditLogViewer() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --audit"
+        eyebrow="Admin panel"
         title="Audit log"
         subtitle={data ? `${data.meta.total} entries` : "Every staff action, with before and after"}
       />
@@ -98,7 +98,6 @@ export default function AuditLogViewer() {
       ) : isError ? (
         <EmptyState
           icon={FileClock}
-          command="selfvibe audit --list"
           title="couldn't load the audit log"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -106,7 +105,6 @@ export default function AuditLogViewer() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FileClock}
-          command="selfvibe audit --list"
           title="no entries"
           description="Try another action or date range."
         />

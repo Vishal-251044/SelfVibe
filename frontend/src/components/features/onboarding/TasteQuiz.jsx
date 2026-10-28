@@ -29,7 +29,6 @@ import { EASE_OUT, DURATION } from "@/utils/animations";
 const STEPS = [
   {
     key: "genres",
-    command: "selfvibe taste --genres",
     title: "What do you listen to?",
     hint: `Pick at least ${ONBOARDING_LIMITS.minGenres} genres.`,
     min: ONBOARDING_LIMITS.minGenres,
@@ -37,7 +36,6 @@ const STEPS = [
   },
   {
     key: "vibes",
-    command: "selfvibe taste --vibes",
     title: "When do you press play?",
     hint: `Pick at least ${ONBOARDING_LIMITS.minVibes} vibes.`,
     min: ONBOARDING_LIMITS.minVibes,
@@ -45,7 +43,6 @@ const STEPS = [
   },
   {
     key: "artists",
-    command: "selfvibe taste --artists",
     title: "Any artists you love?",
     hint: "Picked for your genres and vibes. Optional — choose a few, or finish now.",
     min: 0,
@@ -192,11 +189,8 @@ export default function TasteQuiz() {
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: DURATION.base, ease: EASE_OUT }}
           >
-            <p className="font-mono text-sm text-neon">
-              $ {step.command}{" "}
-              <span className="text-fg-subtle">
-                · step {stepIndex + 1}/{STEPS.length}
-              </span>
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-neon uppercase">
+              Step {stepIndex + 1} of {STEPS.length}
             </p>
             <h1 className="mt-3 font-display text-[clamp(1.75rem,6vw,2.75rem)] leading-tight font-bold">
               {isRetake && stepIndex === 0 ? "Update your taste" : step.title}
@@ -209,7 +203,6 @@ export default function TasteQuiz() {
               {optionsQuery.isError && (
                 <EmptyState
                   icon={TriangleAlert}
-                  command="selfvibe taste --load"
                   title="couldn't load the quiz"
                   description={optionsQuery.error?.message}
                   action={
@@ -227,7 +220,6 @@ export default function TasteQuiz() {
                 options[step.key].length === 0 && (
                   <EmptyState
                     icon={ListMusic}
-                    command={`selfvibe taste --${step.key}`}
                     title={`no ${step.key} available yet`}
                     description="The catalog is still being set up. Skip for now — you can take the quiz later from your profile."
                   />

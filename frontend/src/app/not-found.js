@@ -16,10 +16,9 @@ export default function NotFound() {
       <Logo size="lg" />
       <EmptyState
         icon={FileQuestion}
-        command="selfvibe open ./this-page"
-        title="404: page not found"
-        description="The page you are looking for does not exist or has moved."
-        action={<Button href="/">Back to home</Button>}
+        title="This page skipped a beat"
+        description="We couldn't find what you were looking for. It may have moved, or the link is wrong."
+        action={<Button href="/">Back to SelfVibe</Button>}
         className="w-full max-w-lg bg-black/80"
       />
     </div>

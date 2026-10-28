@@ -210,7 +210,7 @@ export default function TaxonomyManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe admin --taxonomy"
+        eyebrow="Admin panel"
         title="Genres & Vibes"
         subtitle="What listeners browse by. Order here is the order in the app."
         actions={
@@ -253,7 +253,6 @@ export default function TaxonomyManager() {
       ) : query.isError ? (
         <EmptyState
           icon={Shapes}
-          command={`selfvibe admin --${kind}s`}
           title={`couldn't load ${kind}s`}
           description={query.error?.message}
           action={<Button onClick={() => query.refetch()}>Try again</Button>}
@@ -261,7 +260,6 @@ export default function TaxonomyManager() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={Shapes}
-          command={`selfvibe admin --${kind}s`}
           title={`no ${kind}s yet`}
           action={<Button onClick={() => setEditing("new")}>Add the first one</Button>}
         />

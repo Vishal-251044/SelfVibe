@@ -1,9 +1,7 @@
 /**
- * Terminal-style toasts (roadmap Day 7 voice feedback, reusable app-wide).
- * A toast is a command line plus a result line, e.g.
- *   $ selfvibe voice "agla gaana"
- *   >> skipping to next track
- * Toasts with the same `id` replace each other (e.g. "searching…" → "playing").
+ * Toasts (roadmap Day 7 voice feedback, reusable app-wide): one short message,
+ * an icon for the tone, and optionally what a voice command heard. Toasts
+ * with the same `id` replace each other (e.g. "Looking for…" → "Playing").
  */
 import { create } from "zustand";
 import { createId } from "@/utils/genericFunctions";
@@ -12,11 +10,11 @@ const MAX_TOASTS = 3;
 const timers = new Map();
 
 export const useToastStore = create((set, get) => ({
-  toasts: [], // { id, command, message, tone: "info"|"success"|"error"|"pending", action? }
+  toasts: [], // { id, message, heard?, tone: "info"|"success"|"error"|"pending", action? }
 
   /**
    * Show (or replace) a toast.
-   * @param {{ id?: string, command?: string, message: string, tone?: string, action?: { label: string, onClick: () => void }, durationMs?: number }} toast
+   * @param {{ id?: string, heard?: string, message: string, tone?: string, action?: { label: string, onClick: () => void }, durationMs?: number }} toast
    * @returns {string} The toast id
    */
   show({ id = createId(), durationMs = 3500, ...toast }) {

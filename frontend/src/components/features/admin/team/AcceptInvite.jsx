@@ -36,7 +36,6 @@ export default function AcceptInvite({ token }) {
     return (
       <EmptyState
         icon={MailX}
-        command="selfvibe team --join"
         title="invite not valid"
         description={
           error?.message ??
@@ -52,7 +51,6 @@ export default function AcceptInvite({ token }) {
     return (
       <div className="text-center">
         <ShieldCheck size={40} className="mx-auto mb-4 text-neon" aria-hidden />
-        <p className="font-mono text-sm text-neon">$ selfvibe team --join</p>
         <h1 className="mt-2 font-display text-2xl font-bold">You&apos;re on the team</h1>
         <p className="mt-2 text-sm text-fg-muted">
           Log in to SelfVibe with this email. The Admin panel is in your account menu.
@@ -73,7 +71,6 @@ export default function AcceptInvite({ token }) {
       }}
     >
       <div>
-        <p className="font-mono text-sm text-neon">$ selfvibe team --join</p>
         <h1 className="mt-2 font-display text-2xl font-bold">Join as {invite.roleLabel}</h1>
         <p className="mt-1 text-sm text-fg-muted">
           {invite.inviterName} invited <span className="text-fg">{invite.email}</span> to the

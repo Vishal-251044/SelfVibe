@@ -20,7 +20,6 @@ export default function CreatorUploadPage() {
     return (
       <EmptyState
         icon={UploadCloud}
-        command="selfvibe upload --track"
         title="uploads are paused"
         description="New uploads are switched off for a little while. Your songs are safe — please try again later."
         action={<Button href="/creator">Back to Studio</Button>}
@@ -35,7 +34,7 @@ export default function CreatorUploadPage() {
         <ArrowLeft size={16} aria-hidden /> Studio
       </Button>
       <PageHeader
-        eyebrow="selfvibe upload --track"
+        eyebrow="For artists"
         title="Upload a song"
         subtitle={
           artist

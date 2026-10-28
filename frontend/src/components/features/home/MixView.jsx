@@ -48,7 +48,6 @@ export default function MixView({ index }) {
     return (
       <EmptyState
         icon={Disc3}
-        command={`selfvibe mix --daily ${index}`}
         title={query.isError ? "couldn't load your mix" : "this mix isn't ready yet"}
         description={
           query.isError

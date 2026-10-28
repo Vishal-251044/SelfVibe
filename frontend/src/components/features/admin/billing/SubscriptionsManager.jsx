@@ -117,7 +117,7 @@ export default function SubscriptionsManager() {
     onSuccess: () => {
       setEnding(null);
       queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
-      showToast({ command: "selfvibe billing --revoke", message: "gift ended", tone: "success" });
+      showToast({ message: "gift ended", tone: "success" });
     },
   });
   const items = data?.items ?? [];
@@ -125,7 +125,7 @@ export default function SubscriptionsManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --billing"
+        eyebrow="Admin panel"
         title="Subscriptions"
         subtitle="Who pays for what. Refunds and paid cancellations happen in the Razorpay dashboard."
         actions={
@@ -179,7 +179,6 @@ export default function SubscriptionsManager() {
       ) : isError ? (
         <EmptyState
           icon={CreditCard}
-          command="selfvibe billing --list"
           title="couldn't load subscriptions"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -187,7 +186,6 @@ export default function SubscriptionsManager() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={CreditCard}
-          command="selfvibe billing --list"
           title="no subscriptions yet"
           description={
             q || status !== "all" || plan

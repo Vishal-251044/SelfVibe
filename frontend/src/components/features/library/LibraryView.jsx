@@ -79,7 +79,7 @@ export default function LibraryView() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe library --list"
+        eyebrow="Your collection"
         title="Your Library"
         subtitle="Everything you like, save and follow, in one place."
       />
@@ -157,7 +157,6 @@ export default function LibraryView() {
         ) : recentTracks.length === 0 ? (
           <EmptyState
             icon={History}
-            command="selfvibe history --recent"
             title="nothing played yet"
             description="Songs you listen to show up here."
             action={<Button href="/search">Find music</Button>}
@@ -192,7 +191,6 @@ export default function LibraryView() {
         ) : (follows.data?.items ?? []).length === 0 ? (
           <EmptyState
             icon={UserCheck}
-            command="selfvibe follow --list"
             title="not following anyone yet"
             description="Follow artists from their page to see them here."
           />

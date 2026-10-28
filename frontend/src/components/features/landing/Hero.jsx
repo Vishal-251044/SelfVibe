@@ -36,9 +36,8 @@ export default function Hero() {
 
         <FadeIn riseOnly delay={0.16}>
           <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted sm:text-lg">
-            A next-generation music platform for listeners and creators. A feed that learns your
-            taste, background play on your phone, voice control, and an AI studio. All in one
-            terminal-inspired app.
+            Music that gets you. A feed that learns your taste, songs that keep playing when your
+            phone locks, play anything with your voice, and a studio to make your own tracks.
           </p>
         </FadeIn>
 

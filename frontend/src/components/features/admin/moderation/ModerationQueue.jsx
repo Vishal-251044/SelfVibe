@@ -88,7 +88,6 @@ export default function ModerationQueue() {
     onSuccess: (_, { action }) => {
       setPending(null);
       showToast({
-        command: `selfvibe moderate --${action}`,
         message: DONE[action],
         tone: "success",
       });
@@ -96,7 +95,6 @@ export default function ModerationQueue() {
     },
     onError: (mutationError) =>
       showToast({
-        command: "selfvibe moderate",
         message: mutationError?.message ?? "couldn't do that",
         tone: "error",
       }),
@@ -110,7 +108,7 @@ export default function ModerationQueue() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --moderation"
+        eyebrow="Admin panel"
         title="Moderation"
         subtitle={
           data
@@ -164,7 +162,6 @@ export default function ModerationQueue() {
       ) : isError ? (
         <EmptyState
           icon={Flag}
-          command="selfvibe reports --list"
           title="couldn't load reports"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -172,7 +169,6 @@ export default function ModerationQueue() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={Check}
-          command="selfvibe reports --list"
           title={status === "open" ? "queue is clear" : "nothing here"}
           description={status === "open" ? "No reports waiting for review." : undefined}
         />

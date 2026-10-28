@@ -55,12 +55,11 @@ async function handleResult({ transcript, confidence }) {
   usePlayerStore.getState().setDucked(false);
 
   const command = parseVoiceCommand(transcript);
-  const commandLine = `selfvibe voice "${transcript}"`;
   // VOC-5: something on screen right away, even while a song is looked up
   showToast({
     id: TOAST_ID,
-    command: commandLine,
-    message: command.intent === "play" ? `searching '${command.query}'…` : "working…",
+    heard: transcript, // shown as: You said "…"
+    message: command.intent === "play" ? `Looking for '${command.query}'…` : "Working on it…",
     tone: "pending",
   });
 
@@ -81,7 +80,7 @@ async function handleResult({ transcript, confidence }) {
 
   showToast({
     id: TOAST_ID,
-    command: commandLine,
+    heard: transcript, // shown as: You said "…"
     message: outcome.message,
     tone: outcome.tone,
     durationMs: VOICE_TOAST_MS,
@@ -113,7 +112,6 @@ export function startListening(mode = "tap") {
   usePlayerStore.getState().setDucked(true);
   showToast({
     id: TOAST_ID,
-    command: `selfvibe voice --listen [${languageTag()}]`,
     message: "listening…",
     tone: "pending",
   });
@@ -124,7 +122,6 @@ export function startListening(mode = "tap") {
       useVoiceStore.getState().setSession({ interim: text });
       showToast({
         id: TOAST_ID,
-        command: `selfvibe voice --listen [${languageTag()}]`,
         message: `"${text}"`,
         tone: "pending",
       });
@@ -139,7 +136,6 @@ export function startListening(mode = "tap") {
       if (quiet) {
         showToast({
           id: TOAST_ID,
-          command: "selfvibe voice --listen",
           message: "didn't hear anything",
           tone: "info",
           durationMs: 2000,
@@ -147,7 +143,6 @@ export function startListening(mode = "tap") {
       } else {
         showToast({
           id: TOAST_ID,
-          command: "selfvibe voice --listen",
           message: describeSpeechError(code),
           tone: "error",
           durationMs: VOICE_TOAST_MS,
@@ -161,7 +156,6 @@ export function startListening(mode = "tap") {
     endListening();
     showToast({
       id: TOAST_ID,
-      command: "selfvibe voice",
       message: "voice isn't supported in this browser",
       tone: "error",
     });

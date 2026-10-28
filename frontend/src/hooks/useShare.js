@@ -30,9 +30,9 @@ export function useShare() {
     if (channel === "copy") {
       try {
         await navigator.clipboard.writeText(url);
-        showToast({ command: "selfvibe share --copy", message: "link copied", tone: "success" });
+        showToast({ message: "link copied", tone: "success" });
       } catch {
-        showToast({ command: "selfvibe share", message: url, tone: "info", durationMs: 8000 });
+        showToast({ message: url, tone: "info", durationMs: 8000 });
         return;
       }
     }

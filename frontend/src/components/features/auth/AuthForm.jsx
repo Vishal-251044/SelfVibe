@@ -32,7 +32,6 @@ const GOOGLE_ERRORS = {
 
 const COPY = {
   login: {
-    command: "selfvibe login",
     title: "Welcome back",
     subtitle: "Log in to pick up where you left off.",
     submit: "Log in",
@@ -41,7 +40,6 @@ const COPY = {
     switchHref: "/signup",
   },
   signup: {
-    command: "selfvibe signup",
     title: "Create your account",
     subtitle: "Free forever. Your feed starts learning from the first play.",
     submit: "Create account",
@@ -114,7 +112,6 @@ export default function AuthForm({ mode }) {
 
   return (
     <div>
-      <p className="font-mono text-sm text-neon">$ {copy.command}</p>
       <h1 className="mt-3 font-display text-3xl font-bold">{copy.title}</h1>
       <p className="mt-2 text-sm text-fg-muted">{copy.subtitle}</p>
 

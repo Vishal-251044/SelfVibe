@@ -24,7 +24,6 @@ export default function GlobalError({ error, reset }) {
     <div className="px-safe flex min-h-dvh items-center justify-center py-12">
       <EmptyState
         icon={TriangleAlert}
-        command="selfvibe render"
         title="something went wrong"
         description="We hit an unexpected error while loading this page."
         action={<Button onClick={reset}>Try again</Button>}

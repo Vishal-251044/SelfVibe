@@ -8,12 +8,11 @@ import FadeIn from "@/components/animations/FadeIn";
 
 /**
  * @param {Object} props
- * @param {string} props.command - Terminal-style eyebrow, e.g. "selfvibe privacy"
  * @param {string} props.title
  * @param {string} props.updated - "Last updated" date
  * @param {Array<{ heading: string, body: string[] }>} props.sections
  */
-export default function LegalPage({ command, title, updated, sections }) {
+export default function LegalPage({ title, updated, sections }) {
   return (
     <>
       <SiteNavbar />
@@ -23,7 +22,6 @@ export default function LegalPage({ command, title, updated, sections }) {
         className="px-safe mx-auto max-w-3xl py-12 outline-none md:px-6 md:py-20"
       >
         <FadeIn riseOnly>
-          <p className="font-mono text-sm text-neon">$ {command}</p>
           <h1 className="mt-3 font-display text-[clamp(2rem,6vw,3rem)] leading-tight font-bold">
             {title}
           </h1>

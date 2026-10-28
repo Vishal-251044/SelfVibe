@@ -55,14 +55,14 @@ export default function AuthGuard({
   // otherwise a reload of your own private playlist would load as a guest
   if (optional) {
     if (status === "idle" || status === "loading") {
-      return <ScreenLoader label="restoring your session" />;
+      return <ScreenLoader label="Getting your music ready" />;
     }
     return children;
   }
 
   if (status === "error") return <SessionErrorState onRetry={retryBootstrap} />;
   if (status !== "authenticated" || needsOnboarding) {
-    return <ScreenLoader label="restoring your session" />;
+    return <ScreenLoader label="Getting your music ready" />;
   }
   return children;
 }

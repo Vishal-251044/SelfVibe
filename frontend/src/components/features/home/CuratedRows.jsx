@@ -28,7 +28,6 @@ export default function CuratedRows({ sections, query }) {
           key={section.id}
           title={section.title}
           subtitle={section.subtitle}
-          command="selfvibe picks --staff"
           query={query}
           items={section.tracks}
           source="feed"
@@ -39,9 +38,6 @@ export default function CuratedRows({ sections, query }) {
       return (
         <FadeIn key={section.id} className="mb-7 sm:mb-10">
           <section aria-label={section.title}>
-            <p className="font-mono text-[11px] text-neon sm:text-xs">
-              $ selfvibe artists --featured
-            </p>
             <h2 className="font-display text-lg font-bold tracking-tight sm:text-xl">
               {section.title}
             </h2>
@@ -88,9 +84,6 @@ export default function CuratedRows({ sections, query }) {
     return (
       <FadeIn key={section.id} className="mb-7 sm:mb-10">
         <section aria-label={section.title}>
-          <p className="font-mono text-[11px] text-neon sm:text-xs">
-            $ selfvibe playlist --editorial
-          </p>
           <h2 className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl">
             {section.title}
           </h2>

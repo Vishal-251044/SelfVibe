@@ -44,7 +44,6 @@ export default function VoiceLayer() {
       const result = await playCandidate(candidate, { language, catalog: getCatalogFilter() });
       showToast({
         id: "voice",
-        command: `selfvibe voice --pick ${index + 1}`,
         message: result.message,
         tone: result.tone,
         durationMs: VOICE_TOAST_MS,
@@ -54,7 +53,6 @@ export default function VoiceLayer() {
     } catch (error) {
       showToast({
         id: "voice",
-        command: "selfvibe voice --pick",
         message: error?.message ?? "couldn't play that",
         tone: "error",
       });

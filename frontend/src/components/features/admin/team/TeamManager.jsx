@@ -67,7 +67,6 @@ function InviteSheet({ open, onClose }) {
       if (result.acceptUrl) setLink(result.acceptUrl);
       else {
         showToast({
-          command: "selfvibe team --invite",
           message: `invite sent to ${email.trim()}`,
           tone: "success",
         });
@@ -151,7 +150,6 @@ export default function TeamManager() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminTeam });
   const onError = (mutationError) =>
     showToast({
-      command: "selfvibe team",
       message: mutationError?.message ?? "couldn't update",
       tone: "error",
     });
@@ -160,7 +158,6 @@ export default function TeamManager() {
     onSuccess: () => {
       refresh();
       showToast({
-        command: "selfvibe team --role",
         message: "role updated — applies at their next sign-in",
         tone: "success",
       });
@@ -184,7 +181,7 @@ export default function TeamManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --team"
+        eyebrow="Admin panel"
         title="Team"
         subtitle="Who can sign in to the console, and what they can do."
         actions={
@@ -202,7 +199,6 @@ export default function TeamManager() {
       ) : isError ? (
         <EmptyState
           icon={UserCog}
-          command="selfvibe team --list"
           title="couldn't load the team"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}

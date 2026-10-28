@@ -89,7 +89,6 @@ export default function PerformanceList() {
       await exportPerformanceCsv({ range, catalog, q: q || undefined });
     } catch (exportError) {
       showToast({
-        command: "selfvibe stats --export",
         message: exportError?.message ?? "export failed",
         tone: "error",
       });
@@ -101,7 +100,7 @@ export default function PerformanceList() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --performance"
+        eyebrow="Admin panel"
         title="Song performance"
         subtitle="How every song is doing. Numbers update every hour."
         actions={
@@ -185,7 +184,6 @@ export default function PerformanceList() {
       ) : isError ? (
         <EmptyState
           icon={LineChart}
-          command="selfvibe stats --songs"
           title="couldn't load song stats"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -193,7 +191,6 @@ export default function PerformanceList() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={LineChart}
-          command="selfvibe stats --songs"
           title="no songs match"
           description={q ? "Try another title." : "Songs appear here once they are added."}
         />
@@ -208,7 +205,7 @@ export default function PerformanceList() {
                   className="block rounded-card border border-line bg-surface p-3 transition hover:border-line-strong"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 text-center font-mono text-xs text-neon">
+                    <span className="w-6 text-center text-xs font-semibold text-neon tabular-nums">
                       {(page - 1) * PAGE_SIZE + index + 1}
                     </span>
                     <CoverArt
@@ -223,7 +220,9 @@ export default function PerformanceList() {
                       <span className="block truncate text-xs text-fg-subtle">{song.artist}</span>
                     </span>
                     <span className="text-right">
-                      <span className="block font-mono text-sm">{formatCount(song.plays)}</span>
+                      <span className="block text-sm font-semibold tabular-nums">
+                        {formatCount(song.plays)}
+                      </span>
                       <span className="text-[0.6875rem] text-fg-subtle">plays</span>
                     </span>
                   </div>
@@ -231,7 +230,9 @@ export default function PerformanceList() {
                     {COLUMNS.slice(1, 5).map((column) => (
                       <div key={column.key}>
                         <dt className="text-fg-subtle">{column.label}</dt>
-                        <dd className="font-mono text-fg">{column.format(song[column.key])}</dd>
+                        <dd className="font-semibold text-fg tabular-nums">
+                          {column.format(song[column.key])}
+                        </dd>
                       </div>
                     ))}
                   </dl>
@@ -278,7 +279,7 @@ export default function PerformanceList() {
                           href={`/admin/performance/${song.id}`}
                           className="flex min-h-11 items-center gap-3"
                         >
-                          <span className="w-6 text-right font-mono text-xs text-neon">
+                          <span className="w-6 text-right text-xs font-semibold text-neon tabular-nums">
                             {(page - 1) * PAGE_SIZE + index + 1}
                           </span>
                           <CoverArt
@@ -308,7 +309,7 @@ export default function PerformanceList() {
                         <td
                           key={column.key}
                           className={cn(
-                            "px-3 py-2 text-right font-mono",
+                            "px-3 py-2 text-right font-semibold tabular-nums",
                             sort === column.key ? "text-neon" : "text-fg"
                           )}
                         >

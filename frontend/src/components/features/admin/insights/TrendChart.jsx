@@ -64,7 +64,7 @@ export default function TrendChart({ series, valueKey, label, className }) {
     <figure className={className}>
       <figcaption className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <span className="text-sm text-fg-muted">{label}</span>
-        <span className="font-mono text-xs text-fg-subtle">
+        <span className="text-xs font-semibold text-fg-subtle tabular-nums">
           {point ? (
             <>
               <span className="text-neon">{(point[valueKey] ?? 0).toLocaleString("en-IN")}</span> on{" "}
@@ -145,7 +145,7 @@ export default function TrendChart({ series, valueKey, label, className }) {
           )}
         </svg>
       </div>
-      <div className="mt-2 flex justify-between font-mono text-[0.6875rem] text-fg-subtle">
+      <div className="mt-2 flex justify-between text-[0.6875rem] font-semibold text-fg-subtle tabular-nums">
         <span>{shortDate(series[0].date)}</span>
         <span>{shortDate(series.at(-1).date)}</span>
       </div>

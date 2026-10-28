@@ -53,7 +53,6 @@ export default function ArtistAlbumsSection({ artistId, albums, onChanged }) {
       {albums.length === 0 ? (
         <EmptyState
           icon={Disc3}
-          command="selfvibe albums --list"
           title="no albums yet"
           description="Group this artist's tracks into albums, EPs or singles."
         />

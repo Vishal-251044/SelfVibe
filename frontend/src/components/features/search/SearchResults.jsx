@@ -47,7 +47,6 @@ export default function SearchResults({ results }) {
     return (
       <EmptyState
         icon={SearchX}
-        command={`selfvibe search "${results.query}"`}
         title={`No match for '${results.query}'`}
         description="Check the spelling, try fewer words, or search for an artist, a genre or a vibe."
       />

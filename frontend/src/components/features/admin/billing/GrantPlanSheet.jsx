@@ -32,12 +32,16 @@ const DURATION_OPTIONS = [
 ];
 
 /**
- * @param {{ open: boolean, onClose: () => void }} props
+ * @param {Object} props
+ * @param {boolean} props.open
+ * @param {() => void} props.onClose
+ * @param {{ id: string, name: string, email: string, avatar?: string|null }} [props.person] - Pre-selected (from Users & Creators)
+ * @param {() => void} [props.onGranted] - After the plan is given
  */
-export default function GrantPlanSheet({ open, onClose }) {
+export default function GrantPlanSheet({ open, onClose, person: initialPerson = null, onGranted }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [person, setPerson] = useState(null);
+  const [person, setPerson] = useState(initialPerson);
   const [plan, setPlan] = useState("premium");
   const [duration, setDuration] = useState("30");
   const [note, setNote] = useState("");
@@ -58,8 +62,8 @@ export default function GrantPlanSheet({ open, onClose }) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "billing"] });
+      onGranted?.();
       showToast({
-        command: "selfvibe billing --grant",
         message: `${person?.name} is on ${PLAN_OPTIONS.find((option) => option.value === plan).label}`,
         tone: "success",
       });

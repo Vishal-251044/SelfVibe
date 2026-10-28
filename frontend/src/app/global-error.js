@@ -26,12 +26,11 @@ export default function RootError({ error, reset }) {
           justifyContent: "center",
           background: "#000",
           color: "#e5e7eb",
-          fontFamily: "ui-monospace, Menlo, Consolas, monospace",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
           padding: "24px",
         }}
       >
         <main style={{ maxWidth: 420, textAlign: "center" }}>
-          <p style={{ color: "#22c55e", margin: "0 0 8px" }}>$ selfvibe start</p>
           <h1 style={{ fontSize: 22, margin: "0 0 12px", color: "#fff" }}>Something went wrong</h1>
           <p style={{ margin: "0 0 24px", lineHeight: 1.6 }}>
             SelfVibe hit an unexpected error. Please try again.

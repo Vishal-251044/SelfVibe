@@ -75,7 +75,7 @@ export default function AdminTrackList() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --music"
+        eyebrow="Admin panel"
         title="Music"
         subtitle={
           data?.meta ? `${data.meta.total} tracks in the catalog` : "Every track in the catalog"
@@ -160,7 +160,6 @@ export default function AdminTrackList() {
         ) : isError ? (
           <EmptyState
             icon={Music4}
-            command="selfvibe tracks --list"
             title="couldn't load tracks"
             description={error?.message}
             action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -169,7 +168,6 @@ export default function AdminTrackList() {
         ) : tracks.length === 0 ? (
           <EmptyState
             icon={Music4}
-            command={hasFilters ? "selfvibe tracks --filter" : "selfvibe tracks --list"}
             title={hasFilters ? "no tracks match" : "the catalog is empty"}
             description={
               hasFilters

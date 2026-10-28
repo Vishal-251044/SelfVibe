@@ -64,7 +64,6 @@ export default function TrackView({ trackId }) {
     return (
       <EmptyState
         icon={Disc3}
-        command={`selfvibe play ${trackId}`}
         title={isMissing ? "song not found" : "couldn't load this song"}
         description={
           isMissing

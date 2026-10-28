@@ -141,7 +141,7 @@ export default function BulkUploader() {
         <ArrowLeft size={16} aria-hidden /> Music
       </Button>
       <PageHeader
-        eyebrow="selfvibe tracks --bulk"
+        eyebrow="Admin panel"
         title="Bulk upload"
         subtitle={`Up to ${BULK_UPLOAD_MAX_FILES} audio files at once, with an optional CSV for titles, artists, albums and tags.`}
       />

@@ -93,7 +93,7 @@ export default function SearchView() {
 
   return (
     <>
-      <PageHeader eyebrow="selfvibe search" title="Search" />
+      <PageHeader eyebrow="Discover" title="Search" />
 
       <FadeIn className="sticky top-14 z-30 -mx-4 mb-5 flex flex-col gap-2.5 bg-ink/85 px-4 pt-1 pb-3 backdrop-blur-xl md:top-[var(--top-nav-height)] md:mx-0 md:mb-6 md:flex-row md:items-center md:gap-3 md:px-0">
         <form
@@ -157,13 +157,12 @@ export default function SearchView() {
         {!hasQuery ? (
           <>
             <RecentSearches onSelect={runSearch} />
-            <CategoryGrid kind="vibe" title="Browse by vibe" command="selfvibe browse --vibes" />
-            <CategoryGrid kind="genre" title="Browse by genre" command="selfvibe browse --genres" />
+            <CategoryGrid kind="vibe" title="Browse by vibe" />
+            <CategoryGrid kind="genre" title="Browse by genre" />
           </>
         ) : query.isError ? (
           <EmptyState
             icon={Search}
-            command={`selfvibe search "${debounced}"`}
             title="search is having a moment"
             description={query.error?.message}
             action={<Button onClick={() => query.refetch()}>Try again</Button>}

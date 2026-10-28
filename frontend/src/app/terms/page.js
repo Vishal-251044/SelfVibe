@@ -55,12 +55,5 @@ const SECTIONS = [
 ];
 
 export default function TermsPage() {
-  return (
-    <LegalPage
-      command="selfvibe terms"
-      title="Terms of Use"
-      updated="31 October 2026"
-      sections={SECTIONS}
-    />
-  );
+  return <LegalPage title="Terms of Use" updated="31 October 2026" sections={SECTIONS} />;
 }

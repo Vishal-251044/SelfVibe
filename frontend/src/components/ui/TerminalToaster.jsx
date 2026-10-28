@@ -1,10 +1,9 @@
 "use client";
 
 /**
- * Terminal-style toasts (roadmap Day 7 voice feedback), stacked above the
- * mini player and bottom nav on phones, bottom-right on desktop:
- *   $ selfvibe voice "agla gaana"
- *   >> skipping to next track  (check icon)
+ * Toasts (short confirmations, voice feedback), stacked above the mini player
+ * and bottom nav on phones, bottom-right on desktop: an icon, one friendly
+ * sentence, and for voice commands what was heard ("You said “agla gaana”").
  */
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Check, Info, Loader2, X } from "lucide-react";
@@ -13,11 +12,11 @@ import { DURATION, EASE_OUT } from "@/utils/animations";
 import { cn } from "@/utils/genericFunctions";
 
 const TONE_ICON = { success: Check, error: AlertTriangle, info: Info, pending: Loader2 };
-const TONE_CLASS = {
-  success: "text-neon",
-  error: "text-danger",
-  info: "text-fg-muted",
-  pending: "text-neon",
+const TONE_BADGE = {
+  success: "bg-neon/15 text-neon",
+  error: "bg-danger/15 text-danger",
+  info: "bg-white/10 text-fg-muted",
+  pending: "bg-neon/15 text-neon",
 };
 
 export default function TerminalToaster() {
@@ -41,22 +40,26 @@ export default function TerminalToaster() {
               exit={{ opacity: 0, y: 8, scale: 0.96 }}
               transition={{ duration: DURATION.base, ease: EASE_OUT }}
               role={toast.tone === "error" ? "alert" : "status"}
-              className="pointer-events-auto w-full max-w-md overflow-hidden rounded-xl border border-line-strong bg-black/90 font-mono text-xs shadow-panel backdrop-blur-xl sm:text-sm"
+              className="pointer-events-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-surface-raised/95 text-sm shadow-panel backdrop-blur-xl"
             >
-              <div className="flex items-start gap-2 py-2 pr-1 pl-4">
-                <div className="min-w-0 flex-1 space-y-1 py-1">
-                  {toast.command && (
-                    <p className="truncate font-mono text-fg-muted">$ {toast.command}</p>
+              <div className="flex items-start gap-3 py-2.5 pr-1 pl-3">
+                <span
+                  className={cn(
+                    "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
+                    TONE_BADGE[toast.tone] ?? TONE_BADGE.info
                   )}
-                  <p className={cn("flex items-center gap-2", TONE_CLASS[toast.tone])}>
-                    <span aria-hidden>{">>"}</span>
-                    <span className="min-w-0 flex-1 break-words text-fg">{toast.message}</span>
-                    <Icon
-                      size={16}
-                      className={cn("shrink-0", toast.tone === "pending" && "animate-spin")}
-                      aria-hidden
-                    />
-                  </p>
+                >
+                  <Icon
+                    size={16}
+                    className={cn(toast.tone === "pending" && "animate-spin")}
+                    aria-hidden
+                  />
+                </span>
+                <div className="min-w-0 flex-1 py-1">
+                  {toast.heard && (
+                    <p className="truncate text-xs text-fg-subtle">You said “{toast.heard}”</p>
+                  )}
+                  <p className="break-words text-fg first-letter:uppercase">{toast.message}</p>
                   {toast.action && (
                     <button
                       type="button"
@@ -64,7 +67,7 @@ export default function TerminalToaster() {
                         toast.action.onClick();
                         dismiss(toast.id);
                       }}
-                      className="min-h-11 text-neon underline-offset-4 hover:underline"
+                      className="mt-1 min-h-11 font-semibold text-neon underline-offset-4 hover:underline"
                     >
                       {toast.action.label}
                     </button>

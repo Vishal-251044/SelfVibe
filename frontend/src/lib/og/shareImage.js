@@ -1,7 +1,7 @@
 /**
  * Open Graph images in the SelfVibe theme (PRD §10.8 "rich previews",
  * roadmap Day 10 share links): 1200×630, black background, neon green, the
- * cover on the left and a terminal-style "$ selfvibe play" title on the right.
+ * cover on the left and a "Listen on SelfVibe" label above the title.
  * Used by every opengraph-image.js route (song, playlist, artist, site).
  */
 import { ImageResponse } from "next/og";
@@ -13,7 +13,11 @@ export const OG_CONTENT_TYPE = "image/png";
 
 const NEON = "#22c55e";
 const NEON_BRIGHT = "#6bff6b";
-const COMMANDS = { track: "play", playlist: "playlist --open", artist: "artist --follow" };
+const LABELS = {
+  track: "Listen on SelfVibe",
+  playlist: "Playlist on SelfVibe",
+  artist: "Artist on SelfVibe",
+};
 
 /**
  * Keep long titles inside the card.
@@ -86,7 +90,7 @@ async function usableImage(url) {
  */
 export async function renderShareImage({ type = "site", title, subtitle = "", imageUrl = null }) {
   const isSite = type === "site";
-  const command = COMMANDS[type] ?? "start";
+  const label = LABELS[type] ?? "Music for every vibe";
   const coverSrc = isSite ? null : await usableImage(toPreviewImageUrl(imageUrl));
 
   return new ImageResponse(
@@ -106,8 +110,10 @@ export async function renderShareImage({ type = "site", title, subtitle = "", im
     >
       {!isSite && <Cover src={coverSrc} isRound={type === "artist"} />}
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", color: NEON, fontSize: 30, fontFamily: "monospace" }}>
-          {`$ selfvibe ${command}`}
+        <div
+          style={{ display: "flex", color: NEON, fontSize: 28, fontWeight: 600, letterSpacing: 1 }}
+        >
+          {label}
         </div>
         <div
           style={{

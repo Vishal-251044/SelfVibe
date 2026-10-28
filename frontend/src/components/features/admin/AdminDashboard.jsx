@@ -75,7 +75,7 @@ export default function AdminDashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --dashboard"
+        eyebrow="Admin panel"
         title={`Welcome, ${firstName}`}
         subtitle={`Signed in as ${STAFF_ROLE_LABELS[staff.staffRole] ?? staff.staffRole}.`}
       />
@@ -83,7 +83,6 @@ export default function AdminDashboard() {
       {query.isError ? (
         <EmptyState
           icon={Activity}
-          command="selfvibe stats --today"
           title="couldn't load platform stats"
           description={query.error?.message}
           action={<Button onClick={() => query.refetch()}>Try again</Button>}
@@ -226,7 +225,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               ) : stats.topTracksToday.length === 0 ? (
-                <p className="font-mono text-xs text-fg-subtle">{">>"} no plays yet today</p>
+                <p className="text-sm text-fg-subtle">No plays yet today</p>
               ) : (
                 <ol className="space-y-1">
                   {stats.topTracksToday.map((track, index) => (
@@ -235,7 +234,9 @@ export default function AdminDashboard() {
                         href={`/admin/performance/${track.id}`}
                         className="flex min-h-12 items-center gap-3 rounded-lg px-2 py-1 transition hover:bg-surface-raised"
                       >
-                        <span className="w-4 font-mono text-xs text-neon">{index + 1}</span>
+                        <span className="w-4 text-xs font-semibold text-neon tabular-nums">
+                          {index + 1}
+                        </span>
                         <CoverArt
                           src={track.coverUrl}
                           alt=""
@@ -249,7 +250,7 @@ export default function AdminDashboard() {
                             {track.artist}
                           </span>
                         </span>
-                        <span className="font-mono text-xs text-fg">
+                        <span className="text-xs font-semibold text-fg tabular-nums">
                           {formatCount(track.plays)}
                         </span>
                       </Link>

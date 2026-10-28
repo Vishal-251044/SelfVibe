@@ -65,7 +65,6 @@ export default function ArtistPageView({ idOrSlug }) {
     return (
       <EmptyState
         icon={Mic2}
-        command={`selfvibe artist --open ${idOrSlug}`}
         title={isMissing ? "artist not found" : "couldn't load this artist"}
         description={
           isMissing
@@ -185,7 +184,6 @@ export default function ArtistPageView({ idOrSlug }) {
         {tracks.length === 0 ? (
           <EmptyState
             icon={Headphones}
-            command={`selfvibe tracks --artist ${artist.slug ?? artist.id}`}
             title="no tracks yet"
             description={`${artist.stageName} hasn't released any music on SelfVibe yet.`}
           />

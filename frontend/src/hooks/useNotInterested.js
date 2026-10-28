@@ -37,7 +37,6 @@ export function useNotInterested() {
       .then(() =>
         showToast({
           id: `not-interested-${track.id}`,
-          command: `selfvibe feed --hide "${track.title}"`,
           message: "we'll show you less like this",
           tone: "success",
           durationMs: 6000,
@@ -55,7 +54,6 @@ export function useNotInterested() {
       .catch((error) => {
         restore();
         showToast({
-          command: "selfvibe feed --hide",
           message: error?.message ?? "couldn't hide that song",
           tone: "error",
         });

@@ -136,7 +136,6 @@ export default function ArtistPicker({
     return (
       <EmptyState
         icon={Mic2}
-        command="selfvibe artists --suggest"
         title="couldn't load artists"
         description="You can finish without picking artists, or try again."
         action={
@@ -155,7 +154,6 @@ export default function ArtistPicker({
     return (
       <EmptyState
         icon={Mic2}
-        command="selfvibe artists --list"
         title="artists are on their way"
         description="The catalog is just getting started. Finish now — your feed will use your genres and vibes."
       />

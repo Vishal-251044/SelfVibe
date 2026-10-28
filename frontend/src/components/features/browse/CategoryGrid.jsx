@@ -22,9 +22,8 @@ const GRID = "grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4";
  * @param {Object} props
  * @param {"genre"|"vibe"} props.kind
  * @param {string} props.title
- * @param {string} [props.command]
  */
-export default function CategoryGrid({ kind, title, command }) {
+export default function CategoryGrid({ kind, title }) {
   const { catalog } = useCatalogFilter();
   const query = useQuery({
     queryKey: QUERY_KEYS.categories(kind, catalog),
@@ -35,7 +34,6 @@ export default function CategoryGrid({ kind, title, command }) {
 
   return (
     <section aria-labelledby={`browse-${kind}`} className="mb-7 sm:mb-10">
-      {command && <p className="font-mono text-[11px] text-neon sm:text-xs">$ {command}</p>}
       <h2
         id={`browse-${kind}`}
         className="mb-4 font-display text-lg font-bold tracking-tight sm:text-xl"
@@ -51,17 +49,12 @@ export default function CategoryGrid({ kind, title, command }) {
       ) : query.isError ? (
         <EmptyState
           icon={Compass}
-          command={`selfvibe browse --${kind}s`}
           title={`couldn't load ${kind}s`}
           description={query.error?.message}
           action={<Button onClick={() => query.refetch()}>Try again</Button>}
         />
       ) : items.length === 0 ? (
-        <EmptyState
-          icon={Compass}
-          command={`selfvibe browse --${kind}s`}
-          title={`no ${kind}s yet`}
-        />
+        <EmptyState icon={Compass} title={`no ${kind}s yet`} />
       ) : (
         <Stagger className={GRID} stagger={0.03}>
           {items.map((item) => (

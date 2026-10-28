@@ -2,7 +2,7 @@
 
 /**
  * Maintenance mode (roadmap Day 9 Settings): when the Owner switches it on —
- * or any API call answers 503 MAINTENANCE — the app shows a terminal-style
+ * or any API call answers 503 MAINTENANCE — the app shows a friendly
  * "we'll be back" screen instead of the page, and checks again every minute.
  * A 503 only counts until newer settings say maintenance is over.
  */
@@ -11,7 +11,6 @@ import { Construction, RefreshCw } from "lucide-react";
 import Button from "@/components/ui/Button";
 import GridBackground from "@/components/ui/GridBackground";
 import Logo from "@/components/ui/Logo";
-import TerminalWindow from "@/components/ui/TerminalWindow";
 import FadeIn from "@/components/animations/FadeIn";
 import { onMaintenance } from "@/services/api";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -44,19 +43,16 @@ export default function MaintenanceGate({ children }) {
       <GridBackground intensity={0.2} />
       <Logo href={null} />
       <FadeIn className="w-full max-w-lg px-4">
-        <TerminalWindow title="selfvibe@status:~">
-          <div className="space-y-2 font-mono text-sm">
-            <p className="text-neon">$ selfvibe status</p>
-            <p className="flex items-center gap-2 text-warning">
-              <Construction size={16} aria-hidden /> {">>"} maintenance in progress
-            </p>
-            <p className="text-fg">{message}</p>
-            <p className="text-fg-subtle">
-              {">>"} checking again every minute
-              <span className="ml-1 animate-blink text-neon">_</span>
-            </p>
-          </div>
-        </TerminalWindow>
+        <div className="rounded-card border border-white/10 bg-surface/90 p-6 text-center shadow-panel backdrop-blur">
+          <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-warning/15 text-warning">
+            <Construction size={26} aria-hidden />
+          </span>
+          <h1 className="mt-4 font-display text-xl font-bold tracking-tight">
+            We&apos;re tuning things up
+          </h1>
+          <p className="mt-2 text-sm text-fg-muted">{message}</p>
+          <p className="mt-4 text-xs text-fg-subtle">We&apos;ll check again every minute.</p>
+        </div>
         <Button variant="outline" fullWidth className="mt-6" onClick={() => refetch()}>
           <RefreshCw size={16} aria-hidden /> Check now
         </Button>

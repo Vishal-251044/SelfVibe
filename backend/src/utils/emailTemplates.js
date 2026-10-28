@@ -1,6 +1,6 @@
 /**
  * Transactional email templates in the SelfVibe theme (black, neon green,
- * monospace). Inline styles only — email clients ignore <style> blocks.
+ * clean sans-serif). Inline styles only — email clients ignore <style> blocks.
  */
 
 /**
@@ -25,14 +25,13 @@ function escapeHtml(value) {
  * @returns {string} HTML document
  */
 function layout({ title, bodyHtml, button, footnote }) {
-  const mono = "'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace";
+  const sans = "Inter,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
   return `<!doctype html>
-<html><body style="margin:0;background:#000;padding:32px 16px;font-family:${mono};color:#e5e7eb">
+<html><body style="margin:0;background:#000;padding:32px 16px;font-family:${sans};color:#e5e7eb">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" style="max-width:520px;background:#050806;border:1px solid rgba(34,197,94,.45);border-radius:16px">
       <tr><td style="padding:32px">
         <p style="margin:0 0 24px;font-size:20px;font-weight:700;color:#bbf7d0">SelfVibe</p>
-        <p style="margin:0 0 8px;font-size:13px;color:#22c55e">$ selfvibe notify</p>
         <h1 style="margin:0 0 16px;font-size:22px;color:#fff">${escapeHtml(title)}</h1>
         ${bodyHtml}
         ${

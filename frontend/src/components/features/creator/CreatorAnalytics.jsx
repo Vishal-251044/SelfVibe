@@ -42,9 +42,6 @@ export default function CreatorAnalytics() {
     <section className="mt-10" aria-labelledby="analytics-heading">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[11px] text-neon sm:text-xs">
-            $ selfvibe studio --analytics
-          </p>
           <h2
             id="analytics-heading"
             className="font-display text-lg font-bold tracking-tight sm:text-xl"
@@ -64,7 +61,6 @@ export default function CreatorAnalytics() {
       ) : isError ? (
         <EmptyState
           icon={BarChart3}
-          command="selfvibe studio --analytics"
           title="couldn't load your stats"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -72,7 +68,6 @@ export default function CreatorAnalytics() {
       ) : data.songCount === 0 ? (
         <EmptyState
           icon={BarChart3}
-          command="selfvibe studio --analytics"
           title="no stats yet"
           description="Publish a song and your plays, listeners and likes show up here."
           action={<Button href="/creator/upload">Upload a song</Button>}
@@ -133,7 +128,7 @@ export default function CreatorAnalytics() {
             <ol className="space-y-1">
               {data.topTracks.map((track, index) => (
                 <li key={track.id} className="flex min-h-14 items-center gap-3 rounded-lg px-2">
-                  <span className="w-5 font-mono text-[11px] text-neon sm:text-xs">
+                  <span className="w-5 text-[11px] font-semibold text-neon tabular-nums sm:text-xs">
                     {index + 1}
                   </span>
                   <CoverArt
@@ -150,7 +145,7 @@ export default function CreatorAnalytics() {
                       {formatRate(track.completionRate)} finish
                     </span>
                   </span>
-                  <span className="text-right font-mono text-sm">
+                  <span className="text-right text-sm font-semibold tabular-nums">
                     {formatCount(track.plays)}
                     <span className="block text-[0.6875rem] text-fg-subtle">plays</span>
                   </span>

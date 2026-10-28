@@ -112,7 +112,7 @@ export default function AdminTrackCreateForm() {
         <ArrowLeft size={16} aria-hidden /> Music
       </Button>
       <PageHeader
-        eyebrow="selfvibe tracks --add"
+        eyebrow="Admin panel"
         title="Add a track"
         subtitle="The file uploads while you fill in the details. Processing starts when you save."
       />

@@ -13,7 +13,7 @@ export default function HomePage() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe feed --for-you"
+        eyebrow="Listen now"
         title="For You"
         subtitle="Music picked for your taste, mood and time of day."
         actions={<CatalogSwitch />}

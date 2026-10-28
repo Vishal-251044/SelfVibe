@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Ban, KeyRound, Mic2, RotateCcw } from "lucide-react";
+import { BadgeCheck, Ban, Gift, KeyRound, Mail, Mic2, RotateCcw } from "lucide-react";
 import Sheet from "@/components/ui/Sheet";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
@@ -23,6 +23,8 @@ import {
   setUserStatus,
 } from "@/services/adminConsole.service";
 import { showToast } from "@/store/toastStore";
+import GrantPlanSheet from "@/components/features/admin/billing/GrantPlanSheet";
+import { useHasPermission } from "@/components/features/admin/RequirePermission";
 import { QUERY_KEYS } from "@/utils/constants";
 import { formatCount, formatRelativeTime } from "@/utils/genericFunctions";
 
@@ -34,6 +36,9 @@ import { formatCount, formatRelativeTime } from "@/utils/genericFunctions";
 export default function UserDetailSheet({ userId, onClose }) {
   const queryClient = useQueryClient();
   const [isConfirmingSuspend, setIsConfirmingSuspend] = useState(false);
+  const [isGranting, setIsGranting] = useState(false);
+  // Owner: give a free plan; other staff: email the person
+  const canGrantPlan = useHasPermission("billing.manage");
   const { data, isPending, isError, error } = useQuery({
     queryKey: QUERY_KEYS.adminUser(userId),
     queryFn: ({ signal }) => getUser(userId, { signal }),
@@ -44,7 +49,7 @@ export default function UserDetailSheet({ userId, onClose }) {
     mutationFn: ({ run }) => run(),
     onSuccess: (_, { done }) => {
       setIsConfirmingSuspend(false);
-      showToast({ command: "selfvibe users --update", message: done, tone: "success" });
+      showToast({ message: done, tone: "success" });
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminUser(userId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminVerification });
@@ -116,7 +121,7 @@ export default function UserDetailSheet({ userId, onClose }) {
             ].map(([label, value]) => (
               <div key={label} className="rounded-control border border-line p-2">
                 <dt className="text-[0.6875rem] text-fg-subtle">{label}</dt>
-                <dd className="font-mono text-sm">{formatCount(value)}</dd>
+                <dd className="text-sm font-semibold tabular-nums">{formatCount(value)}</dd>
               </div>
             ))}
           </dl>
@@ -207,7 +212,24 @@ export default function UserDetailSheet({ userId, onClose }) {
             >
               <KeyRound size={16} aria-hidden /> Send password reset
             </Button>
+            {canGrantPlan ? (
+              <Button variant="outline" onClick={() => setIsGranting(true)}>
+                <Gift size={16} aria-hidden /> Give a plan
+              </Button>
+            ) : (
+              <Button variant="outline" href={`mailto:${user.email}`} nativeLink>
+                <Mail size={16} aria-hidden /> Email user
+              </Button>
+            )}
           </div>
+          {isGranting && (
+            <GrantPlanSheet
+              open
+              onClose={() => setIsGranting(false)}
+              person={{ id: user.id, name: user.name, email: user.email, avatar: user.avatar }}
+              onGranted={() => queryClient.invalidateQueries({ queryKey: ["admin"] })}
+            />
+          )}
         </div>
       )}
 

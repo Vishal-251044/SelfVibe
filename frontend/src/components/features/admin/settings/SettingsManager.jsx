@@ -122,7 +122,6 @@ function SettingsForms({ settings, yourIp }) {
       }));
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.publicSettings });
       showToast({
-        command: "selfvibe settings --save",
         message: `${label} saved`,
         tone: "success",
       });
@@ -134,7 +133,7 @@ function SettingsForms({ settings, yourIp }) {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --settings"
+        eyebrow="Admin panel"
         title="Settings"
         subtitle="Platform switches. Only the Owner can change these."
       />
@@ -297,11 +296,10 @@ export default function SettingsManager() {
   if (isPending || isError) {
     return (
       <>
-        <PageHeader eyebrow="selfvibe console --settings" title="Settings" />
+        <PageHeader eyebrow="Admin panel" title="Settings" />
         {isError ? (
           <EmptyState
             icon={Settings}
-            command="selfvibe settings"
             title="couldn't load settings"
             description={error?.message}
             action={<Button onClick={() => refetch()}>Try again</Button>}

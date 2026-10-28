@@ -12,14 +12,13 @@ export default function StudioPage() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe studio"
+        eyebrow="Create"
         title="AI Studio"
         subtitle="Describe a vibe, pick a tempo, and get an original track you can save or publish."
       />
       <FadeIn delay={0.05}>
         <EmptyState
           icon={Sparkles}
-          command="selfvibe studio --generate"
           title="studio is tuning up"
           description="AI music generation is not available on your account yet. Check back soon."
         />

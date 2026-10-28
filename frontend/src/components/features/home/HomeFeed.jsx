@@ -29,11 +29,11 @@ import { HOME_ROW_SIZE } from "@/utils/musicConstants";
 const ROW_STALE_MS = 5 * 60 * 1000;
 /** Feed sections in display order, with their terminal eyebrow. */
 const FEED_SECTIONS = [
-  { key: "madeForYou", command: "selfvibe recommend --for-you" },
-  { key: "becauseYouLiked", command: "selfvibe recommend --similar" },
-  { key: "rightNow", command: "selfvibe vibe --now" },
-  { key: "trending", command: "selfvibe trending --7d", ranked: true },
-  { key: "freshCreators", command: "selfvibe discover --fresh-creators" },
+  { key: "madeForYou" },
+  { key: "becauseYouLiked" },
+  { key: "rightNow" },
+  { key: "trending", ranked: true },
+  { key: "freshCreators" },
 ];
 
 /**
@@ -96,22 +96,16 @@ export default function HomeFeed() {
 
       {feed.isPending || feed.isError ? (
         // One placeholder row while loading; one retry row on error
-        <TrackShelf
-          title="Made for You"
-          command="selfvibe recommend --for-you"
-          query={feed}
-          items={[]}
-        />
+        <TrackShelf title="Made for You" query={feed} items={[]} />
       ) : (
         FEED_SECTIONS.filter(({ key }) => sectionByKey.get(key)?.items.length).map(
-          ({ key, command, ranked }) => {
+          ({ key, ranked }) => {
             const section = sectionByKey.get(key);
             return (
               <TrackShelf
                 key={key}
                 title={section.title}
                 subtitle={section.subtitle}
-                command={command}
                 query={feed}
                 items={section.items}
                 source="feed"
@@ -130,23 +124,16 @@ export default function HomeFeed() {
         query={curated}
       />
 
-      <TrackShelf
-        title="New Releases"
-        command="selfvibe releases --new"
-        query={newReleases}
-        emptyText="No new songs yet."
-      />
+      <TrackShelf title="New Releases" query={newReleases} emptyText="No new songs yet." />
       {showCatalogRows && (
         <>
           <TrackShelf
             title="SelfVibe Official"
-            command="selfvibe catalog --official"
             query={official}
             emptyText="Official songs are on their way."
           />
           <TrackShelf
             title="From the Community"
-            command="selfvibe catalog --community"
             query={community}
             emptyText="No community uploads yet — share yours in Creator Studio."
           />

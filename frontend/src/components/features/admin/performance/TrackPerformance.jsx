@@ -67,7 +67,6 @@ export default function TrackPerformance({ trackId }) {
       await exportTrackCsv(trackId, range);
     } catch (exportError) {
       showToast({
-        command: "selfvibe stats --export",
         message: exportError?.message ?? "export failed",
         tone: "error",
       });
@@ -93,7 +92,6 @@ export default function TrackPerformance({ trackId }) {
     return (
       <EmptyState
         icon={LineChart}
-        command={`selfvibe stats --song ${trackId}`}
         title={error?.status === 404 ? "song not found" : "couldn't load this song's stats"}
         description={error?.message}
         action={
@@ -239,8 +237,8 @@ export default function TrackPerformance({ trackId }) {
             </Link>
           </div>
           {comments.items.length === 0 ? (
-            <p className="rounded-card border border-dashed border-line p-4 font-mono text-xs text-fg-subtle">
-              {">>"} no comments yet
+            <p className="rounded-card border border-dashed border-line p-4 text-sm text-fg-subtle">
+              No comments yet
             </p>
           ) : (
             <div className="space-y-2">
@@ -253,8 +251,8 @@ export default function TrackPerformance({ trackId }) {
         <section>
           <h2 className="mb-3 font-display text-lg font-bold">Reports</h2>
           {reports.length === 0 ? (
-            <p className="rounded-card border border-dashed border-line p-4 font-mono text-xs text-fg-subtle">
-              {">>"} no reports
+            <p className="rounded-card border border-dashed border-line p-4 text-sm text-fg-subtle">
+              No reports
             </p>
           ) : (
             <ul className="space-y-2">

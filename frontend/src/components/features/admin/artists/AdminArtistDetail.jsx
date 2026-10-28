@@ -60,7 +60,6 @@ export default function AdminArtistDetail({ artistId }) {
     return (
       <EmptyState
         icon={Disc3}
-        command={`selfvibe artists --open ${artistId}`}
         title={error?.status === 404 ? "artist not found" : "couldn't load this artist"}
         description={error?.message}
         action={

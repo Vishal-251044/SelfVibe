@@ -62,7 +62,9 @@ export default function HeroBanner({ banners }) {
                 <EqualizerBars className="absolute right-5 bottom-5 hidden h-24 w-48 opacity-60 sm:flex lg:right-8 lg:h-32 lg:w-72" />
               )}
               <div className="relative max-w-xl p-4 sm:p-6 lg:p-7">
-                <p className="font-mono text-[11px] text-neon sm:text-xs">$ selfvibe featured</p>
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-neon uppercase">
+                  Featured
+                </p>
                 <h2 className="mt-1 font-display text-[clamp(1.375rem,3.6vw,2.25rem)] leading-tight font-bold tracking-tight">
                   {banner.title}
                 </h2>

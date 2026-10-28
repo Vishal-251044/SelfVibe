@@ -22,7 +22,6 @@ const CARD_CLASS = "w-[42vw] max-w-48 shrink-0 snap-start sm:w-40 xl:w-48";
 /**
  * @param {Object} props
  * @param {string} props.title
- * @param {string} [props.command] - Terminal eyebrow, e.g. "selfvibe trending --7d"
  * @param {string} [props.subtitle]
  * @param {Object} props.query - React Query result (loading / error); its data.items are the songs…
  * @param {Object[]} [props.items] - …unless the songs are given here (a feed section)
@@ -36,7 +35,6 @@ const CARD_CLASS = "w-[42vw] max-w-48 shrink-0 snap-start sm:w-40 xl:w-48";
 export default function TrackShelf({
   title,
   subtitle,
-  command,
   query,
   items,
   source = "browse",
@@ -62,9 +60,6 @@ export default function TrackShelf({
       <section aria-label={title}>
         <div className="mb-4 flex items-end justify-between gap-3">
           <div className="min-w-0">
-            {command && (
-              <p className="truncate font-mono text-[11px] text-neon sm:text-xs">$ {command}</p>
-            )}
             <h2 className="truncate font-display text-lg font-bold tracking-tight sm:text-xl">
               {title}
             </h2>
@@ -123,16 +118,14 @@ export default function TrackShelf({
           </div>
         ) : query.isError ? (
           <div className="flex flex-wrap items-center gap-3 rounded-card border border-dashed border-line px-4 py-6 text-sm text-fg-muted">
-            <span className="font-mono text-danger">
-              {">>"} couldn&apos;t load {title.toLowerCase()}
-            </span>
+            <span className="text-danger">Couldn&apos;t load {title.toLowerCase()}</span>
             <Button variant="outline" onClick={() => query.refetch()}>
               Try again
             </Button>
           </div>
         ) : tracks.length === 0 ? (
-          <p className="rounded-card border border-dashed border-line px-4 py-6 font-mono text-sm text-fg-muted">
-            <span className="text-neon">{">>"}</span> {emptyText}
+          <p className="rounded-card border border-dashed border-line px-4 py-6 text-sm text-fg-muted">
+            {emptyText}
           </p>
         ) : (
           <div

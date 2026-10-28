@@ -57,7 +57,7 @@ export default function CommentsManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --comments"
+        eyebrow="Admin panel"
         title="Comments"
         subtitle={
           data
@@ -113,7 +113,6 @@ export default function CommentsManager() {
       ) : isError ? (
         <EmptyState
           icon={MessageCircle}
-          command="selfvibe comments --list"
           title="couldn't load comments"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -121,7 +120,6 @@ export default function CommentsManager() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={MessageCircle}
-          command="selfvibe comments --list"
           title={reportedOnly ? "no reported comments" : "no comments found"}
           description={reportedOnly ? "Nothing waiting for review." : undefined}
         />

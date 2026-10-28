@@ -58,12 +58,5 @@ const SECTIONS = [
 ];
 
 export default function PrivacyPage() {
-  return (
-    <LegalPage
-      command="selfvibe privacy"
-      title="Privacy Policy"
-      updated="31 October 2026"
-      sections={SECTIONS}
-    />
-  );
+  return <LegalPage title="Privacy Policy" updated="31 October 2026" sections={SECTIONS} />;
 }

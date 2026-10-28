@@ -20,15 +20,13 @@ import { QUERY_KEYS } from "@/utils/constants";
 import { formatRelativeTime } from "@/utils/genericFunctions";
 
 const ACTIONS = {
-  unlock: { run: unlockStaff, command: "selfvibe team --unlock", done: "account unlocked" },
+  unlock: { run: unlockStaff, done: "account unlocked" },
   signOut: {
     run: signOutStaff,
-    command: "selfvibe team --sign-out",
     done: "signed out of every device",
   },
   reset2fa: {
     run: resetStaffTwoFactor,
-    command: "selfvibe team --reset-2fa",
     done: "2FA reset, they set it up again at next sign-in",
   },
 };
@@ -45,7 +43,7 @@ export default function MemberSecuritySheet({ member, onClose }) {
     mutationFn: (kind) => ACTIONS[kind].run(member?.id),
     onSuccess: (result, kind) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminTeam });
-      showToast({ command: ACTIONS[kind].command, message: ACTIONS[kind].done, tone: "success" });
+      showToast({ message: ACTIONS[kind].done, tone: "success" });
       setIsConfirmingReset(false);
       onClose();
     },

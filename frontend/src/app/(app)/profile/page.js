@@ -9,7 +9,7 @@ export const metadata = { title: "Profile" };
 export default function ProfilePage() {
   return (
     <>
-      <PageHeader eyebrow="selfvibe whoami" title="Profile" />
+      <PageHeader eyebrow="Your account" title="Profile" />
       <ProfileSummary />
     </>
   );

@@ -55,7 +55,7 @@ export default function AdminArtistList() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --artists"
+        eyebrow="Admin panel"
         title="Artists & Albums"
         subtitle={
           data?.meta ? `${data.meta.total} artists` : "Official artists, creators and their albums"
@@ -99,7 +99,6 @@ export default function AdminArtistList() {
       ) : isError ? (
         <EmptyState
           icon={Disc3}
-          command="selfvibe artists --list"
           title="couldn't load artists"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -107,7 +106,6 @@ export default function AdminArtistList() {
       ) : artists.length === 0 ? (
         <EmptyState
           icon={Disc3}
-          command="selfvibe artists --search"
           title="no artists found"
           description={q ? "Try a different name." : "Create the first artist."}
           action={<Button onClick={() => setIsCreating(true)}>New artist</Button>}

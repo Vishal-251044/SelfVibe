@@ -84,7 +84,7 @@ export default function AdminShell({ children }) {
     );
   }
   if (status !== "authenticated" || !staff) {
-    return <ScreenLoader label="verifying console access" className="min-h-dvh" />;
+    return <ScreenLoader label="Opening the admin panel" className="min-h-dvh" />;
   }
 
   return (

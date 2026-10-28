@@ -48,7 +48,6 @@ function VerificationRequests() {
     mutationFn: ({ userId, approve }) => setArtistVerified(userId, approve),
     onSuccess: (_, { approve }) => {
       showToast({
-        command: "selfvibe verify",
         message: approve ? "artist verified" : "request rejected",
         tone: "success",
       });
@@ -56,7 +55,6 @@ function VerificationRequests() {
     },
     onError: (error) =>
       showToast({
-        command: "selfvibe verify",
         message: error?.message ?? "couldn't update",
         tone: "error",
       }),
@@ -125,7 +123,7 @@ export default function UsersManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --users"
+        eyebrow="Admin panel"
         title="Users & Creators"
         subtitle={
           data ? `${data.meta.total} accounts` : "Listeners and creators (staff are in Team)"
@@ -164,7 +162,6 @@ export default function UsersManager() {
       ) : isError ? (
         <EmptyState
           icon={Users}
-          command="selfvibe users --list"
           title="couldn't load users"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -172,7 +169,6 @@ export default function UsersManager() {
       ) : users.length === 0 ? (
         <EmptyState
           icon={Users}
-          command="selfvibe users --search"
           title="no users found"
           description={q ? "Try another name or email." : undefined}
         />

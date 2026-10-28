@@ -58,7 +58,6 @@ function SectionsTab() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminHomeSections });
   const onError = (mutationError) =>
     showToast({
-      command: "selfvibe curation",
       message: mutationError?.message ?? "couldn't save",
       tone: "error",
     });
@@ -105,7 +104,6 @@ function SectionsTab() {
       ) : isError ? (
         <EmptyState
           icon={LayoutTemplate}
-          command="selfvibe curation --sections"
           title="couldn't load sections"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -113,7 +111,6 @@ function SectionsTab() {
       ) : sections.length === 0 ? (
         <EmptyState
           icon={LayoutTemplate}
-          command="selfvibe curation --sections"
           title="Home has no curated sections yet"
           description="Add a hero banner or featured songs — they appear above the For You rows."
           action={<Button onClick={() => setEditing("new")}>Add the first one</Button>}
@@ -128,7 +125,9 @@ function SectionsTab() {
                   !section.active && "opacity-60"
                 )}
               >
-                <span className="w-6 text-center font-mono text-xs text-neon">{index + 1}</span>
+                <span className="w-6 text-center text-xs font-semibold text-neon tabular-nums">
+                  {index + 1}
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2">
                     <span className="truncate font-medium">{section.title}</span>
@@ -261,7 +260,6 @@ function EditorialTab() {
       ) : isError ? (
         <EmptyState
           icon={ListMusic}
-          command="selfvibe curation --playlists"
           title="couldn't load playlists"
           description={error?.message}
           action={<Button onClick={() => refetch()}>Try again</Button>}
@@ -269,7 +267,6 @@ function EditorialTab() {
       ) : playlists.length === 0 ? (
         <EmptyState
           icon={ListMusic}
-          command="selfvibe curation --playlists"
           title="no editorial playlists yet"
           description="Build one like “SelfVibe Code Mode”, then show it on Home."
           action={<Button onClick={() => setEditing("new")}>Create one</Button>}
@@ -344,7 +341,7 @@ export default function CurationManager() {
   return (
     <>
       <PageHeader
-        eyebrow="selfvibe console --curation"
+        eyebrow="Admin panel"
         title="Curation"
         subtitle="What listeners see first on Home."
       />
