@@ -10,7 +10,7 @@ import {
   isPublicKey,
 } from "../src/services/storage/storageKeys.js";
 import { resolveKeyPath, verifyToken, localDriver } from "../src/services/storage/local.driver.js";
-import { chooseRenditions, resolveReleaseStatus } from "../src/services/trackProcessing.service.js";
+import { resolveReleaseStatus } from "../src/services/trackProcessing.service.js";
 import {
   normaliseFileName,
   parseBulkCsv,
@@ -86,12 +86,6 @@ describe("release rules", () => {
   });
   it("draft → unpublished", () => {
     assert.equal(resolveReleaseStatus({ releaseIntent: "draft" }, now).status, "unpublished");
-  });
-});
-
-describe("renditions (PRD CRT-4)", () => {
-  it("every source gets one 192 kbps MP3 playback copy", () => {
-    assert.deepEqual(chooseRenditions(), [{ bitrateKbps: 192, codec: "mp3" }]);
   });
 });
 

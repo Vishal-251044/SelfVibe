@@ -1,7 +1,7 @@
 /**
  * Track processing job (PRD CRT-4, roadmap Day 4 "Worker job"):
- * original → validate → 192 kbps MP3 playback copy (PRD CRT-4, STO-6; the original
- * is kept) → duration → waveform → cover → publish / schedule / draft. Files stay
+ * original → validate → AAC playback copies at 64 / 128 / 256 kbps (PRD CRT-4,
+ * STO-6; the original is kept) → duration → waveform → cover → publish / schedule / draft. Files stay
  * on the upload's storage pool account. Runs in the worker (or in-process in dev).
  */
 import { mkdtemp, rm, stat } from "node:fs/promises";
@@ -17,10 +17,11 @@ import {
   withAccount,
 } from "./storage/storageKeys.js";
 import { recordStorageUsage } from "./storagePool.service.js";
-import { extractWaveform, makeSquareCover, probeAudio, transcodeToMp3 } from "./media/ffmpeg.js";
+import { extractWaveform, makeSquareCover, probeAudio, transcodeToAac } from "./media/ffmpeg.js";
 import {
   AUDIO_RENDITIONS,
   AUDIO_UPLOAD,
+  LOSSLESS_CODECS,
   STORAGE_PREFIXES,
   WAVEFORM_PEAK_COUNT,
 } from "../config/constants.js";
@@ -46,12 +47,19 @@ export function resolveReleaseStatus(track, now = new Date()) {
 }
 
 /**
- * Playback copies to produce: one standard 192 kbps MP3 for every source
- * (PRD CRT-4). Kept as a list so more qualities can be added later.
- * @returns {Array<{ bitrateKbps: number, codec: string }>}
+ * Playback copies to produce for a source. "low" and "standard" are always
+ * made; "high" only when the source really has that much detail (lossless,
+ * unknown bitrate, or at least the high bitrate) — re-encoding a 128 kbps
+ * file at 256 kbps only doubles the storage without sounding any better.
+ * @param {{ bitrateKbps?: number|null, codec?: string|null }} [probe]
+ * @returns {Array<{ bitrateKbps: number, codec: string }>} Lowest first
  */
-export function chooseRenditions() {
-  return Object.values(AUDIO_RENDITIONS);
+export function chooseRenditions({ bitrateKbps = null, codec = null } = {}) {
+  const { low, standard, high } = AUDIO_RENDITIONS;
+  const isLossless = LOSSLESS_CODECS.includes(codec) || String(codec ?? "").startsWith("pcm_");
+  // Allow ~10% slack: encoders report e.g. 250 kbps for a "256 kbps" file
+  const hasHighDetail = isLossless || !bitrateKbps || bitrateKbps >= high.bitrateKbps * 0.9;
+  return hasHighDetail ? [low, standard, high] : [low, standard];
 }
 
 /**
@@ -144,10 +152,10 @@ async function processTrack(track) {
 
     // 3. Transcode + waveform
     const formats = [];
-    for (const rendition of chooseRenditions()) {
-      const outputPath = path.join(workDir, `${rendition.bitrateKbps}.mp3`);
+    for (const rendition of chooseRenditions(probe)) {
+      const outputPath = path.join(workDir, `${rendition.bitrateKbps}.m4a`);
       try {
-        await transcodeToMp3(sourcePath, outputPath, rendition.bitrateKbps);
+        await transcodeToAac(sourcePath, outputPath, rendition.bitrateKbps);
       } catch (error) {
         // FFmpeg failing on a local file is deterministic — retrying will not help
         logger.debug(`[TrackProcessing] transcode failed for ${trackId}: ${error.message}`);
@@ -159,11 +167,12 @@ async function processTrack(track) {
         accountKey,
         audioRenditionKey(trackId, rendition.bitrateKbps, version)
       );
-      await storage.putFile(outputPath, key, "audio/mpeg");
+      await storage.putFile(outputPath, key, "audio/mp4");
       formats.push({ ...rendition, key, sizeBytes: (await stat(outputPath)).size });
     }
     const waveform = await extractWaveform(
-      path.join(workDir, `${AUDIO_RENDITIONS.standard.bitrateKbps}.mp3`),
+      // The smallest copy is plenty for 160 bars and decodes fastest
+      path.join(workDir, `${AUDIO_RENDITIONS.low.bitrateKbps}.m4a`),
       probe.durationSec,
       WAVEFORM_PEAK_COUNT
     );

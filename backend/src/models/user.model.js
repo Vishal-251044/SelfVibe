@@ -124,6 +124,9 @@ userSchema.index(
   { partialFilterExpression: { passwordResetTokenHash: { $type: "string" } } }
 );
 
+// Admin Users & Creators list, newest first
+userSchema.index({ createdAt: -1 });
+
 // Database-level guarantee that only one Owner can ever exist (PRD §8.2)
 userSchema.index(
   { staffRole: 1 },

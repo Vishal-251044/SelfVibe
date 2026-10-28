@@ -95,17 +95,24 @@ const trackSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indexes from PRD §13 "Important indexes"
-trackSchema.index({ genres: 1 });
+// Indexes from PRD §13 "Important indexes", shaped for a 5,000+ song catalog:
+// equality fields first, then the sort, so pages read only the rows they show
+// (no in-memory sort). These also serve plain { genres } / { vibes } / { status }
+// lookups through their prefix, so no separate single-field indexes are kept.
+trackSchema.index({ genres: 1, status: 1, playCount: -1, publishedAt: -1, _id: -1 }); // genre page, popular
+trackSchema.index({ genres: 1, status: 1, publishedAt: -1, _id: -1 }); // genre page, new
+trackSchema.index({ vibes: 1, status: 1, playCount: -1, publishedAt: -1, _id: -1 }); // vibe page, popular
+trackSchema.index({ vibes: 1, status: 1, publishedAt: -1, _id: -1 }); // vibe page, new
+trackSchema.index({ status: 1, playCount: -1, publishedAt: -1 }); // top songs, chart top-ups
+trackSchema.index({ artistId: 1, status: 1, playCount: -1, publishedAt: -1 }); // artist page
 trackSchema.index({ "audio.sourceKey": 1 });
 trackSchema.index({ coverSourceKey: 1 }, { sparse: true });
-trackSchema.index({ vibes: 1 });
-trackSchema.index({ status: 1 });
 trackSchema.index({ catalog: 1, status: 1 });
 trackSchema.index({ "storage.accountKey": 1 });
 trackSchema.index({ status: 1, scheduledAt: 1 });
 trackSchema.index({ artistId: 1, createdAt: -1 });
 trackSchema.index({ uploadedBy: 1, createdAt: -1 });
+trackSchema.index({ createdAt: -1 }); // admin song list (newest first), dashboard upload counts
 // Our `language` field holds values like "hindi", which MongoDB would otherwise read as the
 // text-search language and reject — point the override at a field we never set.
 trackSchema.index(

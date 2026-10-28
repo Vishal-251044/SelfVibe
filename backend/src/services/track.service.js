@@ -12,7 +12,13 @@ import { Vibe } from "../models/vibe.model.js";
 import { storage } from "./storage/index.js";
 import { queue } from "./queue/index.js";
 import { env } from "../config/env.js";
-import { ERROR_CODES, JOBS, PAID_PLAN_KEYS, UPLOAD_LIMITS } from "../config/constants.js";
+import {
+  AUDIO_RENDITIONS,
+  ERROR_CODES,
+  JOBS,
+  PAID_PLAN_KEYS,
+  UPLOAD_LIMITS,
+} from "../config/constants.js";
 import { recordStorageUsage } from "./storagePool.service.js";
 import { PROCESS_TRACK_MAX_ATTEMPTS } from "./trackProcessing.service.js";
 import { getPagination, buildPageMeta } from "../helpers/genericFunctions.js";
@@ -353,31 +359,54 @@ function escapeRegex(text) {
     .slice(0, 100);
 }
 
+/** Fields stream URLs need — read lean, without the artist populate. */
+const STREAM_FIELDS = "status uploadedBy audio.formats audio.durationSec";
+
 /**
- * Signed, expiring stream URL (PLY-4). Free listeners get 128 kbps; paid
- * plans get 320 kbps when available. Unpublished tracks only for their
- * uploader (or staff via the admin route).
- * @param {string} trackId
- * @param {{ userId: string, plan?: string, isStaff?: boolean }} viewer
- * @param {{ quality?: "standard"|"high" }} [options]
- * @returns {Promise<{ url: string, expiresAt: Date, bitrateKbps: number, durationSec: number }>}
+ * Which stored copy to stream. "low" is the smallest (slow internet / data
+ * saver); "high" is the largest and only for paid plans, staff and the
+ * uploader; everything else gets the standard copy. Songs processed before the
+ * AAC renditions have a single 192 kbps MP3, which then serves every quality.
+ * @param {Array<{ bitrateKbps: number }>} formats
+ * @param {"low"|"standard"|"high"} quality
+ * @param {boolean} canHaveHigh
+ * @returns {Object} One of formats
  */
-export async function getStreamUrl(trackId, viewer, { quality } = {}) {
-  const track = await getTrackOrThrow(trackId);
+export function pickStreamFormat(formats, quality, canHaveHigh) {
+  const sorted = [...formats].sort((a, b) => a.bitrateKbps - b.bitrateKbps);
+  if (quality === "low") return sorted[0];
+  if (quality === "high" && canHaveHigh) return sorted.at(-1);
+  const standardCap = AUDIO_RENDITIONS.standard.bitrateKbps;
+  return sorted.filter((format) => format.bitrateKbps <= standardCap).at(-1) ?? sorted[0];
+}
+
+/**
+ * Signed stream URL for an already-loaded track.
+ * @param {Object} track - With STREAM_FIELDS
+ * @param {{ userId: string, plan?: string, isStaff?: boolean }} viewer
+ * @param {"auto"|"low"|"standard"|"high"} [quality="auto"]
+ * @returns {Promise<{ url: string, expiresAt: Date, bitrateKbps: number, durationSec: number }>}
+ * @throws {ApiError} 404 when the viewer may not hear it, 409 while it is still processing
+ */
+async function buildStream(track, viewer, quality = "auto") {
+  const trackId = String(track._id);
   const isOwner = String(track.uploadedBy) === String(viewer.userId);
   if (track.status !== "published" && !isOwner && !viewer.isStaff) throw trackNotFound(trackId);
   // A published track being re-processed keeps streaming its current files
-  if (track.audio.formats.length === 0) {
+  if (!track.audio?.formats?.length) {
     throw ApiError.conflict("This track is still processing", {
       code: ERROR_CODES.TRACK_NOT_READY,
     });
   }
 
-  const formats = [...track.audio.formats].sort((a, b) => a.bitrateKbps - b.bitrateKbps);
-  const wantsHigh =
-    quality === "high" || (quality !== "standard" && PAID_PLANS.includes(viewer.plan));
-  const canHaveHigh = PAID_PLANS.includes(viewer.plan) || viewer.isStaff || isOwner;
-  const format = wantsHigh && canHaveHigh ? formats.at(-1) : formats[0];
+  const isPaid = PAID_PLANS.includes(viewer.plan);
+  // "auto": the best quality the plan includes
+  const wanted = quality === "auto" ? (isPaid ? "high" : "standard") : quality;
+  const format = pickStreamFormat(
+    track.audio.formats,
+    wanted,
+    isPaid || Boolean(viewer.isStaff) || isOwner
+  );
 
   const ttlSeconds = env.storage.streamUrlTtlSeconds;
   return {
@@ -389,20 +418,42 @@ export async function getStreamUrl(trackId, viewer, { quality } = {}) {
 }
 
 /**
+ * Signed, expiring stream URL (PLY-4). Free listeners get the standard
+ * 128 kbps copy; paid plans get 256 kbps when the song has it; anyone can ask
+ * for the 64 kbps copy on slow internet. Unpublished tracks only for their
+ * uploader (or staff via the admin route).
+ * @param {string} trackId
+ * @param {{ userId: string, plan?: string, isStaff?: boolean }} viewer
+ * @param {{ quality?: "auto"|"low"|"standard"|"high" }} [options]
+ * @returns {Promise<{ url: string, expiresAt: Date, bitrateKbps: number, durationSec: number }>}
+ */
+export async function getStreamUrl(trackId, viewer, { quality } = {}) {
+  if (!mongoose.isValidObjectId(trackId)) throw trackNotFound(trackId);
+  const track = await Track.findById(trackId).select(STREAM_FIELDS).lean();
+  if (!track) throw trackNotFound(trackId);
+  return buildStream(track, viewer, quality);
+}
+
+/**
  * Signed stream URLs for several tracks at once — the player fetches the
  * upcoming queue ahead of time so background play never waits (BGP-5) and
- * refreshes URLs before they expire. Tracks that can't be streamed are left out.
+ * refreshes URLs before they expire. One database read for the whole batch.
+ * Tracks that can't be streamed are left out.
  * @param {string[]} trackIds
  * @param {{ userId: string, plan?: string }} viewer
+ * @param {{ quality?: "auto"|"low"|"standard"|"high" }} [options]
  * @returns {Promise<Object<string, { url: string, expiresAt: Date, bitrateKbps: number, durationSec: number }>>}
  */
-export async function getStreamUrls(trackIds, viewer) {
+export async function getStreamUrls(trackIds, viewer, { quality } = {}) {
+  const tracks = await Track.find({ _id: { $in: [...new Set(trackIds)] } })
+    .select(STREAM_FIELDS)
+    .lean();
   const entries = await Promise.all(
-    [...new Set(trackIds)].map(async (trackId) => {
+    tracks.map(async (track) => {
       try {
-        return [trackId, await getStreamUrl(trackId, viewer)];
+        return [String(track._id), await buildStream(track, viewer, quality)];
       } catch {
-        return null; // missing, unpublished or still processing
+        return null; // unpublished or still processing
       }
     })
   );

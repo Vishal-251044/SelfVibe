@@ -5,6 +5,9 @@
  * - The element is created once in the root layout and never recreated, so
  *   music keeps playing across pages and in the background (BGP-6, iOS).
  * - Songs stream over HTTP range requests (the browser seeks with 206s).
+ * - Quality follows the listener's setting. On "Auto", slow internet (reported
+ *   by the browser, or noticed as buffering) switches to the 64 kbps copy at
+ *   the same position, so the music keeps going instead of stopping.
  * - The next song's URL is fetched early and its first bytes are preloaded
  *   by a second, silent element, so the queue continues without gaps while
  *   the screen is locked (BGP-5).
@@ -16,7 +19,8 @@
  *   stop playback when the screen locks.
  */
 import { usePlayerStore } from "@/store/playerStore";
-import { getStreamUrl, invalidateStreamUrl, prefetchStreamUrls } from "@/lib/player/streamUrlCache";
+import { getStream, invalidateStreamUrl, prefetchStreamUrls } from "@/lib/player/streamUrlCache";
+import { markSlowNetwork, recordStall, resolveStreamQuality } from "@/lib/player/networkQuality";
 import {
   beginListen,
   endListen,
@@ -29,12 +33,18 @@ import {
   setMediaPlaybackState,
   setMediaPosition,
 } from "@/lib/player/mediaSession";
-import { PRELOAD_BEFORE_END_SECONDS, RESTART_THRESHOLD_SECONDS } from "@/utils/musicConstants";
+import {
+  PRELOAD_BEFORE_END_SECONDS,
+  RESTART_THRESHOLD_SECONDS,
+  STALL_SWITCH_MS,
+} from "@/utils/musicConstants";
 
 const UPCOMING_PREFETCH_COUNT = 5;
 const REPORT_EVERY_MS = 250;
 const POSITION_STATE_EVERY_MS = 1000;
 const SKIP_AFTER_ERROR_MS = 2000;
+const STALL_CHECK_EVERY_MS = 500;
+const STALL_COUNT_AFTER_MS = 1000; // shorter pauses are normal (e.g. right after a seek)
 
 let audio = null;
 let preloader = null;
@@ -45,6 +55,8 @@ let lastReportAt = 0;
 let lastPositionStateAt = 0;
 let audioOutputCount = null;
 let analyser = null;
+let currentQuality = "auto"; // quality requested for the loaded song
+let stallTimer = 0;
 
 /** @returns {ReturnType<typeof usePlayerStore.getState>} */
 const store = () => usePlayerStore.getState();
@@ -111,6 +123,75 @@ export function getAnalyser() {
   return analyser;
 }
 
+/** Quality to request now, from the setting and the connection. */
+const wantedQuality = () => resolveStreamQuality(store().streamQuality);
+
+/**
+ * Tell the UI which copy is playing.
+ * @param {{ bitrateKbps: number|null }} stream
+ * @param {string} quality - What was requested
+ */
+function reportQuality(stream, quality) {
+  store().report({
+    bitrateKbps: stream?.bitrateKbps ?? null,
+    isLowData: store().streamQuality === "auto" && quality === "low",
+  });
+}
+
+/**
+ * Swap the current song to another quality at the same position.
+ * @param {"auto"|"low"|"standard"|"high"} quality
+ * @returns {Promise<void>}
+ */
+async function switchQuality(quality) {
+  const token = currentToken;
+  const track = store().currentTrack();
+  if (!track || !audio.getAttribute("src") || quality === currentQuality) return;
+  const stream = await getStream(track.id, store().scope, quality).catch(() => null);
+  if (!stream || token !== currentToken) return;
+  const resumeAt = audio.currentTime;
+  currentQuality = quality;
+  audio.src = stream.url;
+  audio.currentTime = resumeAt;
+  reportQuality(stream, quality);
+  if (store().wantsToPlay) playAudio();
+  prefetchUpcoming();
+}
+
+/** Whether the element wants to play but has no data to play yet. */
+const isBuffering = () => !audio.paused && audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA;
+
+/**
+ * Buffering started: on Auto, a long pause (or several short ones) means slow
+ * internet — continue on the small copy instead of waiting.
+ */
+function watchForStall() {
+  clearTimeout(stallTimer);
+  if (store().streamQuality !== "auto" || currentQuality === "low") return;
+  const token = currentToken;
+  const startedAt = Date.now();
+  let isCounted = false;
+  const check = () => {
+    if (token !== currentToken || !isBuffering()) return;
+    const waited = Date.now() - startedAt;
+    if (!isCounted && waited >= STALL_COUNT_AFTER_MS) {
+      isCounted = true;
+      if (recordStall()) {
+        markSlowNetwork();
+        switchQuality("low");
+        return;
+      }
+    }
+    if (waited >= STALL_SWITCH_MS) {
+      markSlowNetwork();
+      switchQuality("low");
+      return;
+    }
+    stallTimer = setTimeout(check, STALL_CHECK_EVERY_MS);
+  };
+  stallTimer = setTimeout(check, STALL_CHECK_EVERY_MS);
+}
+
 /** The song after the current one, following repeat-all. */
 function nextQueueItem() {
   const { queue, index, repeat } = store();
@@ -124,7 +205,7 @@ function prefetchUpcoming() {
   const upcoming = queue
     .slice(index + 1, index + 1 + UPCOMING_PREFETCH_COUNT)
     .map((item) => item.id);
-  if (upcoming.length) prefetchStreamUrls(upcoming, scope).catch(() => {});
+  if (upcoming.length) prefetchStreamUrls(upcoming, scope, wantedQuality()).catch(() => {});
 }
 
 /** Start playing, mirroring "not allowed" (no user gesture yet) into the store. */
@@ -142,6 +223,7 @@ async function loadCurrent() {
   const state = store();
   const token = state.playToken;
   currentToken = token;
+  clearTimeout(stallTimer);
   const track = state.currentTrack();
   endListen(); // the previous song (if any) ends here
 
@@ -167,19 +249,22 @@ async function loadCurrent() {
     enabled: state.scope === "user",
   });
 
-  let url = null;
+  const quality = wantedQuality();
+  let stream = null;
   try {
-    url = await getStreamUrl(track.id, state.scope);
+    stream = await getStream(track.id, state.scope, quality);
   } catch {
-    url = null;
+    stream = null;
   }
   if (token !== currentToken) return; // another song was chosen meanwhile
-  if (!url) {
+  if (!stream) {
     handleUnplayable("This song isn't available right now");
     return;
   }
 
-  audio.src = url;
+  currentQuality = quality;
+  reportQuality(stream, quality);
+  audio.src = stream.url;
   audio.currentTime = 0;
   preloadedTrackId = null;
   if (store().wantsToPlay) playAudio();
@@ -207,9 +292,9 @@ async function preloadNextIfNeeded() {
   const nextItem = nextQueueItem();
   if (!nextItem || preloadedTrackId === nextItem.id) return;
   preloadedTrackId = nextItem.id;
-  const url = await getStreamUrl(nextItem.id, store().scope).catch(() => null);
-  if (url && preloader) {
-    preloader.src = url;
+  const stream = await getStream(nextItem.id, store().scope, wantedQuality()).catch(() => null);
+  if (stream && preloader) {
+    preloader.src = stream.url;
     preloader.load();
   }
 }
@@ -217,6 +302,7 @@ async function preloadNextIfNeeded() {
 /** Wire the <audio> element's events to the store. */
 function bindAudioEvents() {
   audio.addEventListener("playing", () => {
+    clearTimeout(stallTimer);
     store().report({ status: "playing", error: null });
     if (!store().wantsToPlay) usePlayerStore.setState({ wantsToPlay: true }); // started from lock screen
     markListenPlaying();
@@ -230,7 +316,10 @@ function bindAudioEvents() {
     if (store().wantsToPlay) usePlayerStore.setState({ wantsToPlay: false });
     setMediaPlaybackState("paused");
   });
-  audio.addEventListener("waiting", () => store().report({ status: "loading" }));
+  audio.addEventListener("waiting", () => {
+    store().report({ status: "loading" });
+    watchForStall();
+  });
   audio.addEventListener("durationchange", () => {
     if (Number.isFinite(audio.duration)) store().report({ duration: audio.duration });
   });
@@ -260,10 +349,10 @@ function bindAudioEvents() {
       retriedToken = token;
       const resumeAt = audio.currentTime;
       invalidateStreamUrl(track.id);
-      const url = await getStreamUrl(track.id, store().scope).catch(() => null);
+      const stream = await getStream(track.id, store().scope, currentQuality).catch(() => null);
       if (token !== currentToken) return;
-      if (url) {
-        audio.src = url;
+      if (stream) {
+        audio.src = stream.url;
         audio.currentTime = resumeAt;
         if (store().wantsToPlay) playAudio();
         return;
@@ -341,6 +430,8 @@ export function initAudioEngine(element) {
       trackListenProgress(state.seekRequest.time, false); // a seek isn't listening time
     }
     if (state.queue !== previous.queue) prefetchUpcoming();
+    // A new quality setting applies straight away, at the same position
+    if (state.streamQuality !== previous.streamQuality) switchQuality(wantedQuality());
   });
 
   return () => {

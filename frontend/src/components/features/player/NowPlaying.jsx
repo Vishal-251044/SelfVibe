@@ -8,7 +8,15 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
-import { BadgeCheck, ChevronDown, ListMusic, ListPlus, MessageCircle } from "lucide-react";
+import {
+  AudioLines,
+  BadgeCheck,
+  ChevronDown,
+  ListMusic,
+  ListPlus,
+  MessageCircle,
+  WifiLow,
+} from "lucide-react";
 import LikeButton from "@/components/features/music/LikeButton";
 import ShareButton from "@/components/features/share/ShareButton";
 import MicButton from "@/components/features/voice/MicButton";
@@ -26,12 +34,28 @@ import { DURATION, EASE_OUT } from "@/utils/animations";
 const CLOSE_DRAG_DISTANCE = 120; // px
 const CLOSE_DRAG_VELOCITY = 600; // px/s
 
-/** Live status of the song: Playing / Paused / Loading, and time played. */
+/**
+ * Plain-words name for the copy being streamed.
+ * @param {number|null} bitrateKbps
+ * @returns {string|null}
+ */
+function qualityLabel(bitrateKbps) {
+  if (!bitrateKbps) return null;
+  if (bitrateKbps >= 256) return "High quality";
+  if (bitrateKbps >= 128) return "Normal quality";
+  return "Data saver";
+}
+
+/** Live status of the song: Playing / Paused / Loading, quality, and time played. */
 function PlaybackStatus() {
   const currentTime = usePlayerStore((state) => state.currentTime);
   const duration = usePlayerStore((state) => state.duration);
   const status = usePlayerStore((state) => state.status);
+  const bitrateKbps = usePlayerStore((state) => state.bitrateKbps);
+  const isLowData = usePlayerStore((state) => state.isLowData);
   const label = status === "loading" ? "Loading" : status === "playing" ? "Playing" : "Paused";
+  const quality = isLowData ? "Slow internet · saving data" : qualityLabel(bitrateKbps);
+  const QualityIcon = isLowData ? WifiLow : AudioLines;
 
   return (
     <div className="flex items-center justify-between gap-3 text-sm">
@@ -44,7 +68,16 @@ function PlaybackStatus() {
         </span>
         {label}
       </span>
-      <span className="text-fg-muted tabular-nums">
+      {quality && (
+        <span
+          className="hidden min-w-0 items-center gap-1.5 truncate text-xs text-fg-subtle min-[380px]:inline-flex"
+          title={bitrateKbps ? `${bitrateKbps} kbps` : undefined}
+        >
+          <QualityIcon size={14} className="shrink-0" aria-hidden />
+          <span className="truncate">{quality}</span>
+        </span>
+      )}
+      <span className="shrink-0 text-fg-muted tabular-nums">
         {formatDuration(currentTime)}
         {duration > 0 && ` / ${formatDuration(duration)}`}
       </span>

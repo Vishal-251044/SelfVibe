@@ -126,3 +126,19 @@ export function toCsv(rows, columns) {
 export function containsRegex(text) {
   return new RegExp(String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
 }
+
+/**
+ * Human-readable size, e.g. 1536 → "1.5 KB", 6291456 → "6.0 MB".
+ * @param {number} bytes
+ * @returns {string}
+ */
+export function formatBytes(bytes) {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = Math.max(0, Number(bytes) || 0);
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return unit === 0 ? `${value} B` : `${value.toFixed(1)} ${units[unit]}`;
+}

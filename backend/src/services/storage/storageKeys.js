@@ -1,7 +1,7 @@
 /**
  * Storage key layout — the only place that decides where files live.
  *   incoming/<owner>/<uuid>.<ext>    browser uploads, before processing (private)
- *   audio/<trackId>/<version>-<kbps>.mp3   transcoded audio (private, signed URLs)
+ *   audio/<trackId>/<version>-<kbps>.m4a   transcoded AAC audio (private, signed URLs)
  *   audio/<trackId>/source.<ext>     the original upload (private, for reprocessing)
  *   covers/<kind>/<id>-<version>.webp  processed images (public)
  *
@@ -85,7 +85,7 @@ export function audioSourceKey(trackId, extension) {
  * @returns {string}
  */
 export function audioRenditionKey(trackId, bitrateKbps, version) {
-  return `${STORAGE_PREFIXES.audio}/${trackId}/${version}-${bitrateKbps}.mp3`;
+  return `${STORAGE_PREFIXES.audio}/${trackId}/${version}-${bitrateKbps}.m4a`;
 }
 
 /**

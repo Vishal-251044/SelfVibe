@@ -11,6 +11,7 @@ import {
   RELEASE_INTENTS,
   REPORT_REASONS,
   REPORT_TARGET_TYPES,
+  STREAM_QUALITIES,
   TRACK_ADDED_VIA,
   TRACK_STATUS,
 } from "../config/constants.js";
@@ -181,7 +182,7 @@ export const listTracksQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 
-export const streamQuerySchema = z.object({ quality: z.enum(["standard", "high"]).optional() });
+export const streamQuerySchema = z.object({ quality: z.enum(STREAM_QUALITIES).optional() });
 
 export const trackIdParamsSchema = z.object({ id: objectId("track") });
 

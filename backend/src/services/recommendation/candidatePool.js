@@ -10,6 +10,7 @@ import { publishedFilter } from "../browse.service.js";
 const POOL_FIELDS = "artistId genres vibes mood energy catalog playCount publishedAt";
 const POOL_CACHE_MS = 2 * 60 * 1000;
 const poolCache = new Map(); // catalog → { at, tracks }
+const poolLoads = new Map(); // catalog → Promise, so many feeds at once share one read
 
 /**
  * @param {"all"|"official"|"community"} catalog
@@ -18,6 +19,21 @@ const poolCache = new Map(); // catalog → { at, tracks }
 export async function getCandidatePool(catalog) {
   const cached = poolCache.get(catalog);
   if (cached && Date.now() - cached.at < POOL_CACHE_MS) return cached.tracks;
+  if (!poolLoads.has(catalog)) {
+    poolLoads.set(
+      catalog,
+      loadPool(catalog).finally(() => poolLoads.delete(catalog))
+    );
+  }
+  return poolLoads.get(catalog);
+}
+
+/**
+ * Read the pool from the database and cache it.
+ * @param {"all"|"official"|"community"} catalog
+ * @returns {Promise<Array<Object>>}
+ */
+async function loadPool(catalog) {
   const docs = await Track.find(publishedFilter(catalog)).select(POOL_FIELDS).lean();
   const tracks = docs.map((doc) => ({
     id: String(doc._id),
@@ -37,4 +53,5 @@ export async function getCandidatePool(catalog) {
 /** Forget cached pools (tests, big catalog changes). */
 export function resetCandidatePools() {
   poolCache.clear();
+  poolLoads.clear();
 }

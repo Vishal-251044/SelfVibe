@@ -78,7 +78,7 @@ export function deleteAdminTrack(trackId) {
 /**
  * Staff preview stream (works for drafts; staff may pick high quality).
  * @param {string} trackId
- * @param {{ quality?: "standard"|"high" }} [params]
+ * @param {{ quality?: "auto"|"low"|"standard"|"high" }} [params]
  * @returns {Promise<{ url: string, bitrateKbps: number, durationSec: number }>}
  */
 export function getAdminPreviewStream(trackId, params = {}) {

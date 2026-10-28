@@ -224,10 +224,21 @@ export const IMAGE_UPLOAD = Object.freeze({
   mimeTypes: Object.freeze({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }),
 });
 
-/** Playback copy (PRD CRT-4, STO-6): one 192 kbps MP3; the original upload is kept. */
+/**
+ * Playback copies (PRD CRT-4, STO-6; Owner decision Oct 2026): AAC in M4A, which
+ * sounds as good as MP3 at about two thirds of the size. The original upload is
+ * kept. "low" keeps music playing on slow internet, "standard" is normal play,
+ * "high" is the Premium quality (PRD plans).
+ */
 export const AUDIO_RENDITIONS = Object.freeze({
-  standard: { bitrateKbps: 192, codec: "mp3" },
+  low: { bitrateKbps: 64, codec: "aac" },
+  standard: { bitrateKbps: 128, codec: "aac" },
+  high: { bitrateKbps: 256, codec: "aac" },
 });
+/** Qualities a listener can ask for ("auto" lets the server pick by plan). */
+export const STREAM_QUALITIES = Object.freeze(["auto", ...Object.keys(AUDIO_RENDITIONS)]);
+/** Sources that are lossless, so every rendition is worth making. */
+export const LOSSLESS_CODECS = Object.freeze(["flac", "alac", "wavpack", "ape"]);
 export const WAVEFORM_PEAK_COUNT = 160;
 
 /** Where the API is allowed to put things in object storage. */

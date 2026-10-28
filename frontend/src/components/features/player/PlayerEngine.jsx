@@ -15,6 +15,7 @@ import { useEffect, useRef } from "react";
 import { initAudioEngine, resetAudioEngine } from "@/lib/player/audioEngine";
 import { clearListenEvents, startListenEventQueue } from "@/lib/player/listenEventQueue";
 import { clearStreamUrls } from "@/lib/player/streamUrlCache";
+import { resetNetworkQuality } from "@/lib/player/networkQuality";
 import { usePlayerShortcuts } from "@/hooks/usePlayerShortcuts";
 import { usePlayerStore } from "@/store/playerStore";
 import { useAuthStore } from "@/store/authStore";
@@ -35,6 +36,7 @@ export default function PlayerEngine() {
         if (usePlayerStore.getState().scope === "user") resetAudioEngine();
         clearListenEvents();
         clearStreamUrls();
+        resetNetworkQuality();
       }
     });
     const unsubscribeStaff = useStaffAuthStore.subscribe((state, previous) => {

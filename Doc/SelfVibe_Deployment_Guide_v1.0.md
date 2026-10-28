@@ -148,6 +148,14 @@ npm run search:setup        # Atlas Search indexes (needs an M10 / Flex cluster 
 npm run import:catalog      # optional: royalty-free starter catalog
 ```
 
+**Songs uploaded before the AAC update (Oct 2026):** new uploads are stored as 64 / 128 / 256 kbps AAC copies (plus the original). Songs processed earlier still have one 192 kbps MP3 and keep playing it. To give them the smaller copies and the slow-internet mode, run once (safe to stop and run again):
+
+```bash
+npm run audio:reencode -- --dry-run      # how many songs, and the storage estimate
+npm run audio:reencode                   # re-encode them (most played first)
+npm run db:sync-indexes                  # the faster indexes for a 5,000+ song catalog
+```
+
 Then log in at `https://<domain>/login` with `OWNER_EMAIL` / `OWNER_PASSWORD` (or "Continue with Google" with the same email). Open **Admin panel** from the account menu. Staff use one login, with no separate console password and no authenticator code.
 
 - **Google sign-in (optional):** in Google Cloud → Credentials → your OAuth client, add `https://<domain>/api/auth/google/callback` under "Authorized redirect URIs".

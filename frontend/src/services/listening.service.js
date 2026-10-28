@@ -30,19 +30,20 @@ export function getHistory(query = {}, options) {
  * Staff previews (Admin Console) use the staff endpoint one track at a time.
  * @param {string[]} trackIds
  * @param {"user"|"staff"} [scope="user"]
+ * @param {"auto"|"low"|"standard"|"high"} [quality="auto"] - "low" on slow internet / data saver
  * @returns {Promise<Object<string, { url: string, expiresAt: string, bitrateKbps: number, durationSec: number }>>}
  */
-export async function getStreamUrls(trackIds, scope = "user") {
+export async function getStreamUrls(trackIds, scope = "user", quality = "auto") {
   if (scope === "staff") {
     const entries = await Promise.all(
       trackIds.map((id) =>
-        getAdminPreviewStream(id)
+        getAdminPreviewStream(id, { quality })
           .then((stream) => [id, stream])
           .catch(() => null)
       )
     );
     return Object.fromEntries(entries.filter(Boolean));
   }
-  const { streams } = await api.post("/tracks/streams", { trackIds });
+  const { streams } = await api.post("/tracks/streams", { trackIds, quality });
   return streams;
 }

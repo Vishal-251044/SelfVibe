@@ -80,13 +80,15 @@ export async function probeAudio(filePath) {
 }
 
 /**
- * Transcode to MP3 at a constant bitrate (stereo, 44.1 kHz, metadata stripped).
+ * Transcode to AAC in an M4A file (stereo, 44.1 kHz, metadata stripped).
+ * "faststart" puts the index at the front, so playback starts after the first
+ * few KB and seeking works with range requests, even on slow connections.
  * @param {string} inputPath
- * @param {string} outputPath
- * @param {number} bitrateKbps - e.g. 128 or 320
+ * @param {string} outputPath - Ends with .m4a
+ * @param {number} bitrateKbps - e.g. 64, 128 or 256
  * @returns {Promise<void>}
  */
-export async function transcodeToMp3(inputPath, outputPath, bitrateKbps) {
+export async function transcodeToAac(inputPath, outputPath, bitrateKbps) {
   await run(ffmpegPath, [
     "-y",
     "-v",
@@ -101,9 +103,11 @@ export async function transcodeToMp3(inputPath, outputPath, bitrateKbps) {
     "-ar",
     "44100",
     "-codec:a",
-    "libmp3lame",
+    "aac",
     "-b:a",
     `${bitrateKbps}k`,
+    "-movflags",
+    "+faststart",
     outputPath,
   ]);
 }

@@ -47,6 +47,8 @@ const INITIAL_PLAYBACK = {
   currentTime: 0,
   duration: 0,
   error: null,
+  bitrateKbps: null, // quality of the copy being streamed (shown in Now Playing)
+  isLowData: false, // true while Auto has dropped to the small copy for slow internet
 };
 
 export const usePlayerStore = create(
@@ -68,6 +70,7 @@ export const usePlayerStore = create(
       volume: 0.9,
       muted: false,
       ducked: false, // not saved: only while the voice mic is open
+      streamQuality: "auto", // auto | low | standard | high (STREAM_QUALITY_OPTIONS)
 
       /* ----- reported by the engine ----- */
       ...INITIAL_PLAYBACK,
@@ -181,6 +184,15 @@ export const usePlayerStore = create(
       toggleMute() {
         const { muted, volume } = get();
         set({ muted: !muted, volume: muted && volume === 0 ? 0.5 : volume });
+      },
+
+      /**
+       * Streaming quality preference. The engine applies it from the next
+       * song (and reloads the current one at the same position).
+       * @param {"auto"|"low"|"standard"|"high"} streamQuality
+       */
+      setStreamQuality(streamQuality) {
+        set({ streamQuality });
       },
 
       /** Shuffle the songs after the current one, or restore the original order. */
@@ -355,6 +367,7 @@ export const usePlayerStore = create(
         repeat: state.repeat,
         volume: state.volume,
         muted: state.muted,
+        streamQuality: state.streamQuality,
       }),
     }
   )

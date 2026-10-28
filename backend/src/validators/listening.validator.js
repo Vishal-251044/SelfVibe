@@ -9,6 +9,7 @@ import {
   LISTEN_HISTORY_LIMIT,
   LISTEN_SOURCES,
   STREAM_BATCH_MAX,
+  STREAM_QUALITIES,
 } from "../config/constants.js";
 
 const objectId = z.string().regex(/^[0-9a-f]{24}$/i, { error: "Invalid track" });
@@ -50,4 +51,5 @@ export const historyQuerySchema = z.object({
 /** POST /api/tracks/streams — signed URLs for the upcoming queue */
 export const streamBatchSchema = z.object({
   trackIds: z.array(objectId).min(1).max(STREAM_BATCH_MAX),
+  quality: z.enum(STREAM_QUALITIES).default("auto"), // "low" on slow internet / data saver
 });

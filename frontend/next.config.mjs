@@ -55,6 +55,10 @@ const nextConfig = {
 
   // Avatars: Cloudinary uploads, Google profile photos, Wikimedia Commons artist photos
   images: {
+    // AVIF first (about 20% smaller than WebP), WebP for older browsers
+    formats: ["image/avif", "image/webp"],
+    // Covers and avatars get a new URL when they change, so resized copies can be kept a month
+    minimumCacheTTL: 30 * 24 * 60 * 60,
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },

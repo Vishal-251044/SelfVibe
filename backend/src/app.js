@@ -1,10 +1,11 @@
 /**
- * Express app setup: security headers, CORS, body parsing, request logging,
+ * Express app setup: security headers, response compression, CORS, body parsing, request logging,
  * routes and the central error handler. Kept separate from server.js so the
  * app can be imported by tests without opening a port.
  */
 import express from "express";
 import helmet from "helmet";
+import compression from "compression";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
@@ -20,6 +21,11 @@ app.set("trust proxy", env.trustProxy);
 app.disable("x-powered-by");
 
 app.use(helmet());
+
+// gzip / brotli JSON: feeds, search and admin lists shrink ~70–85%, which
+// matters most on slow mobile internet. Small replies and audio (already
+// compressed) are sent as they are.
+app.use(compression({ threshold: 1024 }));
 
 // CORS whitelist: only the configured frontend origins may call the API with cookies
 app.use(

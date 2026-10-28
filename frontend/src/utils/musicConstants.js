@@ -122,6 +122,31 @@ export const RESTART_THRESHOLD_SECONDS = 3;
 export const PRELOAD_BEFORE_END_SECONDS = 25;
 /** Fetch a fresh stream URL when the cached one expires within this time. */
 export const STREAM_URL_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+/**
+ * Streaming quality choices (Profile → Playback). Bitrates mirror the API's
+ * AAC copies; "high" is included in paid plans only.
+ */
+export const STREAM_QUALITY_OPTIONS = [
+  {
+    value: "auto",
+    label: "Auto",
+    description: "Best quality your plan and connection allow. Switches down on slow internet.",
+  },
+  { value: "low", label: "Data saver", description: "64 kbps · about 2 MB per song" },
+  { value: "standard", label: "Normal", description: "128 kbps · about 4 MB per song" },
+  {
+    value: "high",
+    label: "High",
+    description: "256 kbps · about 8 MB per song",
+    isPremium: true,
+  },
+];
+/** Auto quality: buffering this long (or this many times in the window) means slow internet. */
+export const STALL_SWITCH_MS = 3000;
+export const STALLS_BEFORE_SWITCH = 2;
+export const STALL_WINDOW_MS = 30 * 1000;
+/** After slow internet was noticed, keep using the small copy for this long. */
+export const LOW_DATA_HOLD_MS = 3 * 60 * 1000;
 /** Send queued listening events this often, plus on page hide / back online (BGP-7). */
 export const LISTEN_FLUSH_INTERVAL_MS = 15 * 1000;
 export const LISTEN_EVENTS_BATCH_SIZE = 50;

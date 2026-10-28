@@ -37,10 +37,12 @@ export const getTrack = asyncHandler(async (req, res) => {
 /** POST /api/tracks/streams — signed URLs for the upcoming queue (background play) */
 export const getStreams = asyncHandler(async (req, res) => {
   const viewer = await User.findById(req.auth.userId).select("plan").lean();
-  const streams = await trackService.getStreamUrls(req.validated.body.trackIds, {
-    userId: req.auth.userId,
-    plan: viewer?.plan,
-  });
+  const { trackIds, quality } = req.validated.body;
+  const streams = await trackService.getStreamUrls(
+    trackIds,
+    { userId: req.auth.userId, plan: viewer?.plan },
+    { quality }
+  );
   return sendSuccess(res, { message: "Streams ready", data: { streams } });
 });
 
