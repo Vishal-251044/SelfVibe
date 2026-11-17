@@ -3,6 +3,7 @@
  * Run with: npm run import:catalog            (100 tracks)
  *   (the npm script raises Node's header limit: ccMixter sends ~70 KB of response headers)
  *           npm run import:catalog -- --limit 30
+ *           npm run import:catalog -- --per-genre 10   (top 10 of every genre)
  *
  * Sources: ccMixter (CC BY, no key) and Jamendo (when JAMENDO_CLIENT_ID is set).
  * Tracks are credited to official artists, keep their licence + source link,
@@ -29,14 +30,19 @@ const PROCESSING_TIMEOUT_MS = 60 * 60 * 1000;
 const POLL_EVERY_MS = 5000;
 
 /**
- * Read `--limit N` from the command line.
- * @returns {number}
+ * Read a whole-number option such as `--limit 30` from the command line.
+ * @param {string} flag - e.g. "--limit"
+ * @param {number|null} fallback - Used when the flag is missing
+ * @param {number} max
+ * @returns {number|null}
+ * @throws {Error} When the value is not a whole number from 1 to max
  */
-function readLimit() {
-  const index = process.argv.indexOf("--limit");
-  const value = index === -1 ? DEFAULT_LIMIT : Number(process.argv[index + 1]);
-  if (!Number.isInteger(value) || value < 1 || value > 1000) {
-    throw new Error("--limit must be a whole number between 1 and 1000");
+function readNumberOption(flag, fallback, max) {
+  const index = process.argv.indexOf(flag);
+  if (index === -1) return fallback;
+  const value = Number(process.argv[index + 1]);
+  if (!Number.isInteger(value) || value < 1 || value > max) {
+    throw new Error(`${flag} must be a whole number between 1 and ${max}`);
   }
   return value;
 }
@@ -71,7 +77,8 @@ async function waitForProcessing(trackIds) {
 
 /** @returns {Promise<void>} */
 async function run() {
-  const limit = readLimit();
+  const limit = readNumberOption("--limit", DEFAULT_LIMIT, 1000);
+  const perGenre = readNumberOption("--per-genre", null, 50);
   if (isUnset(env.databaseUrl)) throw new Error("DATABASE_URL is not set in backend/.env");
   await mongoose.connect(env.databaseUrl, { serverSelectionTimeoutMS: 15000 });
 
@@ -86,9 +93,13 @@ async function run() {
   }
 
   logger.info(
-    `[ImportCatalog] importing up to ${limit} tracks (${env.catalog.jamendoClientId ? "ccMixter + Jamendo" : "ccMixter; set JAMENDO_CLIENT_ID to add Jamendo"}) into ${env.storage.driver} storage`
+    `[ImportCatalog] importing ${perGenre ? `the top ${perGenre} tracks of every genre` : `up to ${limit} tracks`} (${env.catalog.jamendoClientId ? "ccMixter + Jamendo" : "ccMixter; set JAMENDO_CLIENT_ID to add Jamendo"}) into ${env.storage.driver} storage`
   );
-  const { created, skipped, failed } = await importCatalog({ limit, ownerId: String(owner._id) });
+  const { created, skipped, failed } = await importCatalog({
+    limit: perGenre ? Infinity : limit,
+    perGenre,
+    ownerId: String(owner._id),
+  });
   logger.info(
     `[ImportCatalog] ${created.length} tracks created, ${skipped} already imported, ${failed.length} failed to download`
   );

@@ -12,6 +12,57 @@ import { ApiError } from "../../utils/ApiError.js";
 import { logger } from "../../utils/logger.js";
 
 const REQUEST_TIMEOUT_MS = 15_000;
+const KEYS_REJECTED_HINT =
+  "Razorpay rejected RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET (they don't match). " +
+  "Generate a new key pair in Razorpay Dashboard → Account & Settings → API Keys, " +
+  "put both values in backend/.env and restart the API.";
+const SUBSCRIPTIONS_OFF_HINT =
+  "The keys work, but Razorpay Subscriptions is not enabled on this account " +
+  "(plans and subscriptions return 401). Open Razorpay Dashboard → Subscriptions and " +
+  "enable it, in the same mode (Test / Live) as the keys.";
+
+/**
+ * Basic-auth GET to Razorpay, used by the startup check.
+ * @param {string} path
+ * @returns {Promise<number>} HTTP status
+ */
+async function probe(path) {
+  const { keyId, keySecret, apiBase } = env.razorpay;
+  const response = await fetch(`${apiBase}${path}`, {
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
+    },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  return response.status;
+}
+
+/**
+ * Check at startup (read-only calls) that Razorpay accepts the keys AND that
+ * Subscriptions is enabled, so either problem shows up in the API log instead
+ * of at someone's checkout. Never throws.
+ * @returns {Promise<"ok"|"keys_rejected"|"subscriptions_off"|null>} null = not configured / unreachable
+ */
+export async function verifyRazorpayKeys() {
+  const { isConfigured, isLiveMode } = env.razorpay;
+  if (!isConfigured) return null;
+  try {
+    // Payments work on every account, so a 401 here means the key pair itself is wrong
+    if ((await probe("/payments?count=1")) === 401) {
+      logger.error(`[Razorpay] ${KEYS_REJECTED_HINT}`);
+      return "keys_rejected";
+    }
+    if ((await probe("/plans?count=1")) === 401) {
+      logger.error(`[Razorpay] ${SUBSCRIPTIONS_OFF_HINT}`);
+      return "subscriptions_off";
+    }
+    logger.info(`[Razorpay] keys and subscriptions OK (${isLiveMode ? "LIVE" : "test"} mode)`);
+    return "ok";
+  } catch (error) {
+    logger.warn(`[Razorpay] could not check the keys at startup: ${error.message}`);
+    return null;
+  }
+}
 
 /** @returns {ApiError} 503 while Razorpay keys aren't set */
 export function paymentsNotConfigured() {
@@ -51,6 +102,19 @@ async function request(method, path, body) {
   }
 
   const data = await response.json().catch(() => ({}));
+  // 401 = a setup problem (wrong key pair, or Subscriptions not enabled — Razorpay answers
+  // "Authentication failed" for the first and a bare "Unauthorized" for the second), not
+  // something the user can fix
+  if (response.status === 401) {
+    const hint =
+      data?.error?.description === "Authentication failed"
+        ? KEYS_REJECTED_HINT
+        : SUBSCRIPTIONS_OFF_HINT;
+    logger.error(`[Razorpay] ${method} ${path} rejected: ${hint}`);
+    throw new ApiError(503, "Payments are temporarily unavailable. Please try again later.", {
+      code: ERROR_CODES.SERVICE_UNAVAILABLE,
+    });
+  }
   if (!response.ok) {
     const description = data?.error?.description ?? `HTTP ${response.status}`;
     logger.error(`[Razorpay] ${method} ${path} failed: ${description}`);

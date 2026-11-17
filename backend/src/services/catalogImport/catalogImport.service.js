@@ -26,13 +26,11 @@ const DOWNLOAD_CONCURRENCY = 3;
 
 /**
  * Collect candidate items from every available provider, spread across genres.
- * @param {number} limit - Total tracks wanted
+ * @param {number} perSource - Items to ask each provider for, per genre
  * @returns {Promise<Object[]>}
  */
-async function collectItems(limit) {
+async function collectItems(perSource) {
   const providers = PROVIDERS.filter((provider) => provider.isAvailable());
-  // Ask for a few extra per genre: some will already be imported or fail to download
-  const perSource = Math.ceil((limit * 1.3) / CATALOG_SOURCES.length / providers.length);
   const items = [];
 
   for (const source of CATALOG_SOURCES) {
@@ -138,12 +136,37 @@ async function importItem(item, ownerId, workDir) {
 }
 
 /**
- * Import up to `limit` new tracks.
- * @param {{ limit: number, ownerId: string }} options
+ * Choose what to import in per-genre mode (pure — unit tested): the first
+ * (most popular) fresh items of each genre, up to `perGenre` minus what that
+ * genre already has from earlier imports.
+ * @param {Object[]} fresh - Candidates not imported yet, in popularity order
+ * @param {number} perGenre
+ * @param {Map<string, number>} importedPerGenre - genre → tracks already imported
+ * @returns {Object[]}
+ */
+export function pickPerGenre(fresh, perGenre, importedPerGenre) {
+  const taken = new Map();
+  return fresh.filter((item) => {
+    const genre = item.genres[0];
+    const count = (importedPerGenre.get(genre) ?? 0) + (taken.get(genre) ?? 0);
+    if (count >= perGenre) return false;
+    taken.set(genre, (taken.get(genre) ?? 0) + 1);
+    return true;
+  });
+}
+
+/**
+ * Import new tracks: up to `limit` in total, or (with `perGenre`) the top N of every genre.
+ * @param {{ limit?: number, perGenre?: number|null, ownerId: string }} options
  * @returns {Promise<{ created: string[], skipped: number, failed: Array<{ title: string, error: string }> }>}
  */
-export async function importCatalog({ limit, ownerId }) {
-  const candidates = await collectItems(limit);
+export async function importCatalog({ limit = 100, perGenre = null, ownerId }) {
+  const providerCount = PROVIDERS.filter((provider) => provider.isAvailable()).length;
+  // Ask for extra: some are already imported, shared with another genre, or fail to download
+  const perSource = perGenre
+    ? Math.ceil((perGenre * 2) / providerCount)
+    : Math.ceil((limit * 1.3) / CATALOG_SOURCES.length / providerCount);
+  const candidates = await collectItems(perSource);
 
   // Skip anything imported on an earlier run
   const existing = await Track.find({
@@ -157,7 +180,18 @@ export async function importCatalog({ limit, ownerId }) {
   const fresh = candidates.filter(
     (item) => !existingIds.has(`${item.provider}:${item.externalId}`)
   );
-  const todo = fresh.slice(0, limit);
+  let todo = fresh.slice(0, limit);
+  if (perGenre) {
+    const imported = await Track.aggregate([
+      { $match: { "external.provider": { $in: PROVIDERS.map((provider) => provider.name) } } },
+      { $group: { _id: { $arrayElemAt: ["$genres", 0] }, count: { $sum: 1 } } },
+    ]);
+    todo = pickPerGenre(
+      fresh,
+      perGenre,
+      new Map(imported.map((entry) => [entry._id, entry.count]))
+    );
+  }
 
   const workDir = await mkdtemp(path.join(os.tmpdir(), "selfvibe-import-"));
   const created = [];

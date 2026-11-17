@@ -9,6 +9,7 @@ import { logger } from "./src/utils/logger.js";
 import "./src/models/index.js"; // register every model so its indexes are built on connect
 import { startJobs } from "./src/jobs/index.js";
 import { queue } from "./src/services/queue/index.js";
+import { verifyRazorpayKeys } from "./src/services/billing/razorpay.provider.js";
 import { captureError, flushErrorTracking, initErrorTracking } from "./src/utils/errorTracking.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10000;
@@ -41,6 +42,7 @@ async function start() {
     logger.info(
       `[Server] SelfVibe API listening on http://localhost:${env.port}/api (${env.nodeEnv})`
     );
+    verifyRazorpayKeys(); // logs clearly if the payment keys are wrong (never throws)
   });
 
   server.on("error", (error) => {

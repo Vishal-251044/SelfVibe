@@ -74,21 +74,29 @@ export const ccmixterProvider = {
 
   /**
    * Fetch up to `limit` usable items for one catalog source.
-   * @param {{ genre: string, vibes: string[], ccmixterTags: string }} source
+   * @param {{ genre: string, vibes: string[], ccmixterTags: string|string[] }} source
    * @param {number} limit
    * @returns {Promise<Object[]>}
    */
   async fetchItems(source, limit) {
     const items = [];
-    for (let offset = 0; items.length < limit && offset < limit * 4; offset += PAGE_SIZE) {
-      const url = `${API_URL}?f=json&lic=by&sort=rank&limit=${PAGE_SIZE}&offset=${offset}&tags=${encodeURIComponent(source.ccmixterTags)}`;
-      const uploads = await fetchJson(url, { "User-Agent": USER_AGENT });
-      if (!Array.isArray(uploads) || uploads.length === 0) break;
-      for (const upload of uploads) {
-        const item = toCatalogItem(upload, source);
-        if (item) items.push(item);
-        if (items.length >= limit) break;
+    const seen = new Set(); // the same upload can carry several of the tags
+    for (const tag of [].concat(source.ccmixterTags)) {
+      // sort=rank: ccMixter's most popular uploads first
+      for (let offset = 0; items.length < limit && offset < limit * 4; offset += PAGE_SIZE) {
+        const url = `${API_URL}?f=json&lic=by&sort=rank&limit=${PAGE_SIZE}&offset=${offset}&tags=${encodeURIComponent(tag)}`;
+        const uploads = await fetchJson(url, { "User-Agent": USER_AGENT });
+        if (!Array.isArray(uploads) || uploads.length === 0) break;
+        for (const upload of uploads) {
+          const item = toCatalogItem(upload, source);
+          if (item && !seen.has(item.externalId)) {
+            seen.add(item.externalId);
+            items.push(item);
+          }
+          if (items.length >= limit) break;
+        }
       }
+      if (items.length >= limit) break;
     }
     return items;
   },

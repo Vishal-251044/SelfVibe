@@ -236,3 +236,25 @@ describe("audit snapshots", () => {
     assert.deepEqual(snapshot, { title: "Song", audio: { durationSec: 10 } });
   });
 });
+
+describe("catalog import: top N per genre", async () => {
+  const { pickPerGenre } = await import("../src/services/catalogImport/catalogImport.service.js");
+  const item = (id, genre) => ({ externalId: id, genres: [genre] });
+  it("takes the most popular N of each genre, counting earlier imports", () => {
+    const fresh = [
+      item("1", "pop"),
+      item("2", "pop"),
+      item("3", "jazz"),
+      item("4", "pop"),
+      item("5", "jazz"),
+    ];
+    const picked = pickPerGenre(fresh, 2, new Map([["jazz", 1]]));
+    assert.deepEqual(
+      picked.map((x) => x.externalId),
+      ["1", "2", "3"]
+    );
+  });
+  it("a genre that is already full gets nothing", () => {
+    assert.deepEqual(pickPerGenre([item("1", "rock")], 10, new Map([["rock", 10]])), []);
+  });
+});

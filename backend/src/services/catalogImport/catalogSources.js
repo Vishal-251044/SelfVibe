@@ -29,6 +29,26 @@ export const CATALOG_SOURCES = [
   { genre: "r-and-b", vibes: ["chill"], ccmixterTags: "soul", jamendoTags: "rnb" },
   { genre: "ambient", vibes: ["sleep", "focus"], ccmixterTags: "ambient", jamendoTags: "ambient" },
   { genre: "classical", vibes: ["focus"], ccmixterTags: "classical", jamendoTags: "classical" },
+  // Indian categories: ccMixter has Indian-style instrumental / world music, not film songs
+  {
+    genre: "bollywood",
+    vibes: ["happy", "travel"],
+    ccmixterTags: ["indian", "sitar", "tabla"],
+    jamendoTags: "bollywood",
+  },
+  { genre: "punjabi", vibes: ["party", "gym"], ccmixterTags: [], jamendoTags: "bhangra" },
+  {
+    genre: "devotional",
+    vibes: ["focus", "sleep"],
+    ccmixterTags: ["spiritual", "meditation"],
+    jamendoTags: "spiritual",
+  },
+  {
+    genre: "indie-pop",
+    vibes: ["happy", "travel"],
+    ccmixterTags: ["indie_pop", "pop"],
+    jamendoTags: "indiepop",
+  },
 ];
 
 const VIBE_HINTS = {
